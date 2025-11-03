@@ -106,99 +106,74 @@ export class Chat implements AfterViewChecked {
         next: (event) => {
           console.log('🎯 Frontend received event:', event);
 
-          if (event.type === 'connected') {
-            console.log('✅ SSE connected');
-            this.triggerScroll(); // Scroll when connected
-          } else if (event.type === 'chunk' && event.content) {
-            this.isLoading = false;
-            assistantMessage.firstChunkLoaded = true;
-            // Append chunk to assistant message
-            console.log('📝 Appending chunk to message');
-            assistantMessage.content += event.content;
-            this.triggerScroll(); // Scroll with each chunk
-          } else if (event.type === 'reasoning' && event.content) {
-            // Handle reasoning content (optional: you can choose to display or ignore)
-            this.isLoading = false;
-            assistantMessage.firstChunkLoaded = true;
-            console.log('🧠 Reasoning:', event.content);
-            // Optionally append reasoning to message (or ignore it)
-            // assistantMessage.content += event.content;
-          } else if (event.type === 'reasoning-finish') {
-            console.log('✅ Reasoning phase completed');
-          } else if (event.type === 'step-finish') {
-            console.log('✅ Step completed');
-          } else if (event.type === 'text-finish') {
-            console.log('✅ Text generation completed');
-          } else if (event.type === 'tool-call') {
-            // Handle tool call - show loading indicator
-            console.log('🔧 Tool called:', {
-              toolName: event.toolName,
-              args: event.args,
-              toolCallId: event.toolCallId
-            });
-            // assistantMessage.content += `\n\n[Calling tool: ${event.toolName}...]`;
-            console.log(`\n\n[Calling tool: ${event.toolName}...]`);
-          } else if (event.type === 'tool-result' && event.toolName === 'get-tax-data') {
-            // Handle tax data tool result - show modal for confirmation
-            if (event.result?.success && event.result?.data) {
-              this.pendingTaxData = event.result.data;
-              this.pendingScenario = event.result.scenario;
-              this.pendingToolCallId = event.toolCallId || '';
-              this.isModalOpen = true;
+          switch (event.type) {
+            case 'connected':
+              console.log('✅ SSE connected');
+              this.triggerScroll(); // Scroll when connected
+              break;
 
-              // Update message to show tool was called
-              // assistantMessage.content = assistantMessage.content.replace(
-              //   `[Calling tool: ${event.toolName}...]`,
-              //   `[Retrieved ${event.result.scenario} tax data - awaiting confirmation]`
-              // );
-            }
-          } else if (event.type === 'tool-result' && event.toolName === 'generate-tax-pdf') {
-            // Handle PDF generation tool result - show download link
-            if (event.result?.success && event.result?.downloadUrl) {
-              const downloadUrl = `http://localhost:3000${event.result.downloadUrl}`;
-              assistantMessage.content = assistantMessage.content.replace(
-                `[Calling tool: ${event.toolName}...]`,
-                `✅ ${event.result.message}\n\n📄 [Download PDF](${downloadUrl})`
-              );
-            } else {
-              assistantMessage.content = assistantMessage.content.replace(
-                `[Calling tool: ${event.toolName}...]`,
-                `❌ Failed to generate PDF: ${event.result?.error || 'Unknown error'}`
-              );
-            }
-          } else if (event.type === 'tool-result' && event.toolName === 'calculate-deductions') {
-            // Handle deduction calculation tool result
-            console.log('Deduction calculation result:', event.result);
-            if (event.result) {
-              const result = event.result;
-              let summary = `\n\n📊 **Deduction Calculation Results:**\n`;
-              summary += `- Total Deductions: CHF ${result.totalDeductions?.toLocaleString() || 0}\n`;
-              summary += `- Estimated Tax Savings: CHF ${result.estimatedTaxSavings?.toLocaleString() || 0}\n\n`;
-
-              if (result.recommendations && result.recommendations.length > 0) {
-                summary += `💡 **Recommendations:**\n`;
-                result.recommendations.forEach((rec: string, idx: number) => {
-                  summary += `${idx + 1}. ${rec}\n`;
-                });
+            case 'chunk':
+              if (event.content) {
+                // Append chunk to assistant message
+                console.log('📝 Appending chunk to message');
+                assistantMessage.content += event.content;
+                if (event.content.trim().length > 0) {
+                  this.isLoading = false;
+                  assistantMessage.firstChunkLoaded = true;
+                }
+                this.triggerScroll(); // Scroll with each chunk
               }
+              break;
 
-              assistantMessage.content = assistantMessage.content.replace(
-                `[Calling tool: ${event.toolName}...]`,
-                summary
-              );
-            }
-          } else if (event.type === 'tool-result') {
-            // Handle other tool results
-            console.log('Tool result:', event.toolName, event.result);
-            assistantMessage.content = assistantMessage.content.replace(
-              `[Calling tool: ${event.toolName}...]`,
-              `[Tool completed: ${event.toolName}]`
-            );
-          } else if (event.type === 'done') {
-            console.log('SSE stream completed');
-          } else if (event.type === 'error') {
-            this.error = event.error || 'Stream error occurred';
-            console.error('Stream error:', event.error);
+            case 'reasoning':
+              // Handle reasoning content (optional: you can choose to display or ignore)
+              if (event.content) {
+                // this.isLoading = false;
+                // assistantMessage.firstChunkLoaded = true;
+                // Optionally append reasoning to message (or ignore it)
+                // assistantMessage.content += event.content;
+              }
+              break;
+
+            case 'reasoning-finish':
+              console.log('✅ Reasoning phase completed');
+              break;
+
+            case 'step-finish':
+              console.log('✅ Step completed');
+              break;
+
+            case 'text-finish':
+              console.log('✅ Text generation completed');
+              break;
+
+            case 'tool-call':
+              // Handle tool call - show loading indicator
+              console.log('🔧 Tool called:', {
+                toolName: event.toolName,
+                args: event.args,
+                toolCallId: event.toolCallId
+              });
+              // assistantMessage.content += `\n\n[Calling tool: ${event.toolName}...]`;
+              console.log(`\n\n[Calling tool: ${event.toolName}...]`);
+              break;
+
+            case 'tool-result':
+              this.handleToolResult(event, assistantMessage);
+              break;
+
+            case 'done':
+              console.log('SSE stream completed');
+              break;
+
+            case 'error':
+              this.error = event.error || 'Stream error occurred';
+              console.error('Stream error:', event.error);
+              break;
+
+            default:
+              console.warn('Unknown event type:', event.type);
+              break;
           }
         },
         error: (err) => {
@@ -248,6 +223,77 @@ export class Chat implements AfterViewChecked {
       }
 
       this.isLoading = false;
+    }
+  }
+
+  /**
+   * Handle tool result events based on tool name
+   */
+  private handleToolResult(event: StreamEvent, assistantMessage: Message): void {
+    switch (event.toolName) {
+      case 'get-tax-data':
+        // Handle tax data tool result - show modal for confirmation
+        if (event.result?.success && event.result?.data) {
+          this.pendingTaxData = event.result.data;
+          this.pendingScenario = event.result.scenario;
+          this.pendingToolCallId = event.toolCallId || '';
+          this.isModalOpen = true;
+
+          // Update message to show tool was called
+          // assistantMessage.content = assistantMessage.content.replace(
+          //   `[Calling tool: ${event.toolName}...]`,
+          //   `[Retrieved ${event.result.scenario} tax data - awaiting confirmation]`
+          // );
+        }
+        break;
+
+      case 'generate-tax-pdf':
+        // Handle PDF generation tool result - show download link
+        if (event.result?.success && event.result?.downloadUrl) {
+          const downloadUrl = `http://localhost:3000${event.result.downloadUrl}`;
+          assistantMessage.content = assistantMessage.content.replace(
+            `[Calling tool: ${event.toolName}...]`,
+            `✅ ${event.result.message}\n\n📄 [Download PDF](${downloadUrl})`
+          );
+        } else {
+          assistantMessage.content = assistantMessage.content.replace(
+            `[Calling tool: ${event.toolName}...]`,
+            `❌ Failed to generate PDF: ${event.result?.error || 'Unknown error'}`
+          );
+        }
+        break;
+
+      case 'calculate-deductions':
+        // Handle deduction calculation tool result
+        console.log('Deduction calculation result:', event.result);
+        if (event.result) {
+          const result = event.result;
+          let summary = `\n\n📊 **Deduction Calculation Results:**\n`;
+          summary += `- Total Deductions: CHF ${result.totalDeductions?.toLocaleString() || 0}\n`;
+          summary += `- Estimated Tax Savings: CHF ${result.estimatedTaxSavings?.toLocaleString() || 0}\n\n`;
+
+          if (result.recommendations && result.recommendations.length > 0) {
+            summary += `💡 **Recommendations:**\n`;
+            result.recommendations.forEach((rec: string, idx: number) => {
+              summary += `${idx + 1}. ${rec}\n`;
+            });
+          }
+
+          assistantMessage.content = assistantMessage.content.replace(
+            `[Calling tool: ${event.toolName}...]`,
+            summary
+          );
+        }
+        break;
+
+      default:
+        // Handle other tool results
+        console.log('Tool result:', event.toolName, event.result);
+        assistantMessage.content = assistantMessage.content.replace(
+          `[Calling tool: ${event.toolName}...]`,
+          `[Tool completed: ${event.toolName}]`
+        );
+        break;
     }
   }
 
