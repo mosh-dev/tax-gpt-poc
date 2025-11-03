@@ -58,7 +58,8 @@ export class Chat {
     const userMessage: Message = {
       role: 'user',
       content: this.currentMessage,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      firstChunkLoaded: true
     };
 
     this.messages.push(userMessage);

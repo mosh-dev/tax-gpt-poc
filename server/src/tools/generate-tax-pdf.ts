@@ -11,7 +11,7 @@ import * as path from 'path';
  */
 export const generateTaxPDFTool = createTool({
   id: 'generate-tax-pdf',
-  description: 'Generates a PDF document containing a comprehensive tax return summary with income, deductions, and wealth information for Canton Zurich. Use this when the user asks to generate, create, or download a PDF of their tax data or tax return summary.',
+  description: 'Generates a PDF document containing a comprehensive tax return summary with income, deductions, and wealth information for Canton Zurich In English. Use this when the user asks to generate, create, or download a PDF of their tax data or tax return summary.',
   inputSchema: z.object({
     taxData: z.object({
       taxYear: z.number(),
