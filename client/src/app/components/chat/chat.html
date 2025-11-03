@@ -51,7 +51,7 @@
   </div>
 
   <!-- Messages Container -->
-  <div class="flex-1 overflow-y-auto px-6 py-6 space-y-4">
+  <div class="flex-1 overflow-y-auto px-6 py-6 space-y-4 max-h-[calc(100vh-345px)]">
     <div *ngFor="let message of messages"
          [class]="message.role === 'user' ? 'flex justify-end animate-slideIn' : 'flex justify-start animate-slideIn'">
       <div [class]="message.role === 'user'
