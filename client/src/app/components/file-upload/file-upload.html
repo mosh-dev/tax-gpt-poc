@@ -1,0 +1,38 @@
+<div class="upload-container">
+  <div class="upload-area"
+       (drop)="onFileDrop($event)"
+       (dragover)="onDragOver($event)">
+    <input type="file"
+           accept="application/pdf"
+           (change)="onFileSelected($event)"
+           #fileInput
+           style="display: none">
+
+    <div *ngIf="!selectedFile" class="upload-prompt" (click)="fileInput.click()">
+      <div class="upload-icon">📄</div>
+      <p>Drag and drop a PDF or click to select</p>
+      <small>(Lohnausweis, receipts, tax documents)</small>
+    </div>
+
+    <div *ngIf="selectedFile" class="file-info">
+      <p><strong>Selected:</strong> {{ selectedFile.name }}</p>
+      <p><small>{{ (selectedFile.size / 1024).toFixed(1) }} KB</small></p>
+      <div class="actions">
+        <button (click)="uploadPDF()" [disabled]="isUploading">
+          {{ isUploading ? 'Uploading...' : 'Upload & Extract' }}
+        </button>
+        <button (click)="clearFile()" [disabled]="isUploading">Clear</button>
+      </div>
+    </div>
+  </div>
+
+  <div *ngIf="error" class="error">{{ error }}</div>
+
+  <div *ngIf="extractionResult?.success" class="result">
+    <h4>Extraction Complete!</h4>
+    <p *ngIf="extractionResult?.numPages">Pages: {{ extractionResult?.numPages }}</p>
+    <div *ngIf="extractionResult?.extractedData?.income?.employment">
+      <p><strong>Employment Income:</strong> CHF {{ extractionResult?.extractedData?.income?.employment | number }}</p>
+    </div>
+  </div>
+</div>

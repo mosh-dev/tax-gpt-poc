@@ -1,0 +1,45 @@
+# Dependencies
+/node_modules
+/client/node_modules
+/server/node_modules
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+/.pnp
+.pnp.js
+
+# Build outputs
+/tmp
+/out-tsc
+/dist
+/client/dist
+/server/dist
+/.angular/cache
+
+# Environment
+.env
+.env.local
+.env.*.local
+server/.env
+
+# IDE
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Uploads
+/server/uploads
+*.pdf
+
+# Logs
+*.log
+logs/
