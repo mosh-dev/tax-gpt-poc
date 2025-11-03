@@ -35,11 +35,13 @@ app.get('/api/health', (req: Request, res: Response) => {
 import chatRoutes from './routes/chat';
 import taxDataRoutes from './routes/tax-data';
 import uploadRoutes from './routes/upload';
+import pdfRoutes from './routes/pdf';
 
 // Use routes
 app.use('/api/chat', chatRoutes);
 app.use('/api/tax-data', taxDataRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/pdf', pdfRoutes);
 
 // 404 handler
 app.use((req: Request, res: Response) => {

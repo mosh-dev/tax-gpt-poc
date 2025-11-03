@@ -1,31 +1,50 @@
-<div class="app-container">
-  <header class="app-header">
-    <h1>{{ title }}</h1>
-    <nav class="tabs">
-      <button
-        [class.active]="activeTab === 'chat'"
-        (click)="setActiveTab('chat')">
-        Chat Assistant
-      </button>
-      <button
-        [class.active]="activeTab === 'upload'"
-        (click)="setActiveTab('upload')">
-        Upload PDF
-      </button>
-    </nav>
+<div class="flex flex-col h-screen bg-slate-100">
+  <!-- Header -->
+  <header class="bg-white shadow-md border-b border-slate-200">
+    <div class="flex items-center justify-between px-8 py-4">
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl shadow-lg flex items-center justify-center">
+          <span class="text-2xl">🇨🇭</span>
+        </div>
+        <h1 class="text-2xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          {{ title }}
+        </h1>
+      </div>
+
+      <!-- Tabs Navigation -->
+      <nav class="flex gap-2 bg-slate-100 p-1 rounded-lg">
+        <button
+          (click)="setActiveTab('chat')"
+          [class.bg-white]="activeTab === 'chat'"
+          [class.text-blue-600]="activeTab === 'chat'"
+          [class.shadow-md]="activeTab === 'chat'"
+          [class.text-slate-600]="activeTab !== 'chat'"
+          class="px-6 py-2 rounded-lg font-semibold transition-all duration-200 hover:bg-white/60 flex items-center gap-2">
+          <span>💬</span>
+          Chat Assistant
+        </button>
+        <button
+          (click)="setActiveTab('upload')"
+          [class.bg-white]="activeTab === 'upload'"
+          [class.text-purple-600]="activeTab === 'upload'"
+          [class.shadow-md]="activeTab === 'upload'"
+          [class.text-slate-600]="activeTab !== 'upload'"
+          class="px-6 py-2 rounded-lg font-semibold transition-all duration-200 hover:bg-white/60 flex items-center gap-2">
+          <span>📄</span>
+          Upload PDF
+        </button>
+      </nav>
+    </div>
   </header>
 
-  <main class="app-main">
-    <div *ngIf="activeTab === 'chat'" class="tab-content">
+  <!-- Main Content -->
+  <main class="flex-1 overflow-hidden">
+    <div class="h-full" [class.hidden]="activeTab !== 'chat'">
       <app-chat></app-chat>
     </div>
 
-    <div *ngIf="activeTab === 'upload'" class="tab-content">
-      <div class="upload-section">
-        <h2>Upload Tax Documents</h2>
-        <p>Upload your tax documents (Lohnausweis, receipts, etc.) to extract data automatically.</p>
-        <app-file-upload (pdfExtracted)="onPdfExtracted($event)"></app-file-upload>
-      </div>
+    <div class="h-full" [class.hidden]="activeTab !== 'upload'">
+      <app-file-upload (pdfExtracted)="onPdfExtracted($event)"></app-file-upload>
     </div>
   </main>
 </div>

@@ -21,6 +21,7 @@ export class Chat implements OnInit {
   selectedScenario: string = '';
   loadedTaxData: SwissTaxData | null = null;
   isLoadingScenario = false;
+  isDownloadingPDF = false;
 
   constructor(private apiService: ApiService) {
     this.initializeChat();
@@ -175,5 +176,43 @@ export class Chat implements OnInit {
     this.messages = [];
     this.initializeChat();
     this.error = null;
+  }
+
+  /**
+   * Download AI recommendations PDF
+   */
+  async downloadPDF() {
+    // Check if there's any meaningful conversation
+    const hasConversation = this.messages.some(msg =>
+      msg.role === 'assistant' && msg.content.length > 50
+    );
+
+    if (!hasConversation) {
+      this.error = 'Please have a conversation with the AI first before downloading recommendations.';
+      return;
+    }
+
+    this.isDownloadingPDF = true;
+    this.error = null;
+
+    try {
+      // Download PDF with conversation history and optional tax data
+      await this.apiService.downloadAIRecommendationsPDF(
+        this.messages,
+        this.loadedTaxData || undefined
+      );
+
+      // Add success message to chat
+      this.messages.push({
+        role: 'assistant',
+        content: '✓ AI recommendations PDF has been generated and downloaded successfully! This document contains our entire conversation and recommendations for your tax submission.',
+        timestamp: new Date().toISOString()
+      });
+    } catch (err: any) {
+      this.error = 'Failed to generate PDF. Please try again.';
+      console.error('PDF download error:', err);
+    } finally {
+      this.isDownloadingPDF = false;
+    }
   }
 }
