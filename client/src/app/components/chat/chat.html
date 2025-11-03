@@ -4,6 +4,26 @@
     <button class="clear-btn" (click)="clearChat()">Clear Chat</button>
   </div>
 
+  <!-- Tax Scenario Selector -->
+  <div class="scenario-selector">
+    <div class="selector-content">
+      <label for="scenario">Load Mock Tax Data:</label>
+      <select id="scenario" [(ngModel)]="selectedScenario" [disabled]="isLoadingScenario">
+        <option value="">Select a scenario...</option>
+        <option *ngFor="let scenario of availableScenarios" [value]="scenario.id">
+          {{ scenario.name }} (CHF {{ scenario.income | number }})
+        </option>
+      </select>
+      <button
+        (click)="loadScenario()"
+        [disabled]="!selectedScenario || isLoadingScenario"
+        class="load-btn">
+        {{ isLoadingScenario ? 'Loading...' : 'Load Data' }}
+      </button>
+      <span *ngIf="loadedTaxData" class="loaded-indicator">✓ Data Loaded</span>
+    </div>
+  </div>
+
   <div class="messages-container">
     <div *ngFor="let message of messages"
          [class]="'message message-' + message.role">

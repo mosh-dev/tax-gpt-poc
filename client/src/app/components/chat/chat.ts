@@ -1,8 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ApiService } from '../../services/api.service';
-import { Message } from '../../models/tax.model';
+import { Message, TaxScenario, SwissTaxData } from '../../models/tax.model';
 
 @Component({
   selector: 'app-chat',
@@ -10,14 +10,32 @@ import { Message } from '../../models/tax.model';
   templateUrl: './chat.html',
   styleUrl: './chat.scss',
 })
-export class Chat {
+export class Chat implements OnInit {
   messages: Message[] = [];
   currentMessage = '';
   isLoading = false;
   error: string | null = null;
 
+  // Scenario selection
+  availableScenarios: TaxScenario[] = [];
+  selectedScenario: string = '';
+  loadedTaxData: SwissTaxData | null = null;
+  isLoadingScenario = false;
+
   constructor(private apiService: ApiService) {
     this.initializeChat();
+  }
+
+  async ngOnInit() {
+    // Load available scenarios
+    try {
+      const response = await this.apiService.getScenarios().toPromise();
+      if (response?.success) {
+        this.availableScenarios = response.scenarios;
+      }
+    } catch (err) {
+      console.error('Failed to load scenarios:', err);
+    }
   }
 
   /**
@@ -29,6 +47,66 @@ export class Chat {
       content: 'Hallo! I\'m your Swiss tax assistant for Canton Zurich. How can I help you with your tax return today?',
       timestamp: new Date().toISOString()
     });
+  }
+
+  /**
+   * Load selected tax scenario
+   */
+  async loadScenario() {
+    if (!this.selectedScenario) {
+      return;
+    }
+
+    this.isLoadingScenario = true;
+    try {
+      const response = await this.apiService.getTaxData(this.selectedScenario as any).toPromise();
+      if (response?.success) {
+        this.loadedTaxData = response.data;
+
+        // Add system message showing data is loaded
+        this.messages.push({
+          role: 'system',
+          content: `Loaded tax scenario: ${this.selectedScenario}. Your income: CHF ${this.loadedTaxData.income.employment?.toLocaleString() || 0}`,
+          timestamp: new Date().toISOString()
+        });
+
+        // Add assistant message acknowledging the data
+        const summary = this.generateDataSummary(this.loadedTaxData);
+        this.messages.push({
+          role: 'assistant',
+          content: `I've loaded your tax data. ${summary}\n\nHow can I help you with your tax return?`,
+          timestamp: new Date().toISOString()
+        });
+      }
+    } catch (err: any) {
+      this.error = 'Failed to load scenario data';
+      console.error('Load scenario error:', err);
+    } finally {
+      this.isLoadingScenario = false;
+    }
+  }
+
+  /**
+   * Generate a summary of loaded tax data
+   */
+  private generateDataSummary(data: SwissTaxData): string {
+    const parts = [];
+
+    if (data.personalInfo.maritalStatus) {
+      parts.push(`Status: ${data.personalInfo.maritalStatus}`);
+    }
+
+    const totalIncome = Object.values(data.income).reduce((sum, val) => sum + (val || 0), 0);
+    if (totalIncome > 0) {
+      parts.push(`Total income: CHF ${totalIncome.toLocaleString()}`);
+    }
+
+    const totalDeductions = Object.values(data.deductions).reduce((sum, val) => sum + (val || 0), 0);
+    if (totalDeductions > 0) {
+      parts.push(`Total deductions: CHF ${totalDeductions.toLocaleString()}`);
+    }
+
+    return parts.join(', ');
   }
 
   /**
@@ -52,8 +130,14 @@ export class Chat {
     this.error = null;
 
     try {
+      // Include loaded tax data in the context if available
+      let contextualMessage = messageToSend;
+      if (this.loadedTaxData) {
+        contextualMessage = `[User's Tax Data: ${JSON.stringify(this.loadedTaxData, null, 2)}]\n\nUser Question: ${messageToSend}`;
+      }
+
       const response = await this.apiService.sendMessage(
-        messageToSend,
+        contextualMessage,
         this.messages
       ).toPromise();
 

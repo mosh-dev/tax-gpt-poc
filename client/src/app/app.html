@@ -1,2 +1,33 @@
-<app-chat></app-chat>
+<div class="app-container">
+  <header class="app-header">
+    <h1>{{ title }}</h1>
+    <nav class="tabs">
+      <button
+        [class.active]="activeTab === 'chat'"
+        (click)="setActiveTab('chat')">
+        Chat Assistant
+      </button>
+      <button
+        [class.active]="activeTab === 'upload'"
+        (click)="setActiveTab('upload')">
+        Upload PDF
+      </button>
+    </nav>
+  </header>
+
+  <main class="app-main">
+    <div *ngIf="activeTab === 'chat'" class="tab-content">
+      <app-chat></app-chat>
+    </div>
+
+    <div *ngIf="activeTab === 'upload'" class="tab-content">
+      <div class="upload-section">
+        <h2>Upload Tax Documents</h2>
+        <p>Upload your tax documents (Lohnausweis, receipts, etc.) to extract data automatically.</p>
+        <app-file-upload (pdfExtracted)="onPdfExtracted($event)"></app-file-upload>
+      </div>
+    </div>
+  </main>
+</div>
+
 <router-outlet />
