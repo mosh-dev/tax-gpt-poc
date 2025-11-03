@@ -11,7 +11,11 @@
       "Bash(findstr:*)",
       "Bash(taskkill:*)",
       "Bash(curl:*)",
-      "Bash(python -m json.tool:*)"
+      "Bash(python -m json.tool:*)",
+      "WebSearch",
+      "WebFetch(domain:www.copilotkit.ai)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:docs.ag-ui.com)"
     ],
     "deny": [],
     "ask": []

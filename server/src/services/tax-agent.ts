@@ -86,6 +86,34 @@ export class TaxAgent {
     }
 
     /**
+     * Stream a message to the tax agent with SSE support
+     * @param message User's message
+     * @param conversationHistory Optional conversation history for context
+     * @returns Async generator that yields text chunks
+     */
+    async *streamChat(message: string, conversationHistory?: any[]) {
+        try {
+            // If we have conversation history, include it in the context
+            const context = conversationHistory
+                ? this.formatConversationHistory(conversationHistory)
+                : '';
+
+            const fullMessage = context ? `${context}\n\nUser: ${message}` : message;
+
+            // Use stream method from Mastra agent
+            const stream = await this.agent.stream(fullMessage);
+
+            // Yield chunks as they arrive
+            for await (const chunk of stream.textStream) {
+                yield chunk;
+            }
+        } catch (error: any) {
+            console.error('Tax Agent Streaming Error:', error);
+            throw error;
+        }
+    }
+
+    /**
      * Format conversation history for context
      */
     private formatConversationHistory(history: any[]): string {

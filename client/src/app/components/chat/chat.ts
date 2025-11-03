@@ -111,7 +111,7 @@ export class Chat implements OnInit {
   }
 
   /**
-   * Send message to tax assistant
+   * Send message to tax assistant using SSE streaming
    */
   async sendMessage() {
     if (!this.currentMessage.trim() || this.isLoading) {
@@ -130,6 +130,14 @@ export class Chat implements OnInit {
     this.isLoading = true;
     this.error = null;
 
+    // Create a temporary assistant message that will be updated with streaming chunks
+    const assistantMessage: Message = {
+      role: 'assistant',
+      content: '',
+      timestamp: new Date().toISOString()
+    };
+    this.messages.push(assistantMessage);
+
     try {
       // Include loaded tax data in the context if available
       let contextualMessage = messageToSend;
@@ -137,24 +145,60 @@ export class Chat implements OnInit {
         contextualMessage = `[User's Tax Data: ${JSON.stringify(this.loadedTaxData, null, 2)}]\n\nUser Question: ${messageToSend}`;
       }
 
-      const response = await this.apiService.sendMessage(
-        contextualMessage,
-        this.messages
-      ).toPromise();
+      // Subscribe to SSE stream
+      this.apiService.streamMessage(contextualMessage, this.messages).subscribe({
+        next: (event) => {
+          if (event.type === 'connected') {
+            console.log('SSE connected');
+          } else if (event.type === 'chunk' && event.content) {
+            // Append chunk to assistant message
+            assistantMessage.content += event.content;
+          } else if (event.type === 'done') {
+            console.log('SSE stream completed');
+          } else if (event.type === 'error') {
+            this.error = event.error || 'Stream error occurred';
+            console.error('Stream error:', event.error);
+          }
+        },
+        error: (err) => {
+          this.error = err.message || 'Failed to stream message';
+          console.error('Chat streaming error:', err);
 
-      if (response?.success && response.message) {
-        this.messages.push({
-          role: 'assistant',
-          content: response.message,
-          timestamp: response.timestamp
-        });
-      } else {
-        this.error = response?.error || 'Failed to get response';
-      }
+          // Remove the empty assistant message if error occurs
+          if (assistantMessage.content.trim().length === 0) {
+            const index = this.messages.indexOf(assistantMessage);
+            if (index > -1) {
+              this.messages.splice(index, 1);
+            }
+          }
+
+          this.isLoading = false;
+        },
+        complete: () => {
+          // Update timestamp when streaming is complete
+          assistantMessage.timestamp = new Date().toISOString();
+          this.isLoading = false;
+
+          // Remove empty message if no content was received
+          if (assistantMessage.content.trim().length === 0) {
+            const index = this.messages.indexOf(assistantMessage);
+            if (index > -1) {
+              this.messages.splice(index, 1);
+            }
+            this.error = 'No response received from assistant';
+          }
+        }
+      });
     } catch (err: any) {
       this.error = err.message || 'Failed to send message';
       console.error('Chat error:', err);
-    } finally {
+
+      // Remove the empty assistant message
+      const index = this.messages.indexOf(assistantMessage);
+      if (index > -1) {
+        this.messages.splice(index, 1);
+      }
+
       this.isLoading = false;
     }
   }
