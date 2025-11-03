@@ -17,9 +17,10 @@
 // ============ Header Section ============
 .chat-header {
   flex-shrink: 0;
-  background: linear-gradient(to right, #000000, #0066cc);
-  color: white;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  background: #ffffff;
+  color: #1e293b;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
   z-index: 10;
 }
 
@@ -44,17 +45,22 @@
 .logo-icon {
   width: 2.5rem;
   height: 2.5rem;
-  background: rgba(255, 255, 255, 0.2);
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
   border-radius: 0.5rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  padding: 0.5rem;
+
+  svg {
+    width: 100%;
+    height: 100%;
+    color: white;
+  }
 
   @media (max-width: 640px) {
     width: 2rem;
     height: 2rem;
-    font-size: 1.25rem;
   }
 }
 
@@ -62,6 +68,7 @@
   font-size: 1.5rem;
   font-weight: 700;
   margin: 0;
+  color: #1e293b;
 
   @media (max-width: 640px) {
     font-size: 1.125rem;
@@ -70,22 +77,36 @@
 
 .clear-btn {
   padding: 0.5rem 1rem;
-  background: rgba(255, 255, 255, 0.2);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  background: transparent;
+  border: 1px solid #cbd5e1;
   border-radius: 0.5rem;
   font-weight: 500;
-  color: white;
+  color: #64748b;
   cursor: pointer;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  .clear-icon {
+    width: 1rem;
+    height: 1rem;
+  }
 
   &:hover {
-    background: rgba(255, 255, 255, 0.3);
-    transform: scale(1.05);
+    background: #f1f5f9;
+    border-color: #94a3b8;
+    color: #1e293b;
   }
 
   @media (max-width: 640px) {
     padding: 0.4rem 0.75rem;
     font-size: 0.875rem;
+
+    .clear-icon {
+      width: 0.875rem;
+      height: 0.875rem;
+    }
   }
 }
 
@@ -125,15 +146,58 @@
 
 // ============ Message Bubbles ============
 .message-wrapper {
-  display: flex;
+  display: flex !important;
+  width: 100% !important;
+  gap: 0.75rem;
   animation: slideIn 0.3s ease-out;
+  align-items: flex-start;
 
   &.user-message {
-    justify-content: flex-end;
+    //justify-content: flex-end !important;
+    flex-direction: row-reverse !important;
   }
 
   &.assistant-message {
-    justify-content: flex-start;
+    justify-content: flex-start !important;
+    flex-direction: row !important;
+  }
+}
+
+// Avatar Icons
+.avatar-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  min-width: 2.5rem;
+  max-width: 2.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+  flex-grow: 0;
+
+  svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  &.user-avatar {
+    background: linear-gradient(135deg, #2563eb, #1d4ed8);
+    color: white;
+  }
+
+  &.assistant-avatar {
+    background: linear-gradient(135deg, #10b981, #059669);
+    color: white;
+  }
+
+  @media (max-width: 640px) {
+    width: 2rem;
+    height: 2rem;
+    min-width: 2rem;
+    max-width: 2rem;
   }
 }
 
@@ -142,6 +206,8 @@
   padding: 1.25rem;
   border-radius: 1rem;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  flex-shrink: 0;
+  flex-grow: 0;
 
   @media (max-width: 768px) {
     max-width: 85%;
@@ -299,32 +365,56 @@
 }
 
 .send-btn {
-  padding: 0.75rem 1.5rem;
-  background: linear-gradient(to right, #2563eb, #1d4ed8);
+  width: 2.75rem;
+  height: 2.75rem;
+  padding: 0;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
   color: white;
-  font-weight: 600;
   border: none;
-  border-radius: 0.5rem;
+  border-radius: 50%;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  .send-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    transition: transform 0.2s;
+  }
 
   &:hover:not(:disabled) {
-    background: linear-gradient(to right, #1d4ed8, #1e40af);
+    background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+
+    .send-icon {
+      transform: translateX(2px);
+    }
+  }
+
+  &:active:not(:disabled) {
     transform: scale(1.05);
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
   }
 
   &:disabled {
     background: #cbd5e1;
     cursor: not-allowed;
     transform: none;
+    box-shadow: none;
   }
 
   @media (max-width: 640px) {
-    padding: 0.625rem 1rem;
-    font-size: 0.875rem;
+    width: 2.5rem;
+    height: 2.5rem;
+
+    .send-icon {
+      width: 1.125rem;
+      height: 1.125rem;
+    }
   }
 }
 

@@ -4,13 +4,23 @@
     <div class="header-content">
       <div class="logo-section">
         <div class="logo-icon">
-          🇨🇭
+          <!-- Swiss Tax Calculator Icon -->
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+            <path d="M3 8H21" stroke="currentColor" stroke-width="2"/>
+            <path d="M7 12H11" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M7 16H13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="17" cy="14" r="2" stroke="currentColor" stroke-width="2"/>
+          </svg>
         </div>
         <h2 class="header-title">Tax-GPT Assistant</h2>
       </div>
       <button
         (click)="clearChat()"
         class="clear-btn">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="clear-icon">
+          <path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h14zM10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
         Clear Chat
       </button>
     </div>
@@ -21,6 +31,25 @@
     @for (message of messages; track message.timestamp) {
       @if (message.firstChunkLoaded) {
         <div class="message-wrapper" [class.user-message]="message.role === 'user'" [class.assistant-message]="message.role === 'assistant'">
+          <!-- Avatar Icon -->
+          <div class="avatar-icon" [class.user-avatar]="message.role === 'user'" [class.assistant-avatar]="message.role === 'assistant'">
+            @if (message.role === 'user') {
+              <!-- User Icon -->
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="2"/>
+                <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            } @else {
+              <!-- AI Assistant Icon -->
+              <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+                <circle cx="9" cy="10" r="1.5" fill="currentColor"/>
+                <circle cx="15" cy="10" r="1.5" fill="currentColor"/>
+                <path d="M9 15c.5.5 1.5 1 3 1s2.5-.5 3-1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            }
+          </div>
+
           <div class="message-bubble" [class.user-bubble]="message.role === 'user'" [class.assistant-bubble]="message.role === 'assistant'">
             <div class="message-sender">
               {{ message.role === 'user' ? 'You' : 'Assistant' }}
@@ -37,6 +66,16 @@
 
     @if (isLoading) {
       <div class="message-wrapper assistant-message">
+        <!-- Avatar Icon -->
+        <div class="avatar-icon assistant-avatar">
+          <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="2"/>
+            <circle cx="9" cy="10" r="1.5" fill="currentColor"/>
+            <circle cx="15" cy="10" r="1.5" fill="currentColor"/>
+            <path d="M9 15c.5.5 1.5 1 3 1s2.5-.5 3-1" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+
         <div class="message-bubble assistant-bubble">
           <div class="message-sender">
             Assistant
@@ -72,8 +111,11 @@
       <button
         (click)="sendMessage()"
         [disabled]="!currentMessage.trim() || isLoading"
-        class="send-btn">
-        Send
+        class="send-btn"
+        title="Send message">
+        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" class="send-icon">
+          <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
       </button>
     </div>
   </div>

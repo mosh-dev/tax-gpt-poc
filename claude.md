@@ -136,6 +136,86 @@ The Mastra agent will be configured with:
 3. **Frontend**: `cd client && npm start` (port 4200)
 4. **Both**: `npm run dev` from root (using concurrently)
 
+## Recent Implementation Updates
+
+### SSE Streaming Chat with Tool Calling (Latest)
+
+**Completed Features:**
+1. ✓ Full SSE event handling for streaming AI responses
+2. ✓ Type-safe event system with comprehensive TypeScript definitions
+3. ✓ Auto-scrolling chat interface with smooth UX
+4. ✓ Proper resource cleanup and client disconnect handling
+5. ✓ Tool calling support with modal confirmations
+
+**Key Technical Implementation:**
+
+#### Server-Side (`/server/src/routes/chat.ts`)
+- **Complete Event Handling**: All Mastra stream events properly handled
+  - `reasoning-start`, `reasoning-delta`, `reasoning-finish` - AI thinking process
+  - `text-start`, `text-delta`, `text-finish` - Response generation
+  - `tool-call`, `tool-result` - Tool execution lifecycle
+  - `step-start`, `step-finish` - Step completion tracking
+  - `error`, `finish` - Error handling and stream completion
+- **Client Disconnect Detection**: Passive `res.writable` check to stop streaming when client disconnects
+- **StreamEvent Interface**: Soft-typed interface for flexible event handling with Mastra's generic types
+- **Type Casting**: `const event = rawEvent as StreamEvent` to work with Mastra's `ChunkType<undefined>`
+
+#### Client-Side (`/client/src/app/services/api.service.ts`)
+- **Exported Type System**:
+  ```typescript
+  export type StreamEventType =
+    'connected' | 'chunk' | 'reasoning' | 'reasoning-finish' |
+    'step-finish' | 'text-finish' | 'tool-call' | 'tool-result' |
+    'done' | 'error' | 'unknown';
+
+  export interface StreamEvent {
+    type: StreamEventType;
+    content?: string;
+    toolName?: string;
+    toolCallId?: string;
+    args?: any;
+    result?: any;
+    error?: string;
+    timestamp: string;
+    eventType?: string;
+    raw?: any;
+  }
+  ```
+- **Observable SSE Stream**: `streamMessageWithTools()` returns `Observable<StreamEvent>`
+- **Proper SSE Parsing**: Handles `data: {...}\n\n` format with buffering for incomplete messages
+
+#### Chat Component (`/client/src/app/components/chat/chat.ts`)
+- **Auto-Scroll Implementation**:
+  - `AfterViewChecked` lifecycle hook for DOM updates
+  - `@ViewChild('messagesContainer')` for direct element access
+  - `triggerScroll()` method called after: user messages, assistant placeholders, SSE connection, each chunk, modal messages
+  - Smooth scrolling to bottom as tokens stream in real-time
+- **Event Handling**:
+  - `firstChunkLoaded` flag tracks when first event arrives (reasoning or text)
+  - Completion logic removes empty messages only if no events were received
+  - All event types properly handled with appropriate UI updates
+- **Type Safety**: Imports `StreamEvent` and `StreamEventType` for full type checking
+
+#### UI/UX (`/client/src/app/components/chat/chat.scss`)
+- **Fixed Layout**: Changed `:host` from `overflow-y: auto` to `overflow: hidden`
+- **Scroll Container**: Only `.messages-container` scrolls, preventing UI shift during typing
+- **Responsive Design**: Proper flexbox layout for header, messages, and input sections
+
+**Lessons Learned:**
+1. Mastra's generic typing (`ChunkType<undefined>`) requires soft-typed interfaces with type assertions
+2. SSE cleanup should use passive checks (`res.writable`) rather than event listeners
+3. Angular's `AfterViewChecked` is essential for scroll-to-bottom during streaming updates
+4. `firstChunkLoaded` flag needed to distinguish between "no response" vs "reasoning-only response"
+5. Proper event type documentation improves developer experience and maintainability
+
+**Files Modified:**
+- `/server/src/routes/chat.ts` - Complete event handling, client disconnect detection
+- `/server/src/services/tax-agent.ts` - Return type updates for streaming
+- `/client/src/app/services/api.service.ts` - Exported type system, SSE parsing
+- `/client/src/app/components/chat/chat.ts` - Event handling, auto-scroll, type imports
+- `/client/src/app/components/chat/chat.html` - Template reference for scroll container
+- `/client/src/app/components/chat/chat.scss` - Fixed overflow behavior
+
 ## Next Steps
 
 1. Install all dependencies
