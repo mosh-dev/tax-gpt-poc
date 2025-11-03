@@ -90,8 +90,8 @@ export async function generateAIRecommendationsPDF(
       const noticeY = doc.y;
       doc.rect(50, noticeY, doc.page.width - 100, 100).fillAndStroke('#fff3cd', '#ffc107');
       doc.fillColor('#000')
-        .fontSize(12).text('Important Notice', 60, noticeY + 10, { bold: true, underline: true })
-        .fontSize(9)
+        .fontSize(12).font('Helvetica-Bold').text('Important Notice', 60, noticeY + 10, { underline: true })
+        .font('Helvetica').fontSize(9)
         .text('This document contains AI-generated recommendations based on your consultation.', 60, noticeY + 30)
         .text('Please review all information carefully and consult with a qualified tax professional', 60, noticeY + 45)
         .text('before submitting your tax return to the Canton Zurich authorities.', 60, noticeY + 60)
@@ -162,8 +162,8 @@ export async function generateTaxReturnPDF(taxData: SwissTaxData): Promise<Buffe
       });
 
       doc.moveDown(0.5);
-      doc.fontSize(12).fillColor('#1976d2').text(`Total Income: CHF ${formatCurrency(totalIncome)}`, { bold: true });
-      doc.moveDown(1.5);
+      doc.fontSize(12).fillColor('#1976d2').font('Helvetica-Bold').text(`Total Income: CHF ${formatCurrency(totalIncome)}`);
+      doc.font('Helvetica').moveDown(1.5);
 
       // Deductions Section
       doc.fontSize(16).fillColor('#333').text('Deductions');
@@ -188,8 +188,8 @@ export async function generateTaxReturnPDF(taxData: SwissTaxData): Promise<Buffe
       });
 
       doc.moveDown(0.5);
-      doc.fontSize(12).fillColor('#1976d2').text(`Total Deductions: CHF ${formatCurrency(totalDeductions)}`, { bold: true });
-      doc.moveDown(1.5);
+      doc.fontSize(12).fillColor('#1976d2').font('Helvetica-Bold').text(`Total Deductions: CHF ${formatCurrency(totalDeductions)}`);
+      doc.font('Helvetica').moveDown(1.5);
 
       // Wealth Section (if applicable)
       const hasWealth = Object.values(taxData.wealth).some(val => val && val > 0);
@@ -213,18 +213,18 @@ export async function generateTaxReturnPDF(taxData: SwissTaxData): Promise<Buffe
         });
 
         doc.moveDown(0.5);
-        doc.fontSize(12).fillColor('#1976d2').text(`Total Wealth: CHF ${formatCurrency(totalWealth)}`, { bold: true });
-        doc.moveDown(1.5);
+        doc.fontSize(12).fillColor('#1976d2').font('Helvetica-Bold').text(`Total Wealth: CHF ${formatCurrency(totalWealth)}`);
+        doc.font('Helvetica').moveDown(1.5);
       }
 
       // Summary Box
       const taxableIncome = totalIncome - totalDeductions;
       doc.rect(50, doc.y, doc.page.width - 100, 80).fillAndStroke('#e3f2fd', '#1976d2');
       doc.fillColor('#000')
-        .fontSize(14).text('Taxable Income Calculation', 60, doc.y - 70, { bold: true })
-        .fontSize(12).text(`Total Income: CHF ${formatCurrency(totalIncome)}`, 60)
+        .font('Helvetica-Bold').fontSize(14).text('Taxable Income Calculation', 60, doc.y - 70)
+        .font('Helvetica').fontSize(12).text(`Total Income: CHF ${formatCurrency(totalIncome)}`, 60)
         .text(`Total Deductions: CHF ${formatCurrency(totalDeductions)}`, 60)
-        .fontSize(14).fillColor('#1976d2').text(`Taxable Income: CHF ${formatCurrency(taxableIncome)}`, 60, undefined, { bold: true });
+        .font('Helvetica-Bold').fontSize(14).fillColor('#1976d2').text(`Taxable Income: CHF ${formatCurrency(taxableIncome)}`, 60);
 
       // Footer
       doc.moveDown(3);

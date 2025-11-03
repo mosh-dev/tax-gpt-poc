@@ -1,0 +1,85 @@
+<div class="modal-overlay" *ngIf="isOpen" (click)="onCancel()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Tax Data Retrieved</h2>
+      <button class="close-btn" (click)="onCancel()">&times;</button>
+    </div>
+
+    <div class="modal-body" *ngIf="taxData">
+      <div class="info-section">
+        <h3>Personal Information</h3>
+        <div class="info-grid">
+          <div class="info-item">
+            <span class="label">Name:</span>
+            <span class="value">{{ taxData.personalInfo.firstName }} {{ taxData.personalInfo.lastName }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Marital Status:</span>
+            <span class="value">{{ taxData.personalInfo.maritalStatus }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Municipality:</span>
+            <span class="value">{{ taxData.personalInfo.municipality }}</span>
+          </div>
+          <div class="info-item">
+            <span class="label">Tax Year:</span>
+            <span class="value">{{ taxData.taxYear }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h3>Income</h3>
+        <div class="info-grid">
+          <div class="info-item" *ngIf="taxData.income.employment">
+            <span class="label">Employment:</span>
+            <span class="value">{{ formatCurrency(taxData.income.employment) }}</span>
+          </div>
+          <div class="info-item" *ngIf="taxData.income.selfEmployment">
+            <span class="label">Self-Employment:</span>
+            <span class="value">{{ formatCurrency(taxData.income.selfEmployment) }}</span>
+          </div>
+          <div class="info-item" *ngIf="taxData.income.investments">
+            <span class="label">Investment:</span>
+            <span class="value">{{ formatCurrency(taxData.income.investments) }}</span>
+          </div>
+          <div class="info-item" *ngIf="taxData.income.rental">
+            <span class="label">Rental:</span>
+            <span class="value">{{ formatCurrency(taxData.income.rental) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="info-section">
+        <h3>Deductions</h3>
+        <div class="info-grid">
+          <div class="info-item" *ngIf="taxData.deductions.professionalExpenses">
+            <span class="label">Professional Expenses:</span>
+            <span class="value">{{ formatCurrency(taxData.deductions.professionalExpenses) }}</span>
+          </div>
+          <div class="info-item" *ngIf="taxData.deductions.healthcareExpenses">
+            <span class="label">Healthcare:</span>
+            <span class="value">{{ formatCurrency(taxData.deductions.healthcareExpenses) }}</span>
+          </div>
+          <div class="info-item" *ngIf="taxData.deductions.pillar3a">
+            <span class="label">Pension (3a):</span>
+            <span class="value">{{ formatCurrency(taxData.deductions.pillar3a) }}</span>
+          </div>
+          <div class="info-item" *ngIf="taxData.deductions.childcare">
+            <span class="label">Childcare:</span>
+            <span class="value">{{ formatCurrency(taxData.deductions.childcare) }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-message">
+        <p>Do you want to load this <strong>{{ scenario }}</strong> tax scenario into the conversation?</p>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="onCancel()">Cancel</button>
+      <button class="btn btn-primary" (click)="onConfirm()">Confirm & Load</button>
+    </div>
+  </div>
+</div>

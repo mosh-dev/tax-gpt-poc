@@ -15,7 +15,9 @@
       "WebSearch",
       "WebFetch(domain:www.copilotkit.ai)",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:docs.ag-ui.com)"
+      "WebFetch(domain:docs.ag-ui.com)",
+      "WebFetch(domain:mastra.ai)",
+      "WebFetch(domain:khaledgarbaya.net)"
     ],
     "deny": [],
     "ask": []

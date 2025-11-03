@@ -43,6 +43,11 @@ app.use('/api/tax-data', taxDataRoutes);
 app.use('/api/upload', uploadRoutes);
 app.use('/api/pdf', pdfRoutes);
 
+// Serve generated PDFs for download
+import * as path from 'path';
+const generatedPdfsPath = path.join(__dirname, '../generated-pdfs');
+app.use('/downloads', express.static(generatedPdfsPath));
+
 // 404 handler
 app.use((req: Request, res: Response) => {
   res.status(404).json({

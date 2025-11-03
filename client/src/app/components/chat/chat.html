@@ -1,107 +1,81 @@
-<div class="flex flex-col flex-1 h-full overflow-hidden bg-gradient-to-br from-slate-50 to-blue-50">
+<div class="chat-container">
   <!-- Header -->
-  <div class="flex justify-between items-center px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg">
-    <div class="flex items-center gap-3">
-      <div class="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center text-2xl">
-        🇨🇭
+  <div class="chat-header">
+    <div class="header-content">
+      <div class="logo-section">
+        <div class="logo-icon">
+          🇨🇭
+        </div>
+        <h2 class="header-title">Tax-GPT Assistant</h2>
       </div>
-      <h2 class="text-2xl font-bold">Tax-GPT Assistant</h2>
-    </div>
-    <button
-      (click)="clearChat()"
-      class="px-4 py-2 bg-white/20 hover:bg-white/30 border border-white/50 rounded-lg font-medium transition-all duration-200 hover:scale-105">
-      Clear Chat
-    </button>
-  </div>
-
-  <!-- Tax Scenario Selector -->
-  <div class="bg-white border-b border-slate-200 shadow-sm">
-    <div class="flex items-center gap-3 px-6 py-4 flex-wrap">
-      <label for="scenario" class="font-semibold text-slate-700 whitespace-nowrap">
-        Load Tax Data:
-      </label>
-      <select
-        id="scenario"
-        [(ngModel)]="selectedScenario"
-        [disabled]="isLoadingScenario"
-        class="min-w-[200px] px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed transition-all">
-        <option value="">Select a scenario...</option>
-        <option *ngFor="let scenario of availableScenarios" [value]="scenario.id">
-          {{ scenario.name }} (CHF {{ scenario.income | number }})
-        </option>
-      </select>
       <button
-        (click)="loadScenario()"
-        [disabled]="!selectedScenario || isLoadingScenario"
-        class="px-5 py-2 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition-all duration-200 disabled:bg-slate-300 disabled:cursor-not-allowed whitespace-nowrap hover:scale-105 shadow-md hover:shadow-lg">
-        {{ isLoadingScenario ? 'Loading...' : 'Load Data' }}
-      </button>
-      <span *ngIf="loadedTaxData" class="text-green-600 font-semibold whitespace-nowrap flex items-center gap-2">
-        <span class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></span>
-        Data Loaded
-      </span>
-      <button
-        *ngIf="loadedTaxData"
-        (click)="downloadPDF()"
-        [disabled]="isDownloadingPDF"
-        class="px-5 py-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-lg transition-all duration-200 disabled:bg-slate-300 disabled:cursor-not-allowed whitespace-nowrap hover:scale-105 shadow-md hover:shadow-lg">
-        {{ isDownloadingPDF ? 'Generating...' : '📄 Download PDF' }}
+        (click)="clearChat()"
+        class="clear-btn">
+        Clear Chat
       </button>
     </div>
   </div>
 
   <!-- Messages Container -->
-  <div class="flex-1 overflow-y-auto px-6 py-6 space-y-4 max-h-[calc(100vh-345px)]">
-    <div *ngFor="let message of messages"
-         [class]="message.role === 'user' ? 'flex justify-end animate-slideIn' : 'flex justify-start animate-slideIn'">
-      <div [class]="message.role === 'user'
-        ? 'max-w-[70%] px-5 py-4 rounded-2xl shadow-md bg-gradient-to-br from-blue-600 to-blue-700 text-white'
-        : 'max-w-[70%] px-5 py-4 rounded-2xl shadow-md bg-white text-slate-800 border border-slate-200'">
-        <div class="text-xs font-semibold mb-2 opacity-80 uppercase tracking-wide">
+  <div class="messages-container">
+    <div *ngFor="let message of messages" class="message-wrapper" [class.user-message]="message.role === 'user'" [class.assistant-message]="message.role === 'assistant'">
+      <div class="message-bubble" [class.user-bubble]="message.role === 'user'" [class.assistant-bubble]="message.role === 'assistant'">
+        <div class="message-sender">
           {{ message.role === 'user' ? 'You' : 'Assistant' }}
         </div>
-        <div class="text-[15px] leading-relaxed whitespace-pre-wrap break-words">
-          {{ message.content }}
+        <div class="message-content" [innerHTML]="parseMarkdownLinks(message.content)">
         </div>
-        <div class="text-[11px] mt-3 opacity-60">
+        <div class="message-timestamp">
           {{ message.timestamp | date:'short' }}
         </div>
       </div>
     </div>
 
-    <div *ngIf="isLoading" class="flex justify-start animate-slideIn">
-      <div class="max-w-[70%] px-5 py-4 rounded-2xl shadow-md bg-white border border-slate-200">
-        <div class="text-xs font-semibold mb-2 text-slate-700 opacity-80 uppercase tracking-wide">
+    <div *ngIf="isLoading" class="message-wrapper assistant-message">
+      <div class="message-bubble assistant-bubble">
+        <div class="message-sender">
           Assistant
         </div>
-        <div class="flex gap-1.5 py-2">
-          <span class="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style="animation-delay: 0s"></span>
-          <span class="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style="animation-delay: 0.2s"></span>
-          <span class="w-2 h-2 bg-slate-400 rounded-full animate-bounce" style="animation-delay: 0.4s"></span>
+        <div class="loading-dots">
+          <span></span>
+          <span></span>
+          <span></span>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Error Message -->
-  <div *ngIf="error" class="mx-6 mb-4 px-4 py-3 bg-red-50 border-l-4 border-red-500 text-red-800 rounded-lg shadow-sm">
-    {{ error }}
+  <!-- Input Container (Sticky) -->
+  <div class="input-container">
+    <!-- Error Message -->
+    <div *ngIf="error" class="error-message">
+      {{ error }}
+    </div>
+
+    <!-- Input Section -->
+    <div class="input-section">
+      <textarea
+        [(ngModel)]="currentMessage"
+        (keypress)="onKeyPress($event)"
+        placeholder="Ask me about your Swiss tax return..."
+        [disabled]="isLoading"
+        rows="3"
+        class="message-input"></textarea>
+      <button
+        (click)="sendMessage()"
+        [disabled]="!currentMessage.trim() || isLoading"
+        class="send-btn">
+        Send
+      </button>
+    </div>
   </div>
 
-  <!-- Input Container -->
-  <div class="flex gap-3 px-6 py-4 bg-white border-t border-slate-200 shadow-lg">
-    <textarea
-      [(ngModel)]="currentMessage"
-      (keypress)="onKeyPress($event)"
-      placeholder="Ask me about your Swiss tax return..."
-      [disabled]="isLoading"
-      rows="3"
-      class="flex-1 px-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none disabled:bg-slate-100 disabled:cursor-not-allowed transition-all text-[15px]"></textarea>
-    <button
-      (click)="sendMessage()"
-      [disabled]="!currentMessage.trim() || isLoading"
-      class="px-6 py-3 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white font-semibold rounded-lg transition-all duration-200 disabled:bg-slate-300 disabled:cursor-not-allowed hover:scale-105 shadow-md hover:shadow-lg">
-      Send
-    </button>
-  </div>
+  <!-- Tax Data Confirmation Modal -->
+  <app-tax-data-modal
+    [isOpen]="isModalOpen"
+    [taxData]="pendingTaxData"
+    [scenario]="pendingScenario"
+    (confirm)="onConfirmTaxData()"
+    (cancel)="onCancelTaxData()">
+  </app-tax-data-modal>
 </div>

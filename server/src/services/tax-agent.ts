@@ -1,5 +1,6 @@
 import { Agent } from '@mastra/core/agent';
 import { getLMStudioModel, lmStudioConfig } from '../config/lmstudio';
+import { getTaxDataTool, calculateDeductionsTool, generateTaxPDFTool } from '../tools';
 
 /**
  * System prompt for the Swiss Tax Assistant
@@ -32,6 +33,13 @@ Important guidelines:
 - Use English Language For Conversation
 - And Give data in JSON Format
 
+Available Tools:
+- Use get-tax-data tool when the user asks to load their tax data, see their tax information, or retrieve tax details
+- Use calculate-deductions tool when the user wants to know potential deductions or optimize their tax situation
+- Use generate-tax-pdf tool when the user wants to generate, create, or download a PDF document of their tax return summary
+
+IMPORTANT: When you use the get-tax-data tool, explain to the user that you've retrieved their tax data and ask them to confirm if they want to use this data for the conversation.
+
 Start conversations by understanding the user's tax situation, then guide them through relevant questions.`;
 
 /**
@@ -47,10 +55,16 @@ export class TaxAgent {
             name: 'zurich-tax-assistant',
             instructions: SWISS_TAX_SYSTEM_PROMPT,
             model: model,
+            tools: {
+                getTaxDataTool,
+                calculateDeductionsTool,
+                generateTaxPDFTool,
+            },
         });
 
         console.log(`✅ Tax Agent initialized with model: ${lmStudioConfig.model}`);
         console.log(`🔗 Connected to LMStudio at: ${lmStudioConfig.url}`);
+        console.log(`🔧 Tools registered: get-tax-data, calculate-deductions, generate-tax-pdf`);
     }
 
     /**
@@ -109,6 +123,34 @@ export class TaxAgent {
             }
         } catch (error: any) {
             console.error('Tax Agent Streaming Error:', error);
+            throw error;
+        }
+    }
+
+    /**
+     * Stream a message to the tax agent with tool calling support
+     * @param message User's message
+     * @param conversationHistory Optional conversation history for context
+     * @returns Async generator that yields stream events (text, tool-call, tool-result, finish)
+     */
+    async *streamChatWithTools(message: string, conversationHistory?: any[]) {
+        try {
+            // If we have conversation history, include it in the context
+            const context = conversationHistory
+                ? this.formatConversationHistory(conversationHistory)
+                : '';
+
+            const fullMessage = context ? `${context}\n\nUser: ${message}` : message;
+
+            // Use stream method from Mastra agent with full stream
+            const stream = await this.agent.stream(fullMessage);
+
+            // Yield all stream events including tool calls
+            for await (const event of stream.fullStream) {
+                yield event;
+            }
+        } catch (error: any) {
+            console.error('Tax Agent Tool Streaming Error:', error);
             throw error;
         }
     }
