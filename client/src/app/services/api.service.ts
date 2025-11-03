@@ -12,16 +12,6 @@ export class ApiService {
   constructor(private http: HttpClient) {}
 
   /**
-   * Send a chat message to the tax assistant
-   */
-  sendMessage(message: string, conversationHistory: Message[]): Observable<ChatResponse> {
-    return this.http.post<ChatResponse>(`${this.API_URL}/chat`, {
-      message,
-      conversationHistory
-    });
-  }
-
-  /**
    * Stream chat messages with tool calling support using Server-Sent Events (SSE)
    * Returns an Observable that emits chunks and tool events as they arrive
    */
@@ -114,134 +104,12 @@ export class ApiService {
   }
 
   /**
-   * Stream chat messages using Server-Sent Events (SSE)
-   * Returns an Observable that emits chunks of the response as they arrive
-   */
-  streamMessage(message: string, conversationHistory: Message[]): Observable<{
-    type: 'connected' | 'chunk' | 'done' | 'error';
-    content?: string;
-    error?: string;
-    timestamp: string;
-  }> {
-    return new Observable(observer => {
-      // Create fetch request with proper headers
-      fetch(`${this.API_URL}/chat/stream`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          message,
-          conversationHistory
-        })
-      })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        if (!response.body) {
-          throw new Error('No response body');
-        }
-
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = '';
-
-        const readStream = () => {
-          reader.read().then(({ done, value }) => {
-            if (done) {
-              observer.complete();
-              return;
-            }
-
-            // Decode the chunk and add to buffer
-            buffer += decoder.decode(value, { stream: true });
-
-            // Process complete messages (SSE format: "data: {...}\n\n")
-            const lines = buffer.split('\n\n');
-            buffer = lines.pop() || ''; // Keep incomplete message in buffer
-
-            for (const line of lines) {
-              if (line.startsWith('data: ')) {
-                try {
-                  const data = JSON.parse(line.substring(6)); // Remove 'data: ' prefix
-                  observer.next(data);
-
-                  // Complete observable on 'done' or 'error'
-                  if (data.type === 'done') {
-                    observer.complete();
-                    return;
-                  } else if (data.type === 'error') {
-                    observer.error(new Error(data.error));
-                    return;
-                  }
-                } catch (e) {
-                  console.error('Failed to parse SSE message:', e);
-                }
-              }
-            }
-
-            // Continue reading
-            readStream();
-          }).catch(error => {
-            observer.error(error);
-          });
-        };
-
-        readStream();
-      })
-      .catch(error => {
-        observer.error(error);
-      });
-
-      // Cleanup function
-      return () => {
-        console.log('SSE stream closed');
-      };
-    });
-  }
-
-  /**
-   * Get mock tax data for a scenario
-   */
-  getTaxData(scenario: 'single' | 'married' | 'freelancer' = 'single'): Observable<{
-    success: boolean;
-    data: SwissTaxData;
-    scenario: string;
-  }> {
-    return this.http.get<any>(`${this.API_URL}/tax-data?scenario=${scenario}`);
-  }
-
-  /**
-   * Get available tax scenarios
-   */
-  getScenarios(): Observable<{ success: boolean; scenarios: TaxScenario[] }> {
-    return this.http.get<any>(`${this.API_URL}/tax-data/scenarios`);
-  }
-
-  /**
    * Upload a PDF file for extraction
    */
   uploadPDF(file: File): Observable<PDFExtraction> {
     const formData = new FormData();
     formData.append('file', file);
     return this.http.post<PDFExtraction>(`${this.API_URL}/upload/pdf`, formData);
-  }
-
-  /**
-   * Generate tax form based on data
-   */
-  generateTaxForm(taxData: SwissTaxData): Observable<ChatResponse> {
-    return this.http.post<ChatResponse>(`${this.API_URL}/chat/generate-form`, {
-      taxData
-    });
-  }
-
-  /**
-   * Health check
-   */
-  healthCheck(): Observable<{ status: string; message: string; timestamp: string }> {
-    return this.http.get<any>(`${this.API_URL}/health`);
   }
 
   /**

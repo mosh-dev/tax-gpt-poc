@@ -1,3 +1,10 @@
+:host {
+  width: 100%;
+  display: block;
+  height: 100%;
+  overflow-y: auto;
+}
+
 // Chat Container - Full Height with Flex Layout
 .chat-container {
   display: flex;

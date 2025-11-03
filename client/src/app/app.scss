@@ -1,11 +1,12 @@
 // App-specific styles
-app-chat,
-app-file-upload {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-}
-
 .hidden {
   display: none !important;
+}
+
+
+main {
+  margin: 0 auto;
+  width: 100%;
+  display: block;
+  max-width: 1024px;
 }

@@ -42,7 +42,8 @@ export class Chat {
     this.messages.push({
       role: 'assistant',
       content: 'Hallo! I\'m your Swiss tax assistant for Canton Zurich. I can help you with your tax return by loading your tax data, calculating deductions, and generating PDF documents. Just ask me naturally!\n\nTry asking:\n- "Get my single tax data"\n- "Load married tax scenario"\n- "Calculate my deductions"\n- "Generate a PDF of my tax return"',
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      firstChunkLoaded: true,
     });
   }
 
@@ -89,6 +90,8 @@ export class Chat {
           if (event.type === 'connected') {
             console.log('✅ SSE connected');
           } else if (event.type === 'chunk' && event.content) {
+            this.isLoading = false;
+            assistantMessage.firstChunkLoaded = true;
             // Append chunk to assistant message
             console.log('📝 Appending chunk to message');
             assistantMessage.content += event.content;
@@ -99,7 +102,8 @@ export class Chat {
               args: event.args,
               toolCallId: event.toolCallId
             });
-            assistantMessage.content += `\n\n[Calling tool: ${event.toolName}...]`;
+            // assistantMessage.content += `\n\n[Calling tool: ${event.toolName}...]`;
+            console.log(`\n\n[Calling tool: ${event.toolName}...]`);
           } else if (event.type === 'tool-result' && event.toolName === 'get-tax-data') {
             // Handle tax data tool result - show modal for confirmation
             if (event.result?.success && event.result?.data) {
@@ -109,10 +113,10 @@ export class Chat {
               this.isModalOpen = true;
 
               // Update message to show tool was called
-              assistantMessage.content = assistantMessage.content.replace(
-                `[Calling tool: ${event.toolName}...]`,
-                `[Retrieved ${event.result.scenario} tax data - awaiting confirmation]`
-              );
+              // assistantMessage.content = assistantMessage.content.replace(
+              //   `[Calling tool: ${event.toolName}...]`,
+              //   `[Retrieved ${event.result.scenario} tax data - awaiting confirmation]`
+              // );
             }
           } else if (event.type === 'tool-result' && event.toolName === 'generate-tax-pdf') {
             // Handle PDF generation tool result - show download link
@@ -253,7 +257,7 @@ export class Chat {
   onKeyPress(event: KeyboardEvent) {
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
-      this.sendMessage();
+      this.sendMessage().then();
     }
   }
 

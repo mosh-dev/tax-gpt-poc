@@ -18,45 +18,53 @@
 
   <!-- Messages Container -->
   <div class="messages-container">
-    <div *ngFor="let message of messages" class="message-wrapper" [class.user-message]="message.role === 'user'" [class.assistant-message]="message.role === 'assistant'">
-      <div class="message-bubble" [class.user-bubble]="message.role === 'user'" [class.assistant-bubble]="message.role === 'assistant'">
-        <div class="message-sender">
-          {{ message.role === 'user' ? 'You' : 'Assistant' }}
+    @for (message of messages; track message.timestamp) {
+      @if (message.firstChunkLoaded) {
+        <div class="message-wrapper" [class.user-message]="message.role === 'user'" [class.assistant-message]="message.role === 'assistant'">
+          <div class="message-bubble" [class.user-bubble]="message.role === 'user'" [class.assistant-bubble]="message.role === 'assistant'">
+            <div class="message-sender">
+              {{ message.role === 'user' ? 'You' : 'Assistant' }}
+            </div>
+            <div class="message-content" [innerHTML]="parseMarkdownLinks(message.content)">
+            </div>
+            <div class="message-timestamp">
+              {{ message.timestamp | date:'short' }}
+            </div>
+          </div>
         </div>
-        <div class="message-content" [innerHTML]="parseMarkdownLinks(message.content)">
-        </div>
-        <div class="message-timestamp">
-          {{ message.timestamp | date:'short' }}
-        </div>
-      </div>
-    </div>
+      }
+    }
 
-    <div *ngIf="isLoading" class="message-wrapper assistant-message">
-      <div class="message-bubble assistant-bubble">
-        <div class="message-sender">
-          Assistant
-        </div>
-        <div class="loading-dots">
-          <span></span>
-          <span></span>
-          <span></span>
+    @if (isLoading) {
+      <div class="message-wrapper assistant-message">
+        <div class="message-bubble assistant-bubble">
+          <div class="message-sender">
+            Assistant
+          </div>
+          <div class="loading-dots">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
         </div>
       </div>
-    </div>
+    }
   </div>
 
   <!-- Input Container (Sticky) -->
   <div class="input-container">
     <!-- Error Message -->
-    <div *ngIf="error" class="error-message">
-      {{ error }}
-    </div>
+    @if (error) {
+      <div class="error-message">
+        {{ error }}
+      </div>
+    }
 
     <!-- Input Section -->
     <div class="input-section">
       <textarea
         [(ngModel)]="currentMessage"
-        (keypress)="onKeyPress($event)"
+        (keyup)="onKeyPress($event)"
         placeholder="Ask me about your Swiss tax return..."
         [disabled]="isLoading"
         rows="3"
