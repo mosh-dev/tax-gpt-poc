@@ -22,7 +22,6 @@ export class Chat implements AfterViewChecked {
 
   // Tax data (loaded via tool calling)
   loadedTaxData: SwissTaxData | null = null;
-  isDownloadingPDF = false;
 
   // Modal state for tool confirmation
   isModalOpen = false;
@@ -231,7 +230,7 @@ export class Chat implements AfterViewChecked {
    */
   private handleToolResult(event: StreamEvent, assistantMessage: Message): void {
     switch (event.toolName) {
-      case 'get-tax-data':
+      case 'getTaxDataTool':
         // Handle tax data tool result - show modal for confirmation
         if (event.result?.success && event.result?.data) {
           this.pendingTaxData = event.result.data;
@@ -313,25 +312,6 @@ export class Chat implements AfterViewChecked {
       });
       this.triggerScroll(); // Scroll after adding confirmation message
     }
-
-    // Close modal and clear pending state
-    this.isModalOpen = false;
-    this.pendingTaxData = null;
-    this.pendingScenario = '';
-    this.pendingToolCallId = '';
-  }
-
-  /**
-   * Handle modal cancellation - user rejects loading tax data
-   */
-  onCancelTaxData() {
-    // Add cancellation message to chat
-    this.messages.push({
-      role: 'assistant',
-      content: 'No problem! I won\'t load that tax data. Feel free to ask me anything else about Swiss taxes for Canton Zurich.',
-      timestamp: new Date().toISOString()
-    });
-    this.triggerScroll(); // Scroll after adding cancellation message
 
     // Close modal and clear pending state
     this.isModalOpen = false;

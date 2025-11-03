@@ -45,7 +45,8 @@ app.use('/api/pdf', pdfRoutes);
 
 // Serve generated PDFs for download
 import * as path from 'path';
-const generatedPdfsPath = path.join(__dirname, '../generated-pdfs');
+// When running from dist/, we need to go to server/generated-pdfs
+const generatedPdfsPath = path.join(__dirname, '../server/generated-pdfs');
 app.use('/downloads', express.static(generatedPdfsPath));
 
 // 404 handler

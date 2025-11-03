@@ -1,8 +1,8 @@
-<div class="modal-overlay" *ngIf="isOpen" (click)="onCancel()">
+<div class="modal-overlay" *ngIf="isOpen" (click)="onConfirm()">
   <div class="modal-content" (click)="$event.stopPropagation()">
     <div class="modal-header">
       <h2>Tax Data Retrieved</h2>
-      <button class="close-btn" (click)="onCancel()">&times;</button>
+      <button class="close-btn" (click)="onConfirm()">&times;</button>
     </div>
 
     <div class="modal-body" *ngIf="taxData">
@@ -71,15 +71,10 @@
           </div>
         </div>
       </div>
-
-      <div class="modal-message">
-        <p>Do you want to load this <strong>{{ scenario }}</strong> tax scenario into the conversation?</p>
-      </div>
     </div>
 
     <div class="modal-footer">
-      <button class="btn btn-secondary" (click)="onCancel()">Cancel</button>
-      <button class="btn btn-primary" (click)="onConfirm()">Confirm & Load</button>
+      <button class="btn btn-primary" (click)="onConfirm()">Continue</button>
     </div>
   </div>
 </div>

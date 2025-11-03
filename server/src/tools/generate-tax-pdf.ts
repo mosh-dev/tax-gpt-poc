@@ -64,7 +64,8 @@ export const generateTaxPDFTool = createTool({
       const pdfBuffer = await generateTaxReturnPDF(taxData as SwissTaxData);
 
       // Create output directory if it doesn't exist
-      const outputDir = path.join(__dirname, '../../generated-pdfs');
+      // When running from dist/tools/, go up two levels to dist, then to server/generated-pdfs
+      const outputDir = path.join(__dirname, '../../server/generated-pdfs');
       if (!fs.existsSync(outputDir)) {
         fs.mkdirSync(outputDir, { recursive: true });
       }
@@ -87,7 +88,7 @@ export const generateTaxPDFTool = createTool({
         success: true,
         fileName: pdfFileName,
         filePath: filePath,
-        downloadUrl: `/downloads/${pdfFileName}`,
+        downloadUrl: `http://localhost:3000/downloads/${pdfFileName}`,
         message: `Successfully generated tax return PDF for ${taxData.personalInfo.firstName} ${taxData.personalInfo.lastName} (Tax Year ${taxData.taxYear}). File size: ${fileSizeKB} KB. The PDF includes income summary, deductions, wealth declaration, and taxable income calculation.`,
       };
     } catch (error: any) {
