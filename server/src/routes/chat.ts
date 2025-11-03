@@ -2,6 +2,26 @@ import { Request, Response, Router } from 'express';
 import { taxAgent } from '../services/tax-agent';
 import { ChatRequest, ChatResponse } from '../types';
 
+// Type definition for stream events
+interface StreamEvent {
+    type: 'start' | 'step-start' | 'reasoning-start' | 'reasoning-delta' | 'reasoning-finish' |
+          'step-finish' | 'text-start' | 'text-delta' | 'text-finish' |
+          'tool-call' | 'tool-result' | 'error' | 'finish' | string;
+    payload?: {
+        text?: string;
+        toolName?: string;
+        toolCallId?: string;
+        args?: Record<string, any>;
+        result?: any;
+        error?: string;
+        [key: string]: any;
+    };
+    finishReason?: string;
+    error?: string;
+    textDelta?: string;
+    [key: string]: any;
+}
+
 const router = Router();
 
 /**
@@ -69,14 +89,23 @@ router.post('/stream-with-tools', async (req: Request, res: Response) => {
             console.log('🔄 Starting stream for message:', message);
 
 // -------------
-            for await (const event of fullStream) {
+            for await (const rawEvent of fullStream) {
+                const event = rawEvent as StreamEvent;
+
+                // Check if response is still writable (client hasn't disconnected)
+                if (!res.writable) {
+                    console.log('🛑 Client disconnected - stopping stream');
+                    break;
+                }
+
                 console.log("📦 Stream event received:", {
                     type: event.type,
                     eventKeys: Object.keys(event),
                     event: event
                 });
 
-                switch (event.type) {
+                const eventType = event.type as string;
+                switch (eventType) {
                     /** ------------------------------
                      *  🧠 Reasoning Phase (new models)
                      * ------------------------------ */
@@ -98,6 +127,22 @@ router.post('/stream-with-tools', async (req: Request, res: Response) => {
                         break;
                     }
 
+                    case "reasoning-finish":
+                        console.log("✅ Reasoning phase completed");
+                        res.write(`data: ${JSON.stringify({
+                            type: "reasoning-finish",
+                            timestamp: new Date().toISOString()
+                        })}\n\n`);
+                        break;
+
+                    case "step-finish":
+                        console.log("✅ Step completed");
+                        res.write(`data: ${JSON.stringify({
+                            type: "step-finish",
+                            timestamp: new Date().toISOString()
+                        })}\n\n`);
+                        break;
+
                     /** ------------------------------
                      *  💬 Text generation (streaming)
                      * ------------------------------ */
@@ -106,7 +151,7 @@ router.post('/stream-with-tools', async (req: Request, res: Response) => {
                         break;
 
                     case "text-delta": {
-                        const textChunk = event.payload?.text ?? (event as any).textDelta ?? "";
+                        const textChunk = event.payload?.text ?? event.textDelta ?? "";
                         console.log("💬 Text chunk:", textChunk);
                         res.write(`data: ${JSON.stringify({
                             type: "chunk",
@@ -116,40 +161,59 @@ router.post('/stream-with-tools', async (req: Request, res: Response) => {
                         break;
                     }
 
+                    case "text-finish":
+                        console.log("✅ Text generation completed");
+                        res.write(`data: ${JSON.stringify({
+                            type: "text-finish",
+                            timestamp: new Date().toISOString()
+                        })}\n\n`);
+                        break;
+
                     /** ------------------------------
                      *  🛠️ Tool calls
                      * ------------------------------ */
                     case "tool-call": {
-                        const toolEvent = event as any;
-                        console.log({toolEvent});
+                        console.log({event});
                         console.log("🔧 Tool call detected:", {
-                            toolName: toolEvent.payload.toolName,
-                            toolCallId: toolEvent.payload.toolCallId,
-                            args: toolEvent.payload.args
+                            toolName: event.payload?.toolName,
+                            toolCallId: event.payload?.toolCallId,
+                            args: event.payload?.args
                         });
                         res.write(`data: ${JSON.stringify({
                             type: "tool-call",
-                            toolName: toolEvent.payload.toolName,
-                            toolCallId: toolEvent.payload.toolCallId,
-                            args: toolEvent.payload.args,
+                            toolName: event.payload?.toolName,
+                            toolCallId: event.payload?.toolCallId,
+                            args: event.payload?.args,
                             timestamp: new Date().toISOString()
                         })}\n\n`);
                         break;
                     }
 
                     case "tool-result": {
-                        const resultEvent = event as any;
-                        console.log({resultEvent});
+                        console.log({event});
                         console.log("✅ Tool result received:", {
-                            toolCallId: resultEvent.payload.toolCallId,
-                            toolName: resultEvent.payload.toolName,
-                            result: resultEvent.payload.result
+                            toolCallId: event.payload?.toolCallId,
+                            toolName: event.payload?.toolName,
+                            result: event.payload?.result
                         });
                         res.write(`data: ${JSON.stringify({
                             type: "tool-result",
-                            toolCallId: resultEvent.payload.toolCallId,
-                            toolName: resultEvent.payload.toolName,
-                            result: resultEvent.payload.result,
+                            toolCallId: event.payload?.toolCallId,
+                            toolName: event.payload?.toolName,
+                            result: event.payload?.result,
+                            timestamp: new Date().toISOString()
+                        })}\n\n`);
+                        break;
+                    }
+
+                    /** ------------------------------
+                     *  ❌ Error Handling
+                     * ------------------------------ */
+                    case "error": {
+                        console.error("❌ Stream error event:", event);
+                        res.write(`data: ${JSON.stringify({
+                            type: "error",
+                            error: event.payload?.error || event.error || "Unknown error",
                             timestamp: new Date().toISOString()
                         })}\n\n`);
                         break;
@@ -160,7 +224,7 @@ router.post('/stream-with-tools', async (req: Request, res: Response) => {
                      * ------------------------------ */
                     case "finish": {
                         console.log({event}, "Finish")
-                        const finishReason = (event as any).finishReason ?? "unknown";
+                        const finishReason = event.finishReason ?? "unknown";
                         res.write(`data: ${JSON.stringify({
                             type: "done",
                             finishReason,

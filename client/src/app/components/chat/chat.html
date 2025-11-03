@@ -17,7 +17,7 @@
   </div>
 
   <!-- Messages Container -->
-  <div class="messages-container">
+  <div class="messages-container" #messagesContainer>
     @for (message of messages; track message.timestamp) {
       @if (message.firstChunkLoaded) {
         <div class="message-wrapper" [class.user-message]="message.role === 'user'" [class.assistant-message]="message.role === 'assistant'">

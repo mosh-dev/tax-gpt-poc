@@ -2,7 +2,7 @@
   width: 100%;
   display: block;
   height: 100%;
-  overflow-y: auto;
+  overflow: hidden; // Changed from overflow-y: auto to prevent scrolling at host level
 }
 
 // Chat Container - Full Height with Flex Layout
@@ -17,7 +17,7 @@
 // ============ Header Section ============
 .chat-header {
   flex-shrink: 0;
-  background: linear-gradient(to right, #2563eb, #1d4ed8);
+  background: linear-gradient(to right, #000000, #0066cc);
   color: white;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
   z-index: 10;

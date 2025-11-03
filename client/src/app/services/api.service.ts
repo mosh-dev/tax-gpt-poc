@@ -3,6 +3,38 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Message, ChatResponse, SwissTaxData, PDFExtraction, TaxScenario } from '../models/tax.model';
 
+/**
+ * Server-Sent Event types for streaming chat responses
+ */
+export type StreamEventType =
+  | 'connected'          // Initial connection established
+  | 'chunk'              // Text chunk received
+  | 'reasoning'          // Reasoning content (thinking process)
+  | 'reasoning-finish'   // Reasoning phase completed
+  | 'step-finish'        // Step completed
+  | 'text-finish'        // Text generation completed
+  | 'tool-call'          // Tool is being called
+  | 'tool-result'        // Tool execution result
+  | 'done'               // Stream completed successfully
+  | 'error'              // Error occurred
+  | 'unknown';           // Unknown/unhandled event type
+
+/**
+ * Stream event structure
+ */
+export interface StreamEvent {
+  type: StreamEventType;
+  content?: string;
+  toolName?: string;
+  toolCallId?: string;
+  args?: any;
+  result?: any;
+  error?: string;
+  timestamp: string;
+  eventType?: string;
+  raw?: any;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -15,16 +47,7 @@ export class ApiService {
    * Stream chat messages with tool calling support using Server-Sent Events (SSE)
    * Returns an Observable that emits chunks and tool events as they arrive
    */
-  streamMessageWithTools(message: string, conversationHistory: Message[]): Observable<{
-    type: 'connected' | 'chunk' | 'tool-call' | 'tool-result' | 'done' | 'error';
-    content?: string;
-    toolName?: string;
-    toolCallId?: string;
-    args?: any;
-    result?: any;
-    error?: string;
-    timestamp: string;
-  }> {
+  streamMessageWithTools(message: string, conversationHistory: Message[]): Observable<StreamEvent> {
     return new Observable(observer => {
       // Create fetch request with proper headers
       fetch(`${this.API_URL}/chat/stream-with-tools`, {

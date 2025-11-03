@@ -133,7 +133,7 @@ export class TaxAgent {
      * @param conversationHistory Optional conversation history for context
      * @returns Async generator that yields stream events (text, tool-call, tool-result, finish)
      */
-    async *streamChatWithTools(message: string, conversationHistory?: any[]) {
+    async *streamChatWithTools(message: string, conversationHistory?: any[]): AsyncGenerator<any, void, unknown> {
         try {
             // If we have conversation history, include it in the context
             const context = conversationHistory
@@ -146,8 +146,9 @@ export class TaxAgent {
             const stream = await this.agent.stream(fullMessage);
 
             // Yield all stream events including tool calls
+            // Events can include: text-delta, tool-call, tool-result, finish, etc.
             for await (const event of stream.fullStream) {
-                yield event;
+                yield event as any; // Type assertion needed due to Mastra's generic types
             }
         } catch (error: any) {
             console.error('Tax Agent Tool Streaming Error:', error);

@@ -1,8 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild, ElementRef, AfterViewChecked } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
-import { ApiService } from '../../services/api.service';
+import { ApiService, StreamEvent } from '../../services/api.service';
 import { Message, SwissTaxData } from '../../models/tax.model';
 import { TaxDataModal } from '../tax-data-modal/tax-data-modal';
 
@@ -12,7 +12,9 @@ import { TaxDataModal } from '../tax-data-modal/tax-data-modal';
   templateUrl: './chat.html',
   styleUrl: './chat.scss',
 })
-export class Chat {
+export class Chat implements AfterViewChecked {
+  @ViewChild('messagesContainer') private messagesContainer?: ElementRef;
+
   messages: Message[] = [];
   currentMessage = '';
   isLoading = false;
@@ -28,11 +30,24 @@ export class Chat {
   pendingScenario: string = '';
   pendingToolCallId: string = '';
 
+  // Auto-scroll control
+  private shouldScrollToBottom = false;
+
   constructor(
     private apiService: ApiService,
     private sanitizer: DomSanitizer
   ) {
     this.initializeChat();
+  }
+
+  /**
+   * Lifecycle hook - scroll to bottom after view is checked
+   */
+  ngAfterViewChecked() {
+    if (this.shouldScrollToBottom) {
+      this.scrollToBottom();
+      this.shouldScrollToBottom = false;
+    }
   }
 
   /**
@@ -63,6 +78,8 @@ export class Chat {
     };
 
     this.messages.push(userMessage);
+    this.triggerScroll(); // Scroll after user message
+
     const messageToSend = this.currentMessage;
     this.currentMessage = '';
     this.isLoading = true;
@@ -75,6 +92,7 @@ export class Chat {
       timestamp: new Date().toISOString()
     };
     this.messages.push(assistantMessage);
+    this.triggerScroll(); // Scroll after adding assistant message placeholder
 
     try {
       // Include loaded tax data in the context if available
@@ -90,12 +108,27 @@ export class Chat {
 
           if (event.type === 'connected') {
             console.log('✅ SSE connected');
+            this.triggerScroll(); // Scroll when connected
           } else if (event.type === 'chunk' && event.content) {
             this.isLoading = false;
             assistantMessage.firstChunkLoaded = true;
             // Append chunk to assistant message
             console.log('📝 Appending chunk to message');
             assistantMessage.content += event.content;
+            this.triggerScroll(); // Scroll with each chunk
+          } else if (event.type === 'reasoning' && event.content) {
+            // Handle reasoning content (optional: you can choose to display or ignore)
+            this.isLoading = false;
+            assistantMessage.firstChunkLoaded = true;
+            console.log('🧠 Reasoning:', event.content);
+            // Optionally append reasoning to message (or ignore it)
+            // assistantMessage.content += event.content;
+          } else if (event.type === 'reasoning-finish') {
+            console.log('✅ Reasoning phase completed');
+          } else if (event.type === 'step-finish') {
+            console.log('✅ Step completed');
+          } else if (event.type === 'text-finish') {
+            console.log('✅ Text generation completed');
           } else if (event.type === 'tool-call') {
             // Handle tool call - show loading indicator
             console.log('🔧 Tool called:', {
@@ -187,13 +220,20 @@ export class Chat {
           assistantMessage.timestamp = new Date().toISOString();
           this.isLoading = false;
 
-          // Remove empty message if no content was received
-          if (assistantMessage.content.trim().length === 0) {
+          // Remove empty message if no content was received AND no chunks were loaded
+          // (firstChunkLoaded indicates we received some response, even if just reasoning)
+          if (assistantMessage.content.trim().length === 0 && !assistantMessage.firstChunkLoaded) {
             const index = this.messages.indexOf(assistantMessage);
             if (index > -1) {
               this.messages.splice(index, 1);
             }
             this.error = 'No response received from assistant';
+          } else if (assistantMessage.content.trim().length === 0 && assistantMessage.firstChunkLoaded) {
+            // We received events but no text content - remove the empty message silently
+            const index = this.messages.indexOf(assistantMessage);
+            if (index > -1) {
+              this.messages.splice(index, 1);
+            }
           }
         }
       });
@@ -225,6 +265,7 @@ export class Chat {
         content: `Great! I've loaded your ${this.pendingScenario} tax scenario data into our conversation. I can now provide personalized advice based on your situation.`,
         timestamp: new Date().toISOString()
       });
+      this.triggerScroll(); // Scroll after adding confirmation message
     }
 
     // Close modal and clear pending state
@@ -244,6 +285,7 @@ export class Chat {
       content: 'No problem! I won\'t load that tax data. Feel free to ask me anything else about Swiss taxes for Canton Zurich.',
       timestamp: new Date().toISOString()
     });
+    this.triggerScroll(); // Scroll after adding cancellation message
 
     // Close modal and clear pending state
     this.isModalOpen = false;
@@ -272,41 +314,24 @@ export class Chat {
   }
 
   /**
-   * Download AI recommendations PDF
+   * Scroll messages container to bottom
    */
-  async downloadPDF() {
-    // Check if there's any meaningful conversation
-    const hasConversation = this.messages.some(msg =>
-      msg.role === 'assistant' && msg.content.length > 50
-    );
-
-    if (!hasConversation) {
-      this.error = 'Please have a conversation with the AI first before downloading recommendations.';
-      return;
-    }
-
-    this.isDownloadingPDF = true;
-    this.error = null;
-
+  private scrollToBottom(): void {
     try {
-      // Download PDF with conversation history and optional tax data
-      await this.apiService.downloadAIRecommendationsPDF(
-        this.messages,
-        this.loadedTaxData || undefined
-      );
-
-      // Add success message to chat
-      this.messages.push({
-        role: 'assistant',
-        content: '✓ AI recommendations PDF has been generated and downloaded successfully! This document contains our entire conversation and recommendations for your tax submission.',
-        timestamp: new Date().toISOString()
-      });
-    } catch (err: any) {
-      this.error = 'Failed to generate PDF. Please try again.';
-      console.error('PDF download error:', err);
-    } finally {
-      this.isDownloadingPDF = false;
+      if (this.messagesContainer) {
+        const element = this.messagesContainer.nativeElement;
+        element.scrollTop = element.scrollHeight;
+      }
+    } catch (err) {
+      console.error('Scroll to bottom error:', err);
     }
+  }
+
+  /**
+   * Trigger scroll to bottom on next view check
+   */
+  private triggerScroll(): void {
+    this.shouldScrollToBottom = true;
   }
 
   /**
