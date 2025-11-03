@@ -36,78 +36,75 @@ Start conversations by understanding the user's tax situation, then guide them t
  * Tax Agent powered by Mastra and LMStudio
  */
 export class TaxAgent {
-  private agent: Agent;
+    private agent: Agent;
 
-  constructor() {
-    const model = getLMStudioModel();
+    constructor() {
+        const model = getLMStudioModel();
 
-    this.agent = new Agent({
-      name: 'zurich-tax-assistant',
-      instructions: SWISS_TAX_SYSTEM_PROMPT,
-      model: model,
-    });
+        this.agent = new Agent({
+            name: 'zurich-tax-assistant',
+            instructions: SWISS_TAX_SYSTEM_PROMPT,
+            model: model,
+        });
 
-    console.log(`✅ Tax Agent initialized with model: ${lmStudioConfig.model}`);
-    console.log(`🔗 Connected to LMStudio at: ${lmStudioConfig.url}`);
-  }
-
-  /**
-   * Send a message to the tax agent
-   * @param message User's message
-   * @param conversationHistory Optional conversation history for context
-   * @returns Agent's response
-   */
-  async chat(message: string, conversationHistory?: any[]) {
-    try {
-      // If we have conversation history, include it in the context
-      const context = conversationHistory
-        ? this.formatConversationHistory(conversationHistory)
-        : '';
-
-      const fullMessage = context ? `${context}\n\nUser: ${message}` : message;
-
-      const response = await this.agent.generate(fullMessage);
-
-      return {
-        success: true,
-        message: response.text || response,
-        timestamp: new Date().toISOString(),
-      };
-    } catch (error: any) {
-      console.error('Tax Agent Error:', error);
-      return {
-        success: false,
-        error: error.message || 'Failed to get response from tax agent',
-        timestamp: new Date().toISOString(),
-      };
+        console.log(`✅ Tax Agent initialized with model: ${lmStudioConfig.model}`);
+        console.log(`🔗 Connected to LMStudio at: ${lmStudioConfig.url}`);
     }
-  }
 
-  /**
-   * Format conversation history for context
-   */
-  private formatConversationHistory(history: any[]): string {
-    return history
-      .map((msg) => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
-      .join('\n');
-  }
+    /**
+     * Send a message to the tax agent
+     * @param message User's message
+     * @param conversationHistory Optional conversation history for context
+     * @returns Agent's response
+     */
+    async chat(message: string, conversationHistory?: any[]) {
+        try {
+            // If we have conversation history, include it in the context
+            const context = conversationHistory
+                ? this.formatConversationHistory(conversationHistory)
+                : '';
 
-  /**
-   * Generate tax form based on conversation and data
-   */
-  async generateTaxForm(userData: any) {
-    const prompt = `Based on the following user tax data, generate a summary and recommendations for their Canton Zurich tax return:
+            const fullMessage = context ? `${context}\n\nUser: ${message}` : message;
 
-${JSON.stringify(userData, null, 2)}
+            const response = await this.agent.generate(fullMessage);
 
-Provide:
-1. A summary of their tax situation
-2. Estimated tax liability
-3. Potential deductions they might be missing
-4. Next steps for filing their tax return`;
+            return {
+                success: true,
+                message: response.text || response,
+                timestamp: new Date().toISOString(),
+            };
+        } catch (error: any) {
+            console.error('Tax Agent Error:', error);
+            return {
+                success: false,
+                error: error.message || 'Failed to get response from tax agent',
+                timestamp: new Date().toISOString(),
+            };
+        }
+    }
 
-    return await this.chat(prompt);
-  }
+    /**
+     * Format conversation history for context
+     */
+    private formatConversationHistory(history: any[]): string {
+        return history
+            .map((msg) => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
+            .join('\n');
+    }
+
+    /**
+     * Generate tax form based on conversation and data
+     */
+    async generateTaxForm(userData: any) {
+        const prompt = `Based on the following user tax data, generate a summary and recommendations for their Canton Zurich tax return: ${JSON.stringify(userData, null, 2)}
+        Provide:
+        1. A summary of their tax situation
+        2. Estimated tax liability
+        3. Potential deductions they might be missing
+        4. Next steps for filing their tax return`;
+
+        return await this.chat(prompt);
+    }
 }
 
 // Export a singleton instance

@@ -24,7 +24,7 @@
         id="scenario"
         [(ngModel)]="selectedScenario"
         [disabled]="isLoadingScenario"
-        class="flex-1 min-w-[200px] px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed transition-all">
+        class="min-w-[200px] px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-slate-100 disabled:cursor-not-allowed transition-all">
         <option value="">Select a scenario...</option>
         <option *ngFor="let scenario of availableScenarios" [value]="scenario.id">
           {{ scenario.name }} (CHF {{ scenario.income | number }})
