@@ -242,10 +242,153 @@
 
 .message-content {
   font-size: 0.9375rem;
-  line-height: 1.6;
+  line-height: 1.4; // Reduced from 1.6 for tighter spacing
   word-wrap: break-word;
 
-  // Markdown link styles
+  // Headers
+  ::ng-deep h1 {
+    font-size: 1.875rem;
+    font-weight: 700;
+    margin-top: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  ::ng-deep h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-top: 1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  ::ng-deep h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+  }
+
+  ::ng-deep h4, ::ng-deep h5, ::ng-deep h6 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-top: 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  // Paragraphs
+  ::ng-deep p {
+    margin: 0.5rem 0;
+
+    &:first-child {
+      margin-top: 0;
+    }
+
+    &:last-child {
+      margin-bottom: 0;
+    }
+  }
+
+  // Lists
+  ::ng-deep ul, ::ng-deep ol {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+
+    li {
+      margin: 0.25rem 0;
+    }
+  }
+
+  ::ng-deep ul {
+    list-style-type: disc;
+  }
+
+  ::ng-deep ol {
+    list-style-type: decimal;
+  }
+
+  // Code blocks
+  ::ng-deep pre {
+    background-color: #f3f4f6;
+    padding: 0.75rem;
+    border-radius: 0.375rem;
+    overflow-x: auto;
+    margin: 0.75rem 0;
+
+    code {
+      background-color: transparent;
+      padding: 0;
+      font-size: 0.875rem;
+      font-family: 'Courier New', Courier, monospace;
+    }
+  }
+
+  // Inline code
+  ::ng-deep code {
+    background-color: #f3f4f6;
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-size: 0.875rem;
+    font-family: 'Courier New', Courier, monospace;
+  }
+
+  // Blockquotes
+  ::ng-deep blockquote {
+    border-left: 4px solid #9ca3af;
+    padding-left: 0.75rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    margin: 0.75rem 0;
+    font-style: italic;
+    color: #6b7280;
+  }
+
+  // Horizontal rules
+  ::ng-deep hr {
+    border: none;
+    border-top: 1px solid #d1d5db;
+    margin: 1rem 0;
+  }
+
+  // Tables
+  ::ng-deep table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 0.75rem 0;
+    font-size: 0.875rem;
+    display: block;
+    overflow-x: auto;
+
+    thead {
+      background-color: #f3f4f6;
+
+      th {
+        border: 1px solid #d1d5db;
+        padding: 0.5rem 0.75rem;
+        text-align: left;
+        font-weight: 600;
+        color: #374151;
+      }
+    }
+
+    tbody {
+      tr {
+        &:nth-child(even) {
+          background-color: #f9fafb;
+        }
+
+        &:hover {
+          background-color: #f3f4f6;
+        }
+      }
+
+      td {
+        border: 1px solid #d1d5db;
+        padding: 0.5rem 0.75rem;
+        color: #1f2937;
+      }
+    }
+  }
+
+  // Links
   ::ng-deep a {
     color: #2563eb;
     text-decoration: underline;
@@ -256,18 +399,107 @@
     }
   }
 
-  // User message links
-  .user-bubble & ::ng-deep a {
-    color: white;
-    text-decoration: underline;
+  // Strong and emphasis
+  ::ng-deep strong {
+    font-weight: 700;
+  }
 
-    &:hover {
-      opacity: 0.9;
+  ::ng-deep em {
+    font-style: italic;
+  }
+
+  ::ng-deep del {
+    text-decoration: line-through;
+  }
+
+  // User message styles (lighter/white theme)
+  .user-bubble & {
+    ::ng-deep h1, ::ng-deep h2, ::ng-deep h3, ::ng-deep h4, ::ng-deep h5, ::ng-deep h6 {
+      color: white;
+    }
+
+    ::ng-deep pre {
+      background-color: rgba(255, 255, 255, 0.1);
+
+      code {
+        color: white;
+      }
+    }
+
+    ::ng-deep code {
+      background-color: rgba(255, 255, 255, 0.1);
+      color: white;
+    }
+
+    ::ng-deep blockquote {
+      border-left-color: rgba(255, 255, 255, 0.5);
+      color: rgba(255, 255, 255, 0.9);
+    }
+
+    ::ng-deep hr {
+      border-top-color: rgba(255, 255, 255, 0.3);
+    }
+
+    ::ng-deep table {
+      thead {
+        background-color: rgba(255, 255, 255, 0.1);
+
+        th {
+          border-color: rgba(255, 255, 255, 0.3);
+          color: white;
+        }
+      }
+
+      tbody {
+        tr {
+          &:nth-child(even) {
+            background-color: rgba(255, 255, 255, 0.05);
+          }
+
+          &:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+          }
+        }
+
+        td {
+          border-color: rgba(255, 255, 255, 0.3);
+          color: white;
+        }
+      }
+    }
+
+    ::ng-deep a {
+      color: white;
+      text-decoration: underline;
+
+      &:hover {
+        opacity: 0.9;
+      }
     }
   }
 
   @media (max-width: 640px) {
     font-size: 0.875rem;
+
+    ::ng-deep h1 {
+      font-size: 1.5rem;
+    }
+
+    ::ng-deep h2 {
+      font-size: 1.25rem;
+    }
+
+    ::ng-deep h3 {
+      font-size: 1.125rem;
+    }
+
+    ::ng-deep table {
+      font-size: 0.8125rem;
+
+      th, td {
+        padding: 0.375rem 0.5rem;
+      }
+    }
   }
 }
 

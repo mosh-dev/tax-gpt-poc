@@ -2,6 +2,7 @@ import { Component, ViewChild, ElementRef, AfterViewChecked } from '@angular/cor
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
+import { marked } from 'marked';
 import { ApiService, StreamEvent } from '../../services/api.service';
 import { Message, SwissTaxData } from '../../models/tax.model';
 import { TaxDataModal } from '../tax-data-modal/tax-data-modal';
@@ -37,6 +38,27 @@ export class Chat implements AfterViewChecked {
     private sanitizer: DomSanitizer
   ) {
     this.initializeChat();
+    this.configureMarked();
+  }
+
+  /**
+   * Configure marked options
+   */
+  private configureMarked() {
+    // Create custom renderer for links
+    const renderer = new marked.Renderer();
+
+    // Override link rendering to add target="_blank" and rel="noopener noreferrer"
+    renderer.link = ({ href, title, text }) => {
+      const titleAttr = title ? ` title="${title}"` : '';
+      return `<a href="${href}"${titleAttr} target="_blank" rel="noopener noreferrer">${text}</a>`;
+    };
+
+    marked.setOptions({
+      breaks: false, // Don't add <br> on single line breaks
+      gfm: true, // GitHub Flavored Markdown (tables, strikethrough, etc.)
+      renderer: renderer, // Use custom renderer
+    });
   }
 
   /**
@@ -55,7 +77,9 @@ export class Chat implements AfterViewChecked {
   private initializeChat() {
     this.messages.push({
       role: 'assistant',
-      content: 'Hallo! I\'m your Swiss tax assistant for Canton Zurich. I can help you with your tax return by loading your tax data, calculating deductions, and generating PDF documents. Just ask me naturally!\n\nTry asking:\n- "Get my single tax data"\n- "Load married tax scenario"\n- "Calculate my deductions"\n- "Generate a PDF of my tax return"',
+      content: 'Hallo! I\'m your Swiss tax assistant for Canton Zurich. I can help you with your tax return by loading your tax data, ' +
+        'calculating deductions, and generating PDF documents. Just ask me naturally!\n\nTry asking:\n- Get my single tax data\n- Load married tax scenario\n- ' +
+        'Calculate my deductions\n- Generate a PDF of my tax return ',
       timestamp: new Date().toISOString(),
       firstChunkLoaded: true,
     });
@@ -361,22 +385,20 @@ export class Chat implements AfterViewChecked {
   }
 
   /**
-   * Convert markdown links to HTML and sanitize
-   * Converts [text](url) to clickable links
+   * Convert markdown to HTML using marked library and sanitize
+   * Supports: links, bold, italic, code, strikethrough, lists, headers, blockquotes, tables, and more
    */
   parseMarkdownLinks(content: string): SafeHtml {
-    // Convert markdown links [text](url) to HTML <a> tags
-    const htmlContent = content.replace(
-      /\[([^\]]+)\]\(([^)]+)\)/g,
-      '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline font-semibold">$1</a>'
-    );
+    try {
+      // Parse markdown to HTML using marked
+      const html = marked.parse(content) as string;
 
-    // Convert line breaks to <br> tags
-    const htmlWithBreaks = htmlContent.replace(/\n/g, '<br>');
-
-    // Convert **bold** to <strong>
-    const htmlWithBold = htmlWithBreaks.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-
-    return this.sanitizer.sanitize(1, htmlWithBold) || htmlWithBold;
+      // Sanitize and return (allows safe HTML tags)
+      return this.sanitizer.sanitize(1, html) || html;
+    } catch (error) {
+      console.error('Markdown parsing error:', error);
+      // Fallback to plain text on error
+      return content;
+    }
   }
 }
