@@ -1,7 +1,6 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Message, ChatResponse, SwissTaxData, PDFExtraction, TaxScenario } from '../models/tax.model';
+import { Message } from '../models/tax.model';
 
 /**
  * Server-Sent Event types for streaming chat responses
@@ -41,8 +40,6 @@ export interface StreamEvent {
 export class ApiService {
   private readonly API_URL = 'http://localhost:3000/api';
 
-  constructor(private http: HttpClient) {}
-
   /**
    * Stream chat messages with tool calling support using Server-Sent Events (SSE)
    * Returns an Observable that emits chunks and tool events as they arrive
@@ -60,131 +57,69 @@ export class ApiService {
           conversationHistory
         })
       })
-      .then(response => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        if (!response.body) {
-          throw new Error('No response body');
-        }
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          if (!response.body) {
+            throw new Error('No response body');
+          }
 
-        const reader = response.body.getReader();
-        const decoder = new TextDecoder();
-        let buffer = '';
+          const reader = response.body.getReader();
+          const decoder = new TextDecoder();
+          let buffer = '';
 
-        const readStream = () => {
-          reader.read().then(({ done, value }) => {
-            if (done) {
-              observer.complete();
-              return;
-            }
+          const readStream = () => {
+            reader.read().then(({done, value}) => {
+              if (done) {
+                observer.complete();
+                return;
+              }
 
-            // Decode the chunk and add to buffer
-            buffer += decoder.decode(value, { stream: true });
+              // Decode the chunk and add to buffer
+              buffer += decoder.decode(value, {stream: true});
 
-            // Process complete messages (SSE format: "data: {...}\n\n")
-            const lines = buffer.split('\n\n');
-            buffer = lines.pop() || ''; // Keep incomplete message in buffer
+              // Process complete messages (SSE format: "data: {...}\n\n")
+              const lines = buffer.split('\n\n');
+              buffer = lines.pop() || ''; // Keep incomplete message in buffer
 
-            for (const line of lines) {
-              if (line.startsWith('data: ')) {
-                try {
-                  const data = JSON.parse(line.substring(6)); // Remove 'data: ' prefix
-                  observer.next(data);
+              for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                  try {
+                    const data = JSON.parse(line.substring(6)); // Remove 'data: ' prefix
+                    observer.next(data);
 
-                  // Complete observable on 'done' or 'error'
-                  if (data.type === 'done') {
-                    observer.complete();
-                    return;
-                  } else if (data.type === 'error') {
-                    observer.error(new Error(data.error));
-                    return;
+                    // Complete observable on 'done' or 'error'
+                    if (data.type === 'done') {
+                      observer.complete();
+                      return;
+                    } else if (data.type === 'error') {
+                      observer.error(new Error(data.error));
+                      return;
+                    }
+                  } catch (e) {
+                    console.error('Failed to parse SSE message:', e);
                   }
-                } catch (e) {
-                  console.error('Failed to parse SSE message:', e);
                 }
               }
-            }
 
-            // Continue reading
-            readStream();
-          }).catch(error => {
-            observer.error(error);
-          });
-        };
+              // Continue reading
+              readStream();
+            }).catch(error => {
+              observer.error(error);
+            });
+          };
 
-        readStream();
-      })
-      .catch(error => {
-        observer.error(error);
-      });
+          readStream();
+        })
+        .catch(error => {
+          observer.error(error);
+        });
 
       // Cleanup function
       return () => {
         console.log('SSE stream closed');
       };
     });
-  }
-
-  /**
-   * Upload a PDF file for extraction
-   */
-  uploadPDF(file: File): Observable<PDFExtraction> {
-    const formData = new FormData();
-    formData.append('file', file);
-    return this.http.post<PDFExtraction>(`${this.API_URL}/upload/pdf`, formData);
-  }
-
-  /**
-   * Generate and download AI recommendations PDF
-   */
-  async downloadAIRecommendationsPDF(messages: Message[], taxData?: SwissTaxData): Promise<void> {
-    try {
-      const response = await this.http.post(`${this.API_URL}/pdf/generate-ai-recommendations`,
-        { messages, taxData },
-        { responseType: 'blob' }
-      ).toPromise();
-
-      if (response) {
-        // Create blob and download
-        const blob = new Blob([response], { type: 'application/pdf' });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        const timestamp = new Date().toISOString().split('T')[0];
-        link.download = `Tax_GPT_Recommendations_${timestamp}.pdf`;
-        link.click();
-        window.URL.revokeObjectURL(url);
-      }
-    } catch (error) {
-      console.error('Failed to download AI recommendations PDF:', error);
-      throw error;
-    }
-  }
-
-  /**
-   * Generate and download tax return PDF (legacy - input data only)
-   */
-  async downloadTaxReturnPDF(taxData: SwissTaxData): Promise<void> {
-    try {
-      const response = await this.http.post(`${this.API_URL}/pdf/generate-tax-return`,
-        { taxData },
-        { responseType: 'blob' }
-      ).toPromise();
-
-      if (response) {
-        // Create blob and download
-        const blob = new Blob([response], { type: 'application/pdf' });
-        const url = window.URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `Tax_Return_${taxData.personalInfo.lastName}_${taxData.taxYear}.pdf`;
-        link.click();
-        window.URL.revokeObjectURL(url);
-      }
-    } catch (error) {
-      console.error('Failed to download PDF:', error);
-      throw error;
-    }
   }
 }

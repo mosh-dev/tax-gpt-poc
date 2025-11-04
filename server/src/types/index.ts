@@ -62,33 +62,3 @@ export interface SwissTaxData {
   };
   taxYear: number;
 }
-
-/**
- * PDF extraction result
- */
-export interface PDFExtraction {
-  success: boolean;
-  text?: string;
-  numPages?: number;
-  error?: string;
-  fileName: string;
-  extractedData?: Partial<SwissTaxData>;
-}
-
-/**
- * Tax form generation request
- */
-export interface TaxFormRequest {
-  taxData: SwissTaxData;
-  formType: 'summary' | 'full' | 'recommendations';
-}
-
-/**
- * Tax form generation response
- */
-export interface TaxFormResponse {
-  success: boolean;
-  content?: string;
-  error?: string;
-  timestamp: string;
-}

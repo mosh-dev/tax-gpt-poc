@@ -24,36 +24,6 @@ interface StreamEvent {
 
 const router = Router();
 
-/**
- * POST /api/chat
- * Send a message to the tax assistant agent
- */
-router.post('/', async (req: Request, res: Response) => {
-    try {
-        const {message, conversationHistory}: ChatRequest = req.body;
-
-        if (!message || message.trim().length === 0) {
-            return res.status(400).json({
-                success: false,
-                error: 'Message is required',
-                timestamp: new Date().toISOString(),
-            } as ChatResponse);
-        }
-
-        // Get response from tax agent
-        const response = await taxAgent.chat(message, conversationHistory);
-
-        res.json(response as ChatResponse);
-    } catch (error: any) {
-        console.error('Chat error:', error);
-        res.status(500).json({
-            success: false,
-            error: error.message || 'Failed to process chat message',
-            timestamp: new Date().toISOString(),
-        } as ChatResponse);
-    }
-});
-
 
 /**
  * POST /api/chat/stream-with-tools
@@ -86,19 +56,18 @@ router.post('/stream-with-tools', async (req: Request, res: Response) => {
             // Get the full stream with tool support
             const fullStream = taxAgent.streamChatWithTools(message, conversationHistory);
 
-            console.log('🔄 Starting stream for message:', message);
+            console.log('Starting stream for message:', message);
 
-// -------------
             for await (const rawEvent of fullStream) {
                 const event = rawEvent as StreamEvent;
 
                 // Check if response is still writable (client hasn't disconnected)
                 if (!res.writable) {
-                    console.log('🛑 Client disconnected - stopping stream');
+                    console.log('Client disconnected - stopping stream');
                     break;
                 }
 
-                console.log("📦 Stream event received:", {
+                console.log("Stream event received:", {
                     type: event.type,
                     eventKeys: Object.keys(event),
                     event: event
@@ -107,13 +76,13 @@ router.post('/stream-with-tools', async (req: Request, res: Response) => {
                 const eventType = event.type as string;
                 switch (eventType) {
                     /** ------------------------------
-                     *  🧠 Reasoning Phase (new models)
+                     *  Reasoning Phase (new models)
                      * ------------------------------ */
                     case "start":
                     case "step-start":
                     case "reasoning-start":
                         // These mark the beginning of a reasoning or step phase
-                        console.log(`🧩 ${event.type} event from agent:`, event.payload);
+                        console.log(`${event.type} event from agent:`, event.payload);
                         break;
 
                     case "reasoning-delta": {
@@ -128,7 +97,6 @@ router.post('/stream-with-tools', async (req: Request, res: Response) => {
                     }
 
                     case "reasoning-finish":
-                        console.log("✅ Reasoning phase completed");
                         res.write(`data: ${JSON.stringify({
                             type: "reasoning-finish",
                             timestamp: new Date().toISOString()
@@ -136,7 +104,6 @@ router.post('/stream-with-tools', async (req: Request, res: Response) => {
                         break;
 
                     case "step-finish":
-                        console.log("✅ Step completed");
                         res.write(`data: ${JSON.stringify({
                             type: "step-finish",
                             timestamp: new Date().toISOString()
@@ -144,15 +111,15 @@ router.post('/stream-with-tools', async (req: Request, res: Response) => {
                         break;
 
                     /** ------------------------------
-                     *  💬 Text generation (streaming)
+                     *  Text generation (streaming)
                      * ------------------------------ */
                     case "text-start":
-                        console.log("📝 Text stream started:", event.payload);
+                        console.log("ext stream started:", event.payload);
                         break;
 
                     case "text-delta": {
                         const textChunk = event.payload?.text ?? event.textDelta ?? "";
-                        console.log("💬 Text chunk:", textChunk);
+                        console.log("Text chunk:", textChunk);
                         res.write(`data: ${JSON.stringify({
                             type: "chunk",
                             content: textChunk,
@@ -162,7 +129,7 @@ router.post('/stream-with-tools', async (req: Request, res: Response) => {
                     }
 
                     case "text-finish":
-                        console.log("✅ Text generation completed");
+                        console.log("Text generation completed");
                         res.write(`data: ${JSON.stringify({
                             type: "text-finish",
                             timestamp: new Date().toISOString()
@@ -170,15 +137,10 @@ router.post('/stream-with-tools', async (req: Request, res: Response) => {
                         break;
 
                     /** ------------------------------
-                     *  🛠️ Tool calls
+                     *  Tool calls
                      * ------------------------------ */
                     case "tool-call": {
-                        console.log({event});
-                        console.log("🔧 Tool call detected:", {
-                            toolName: event.payload?.toolName,
-                            toolCallId: event.payload?.toolCallId,
-                            args: event.payload?.args
-                        });
+                        console.log("Tool call detected:", {event});
                         res.write(`data: ${JSON.stringify({
                             type: "tool-call",
                             toolName: event.payload?.toolName,
@@ -191,11 +153,7 @@ router.post('/stream-with-tools', async (req: Request, res: Response) => {
 
                     case "tool-result": {
                         console.log({event});
-                        console.log("✅ Tool result received:", {
-                            toolCallId: event.payload?.toolCallId,
-                            toolName: event.payload?.toolName,
-                            result: event.payload?.result
-                        });
+                        console.log("Tool result received:", {event});
                         res.write(`data: ${JSON.stringify({
                             type: "tool-result",
                             toolCallId: event.payload?.toolCallId,
@@ -207,10 +165,10 @@ router.post('/stream-with-tools', async (req: Request, res: Response) => {
                     }
 
                     /** ------------------------------
-                     *  ❌ Error Handling
+                     * Error Handling
                      * ------------------------------ */
                     case "error": {
-                        console.error("❌ Stream error event:", event);
+                        console.error("Stream error event:", event);
                         res.write(`data: ${JSON.stringify({
                             type: "error",
                             error: event.payload?.error || event.error || "Unknown error",
@@ -220,7 +178,7 @@ router.post('/stream-with-tools', async (req: Request, res: Response) => {
                     }
 
                     /** ------------------------------
-                     *  🏁 Finish / Stream Complete
+                     *  Finish / Stream Complete
                      * ------------------------------ */
                     case "finish": {
                         console.log({event}, "Finish")
@@ -234,11 +192,11 @@ router.post('/stream-with-tools', async (req: Request, res: Response) => {
                     }
 
                     /** ------------------------------
-                     *  ❓ Unknown / Future Event Types
+                     *  Unknown / Future Event Types
                      * ------------------------------ */
                     default: {
                         // OpenAI may introduce new delta types (e.g., image-delta, tool-status)
-                        console.warn("❓ Unknown event type:", event.type, event);
+                        console.warn("Unknown event type:", event.type, event);
                         res.write(`data: ${JSON.stringify({
                             type: "unknown",
                             eventType: event.type,
@@ -250,7 +208,7 @@ router.post('/stream-with-tools', async (req: Request, res: Response) => {
                 }
             }
 
-            console.log('✅ Stream completed successfully');
+            console.log('Stream completed successfully');
 
             res.end();
         } catch (streamError: any) {
@@ -274,33 +232,5 @@ router.post('/stream-with-tools', async (req: Request, res: Response) => {
     }
 });
 
-/**
- * POST /api/chat/generate-form
- * Generate tax form based on user data
- */
-router.post('/generate-form', async (req: Request, res: Response) => {
-    try {
-        const {taxData} = req.body;
-
-        if (!taxData) {
-            return res.status(400).json({
-                success: false,
-                error: 'Tax data is required',
-                timestamp: new Date().toISOString(),
-            });
-        }
-
-        const response = await taxAgent.generateTaxForm(taxData);
-
-        res.json(response);
-    } catch (error: any) {
-        console.error('Generate form error:', error);
-        res.status(500).json({
-            success: false,
-            error: error.message || 'Failed to generate tax form',
-            timestamp: new Date().toISOString(),
-        });
-    }
-});
 
 export default router;

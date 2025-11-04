@@ -20,10 +20,6 @@ export class TaxDataModal {
     this.confirm.emit();
   }
 
-  onCancel() {
-    this.cancel.emit();
-  }
-
   formatCurrency(amount: number | undefined): string {
     if (amount === undefined || amount === null) return 'CHF 0';
     return `CHF ${amount.toLocaleString()}`;

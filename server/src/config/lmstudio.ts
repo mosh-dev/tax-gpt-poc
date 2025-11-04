@@ -22,11 +22,3 @@ export const getLMStudioModel = () => {
   const modelName = process.env.LMSTUDIO_MODEL || 'openai/gpt-oss-20b';
   return lmStudioClient(modelName);
 };
-
-/**
- * LMStudio configuration
- */
-export const lmStudioConfig = {
-  url: process.env.LMSTUDIO_URL || 'http://192.168.0.188:1234/v1',
-  model: process.env.LMSTUDIO_MODEL || 'openai/gpt-oss-20b',
-};

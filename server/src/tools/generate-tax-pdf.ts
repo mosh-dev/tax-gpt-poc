@@ -65,7 +65,7 @@ export const generateTaxPDFTool = createTool({
 
       // Create output directory if it doesn't exist
       // When running from dist/tools/, go up two levels to dist, then to server/generated-pdfs
-      const outputDir = path.join(__dirname, '../../server/generated-pdfs');
+      const outputDir = path.join(__dirname, '../../../server/generated-pdfs');
       if (!fs.existsSync(outputDir)) {
         fs.mkdirSync(outputDir, { recursive: true });
       }

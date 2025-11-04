@@ -5,9 +5,9 @@ An intelligent tax assistant powered by local LLM (LMStudio) and built with Angu
 ## Features
 
 - Conversational AI tax assistant specialized in Canton Zurich regulations
-- PDF document upload and extraction (Lohnausweis, receipts, etc.)
-- Mock tax data for testing different scenarios
-- Real-time chat with conversation history
+- Real-time streaming chat with SSE (Server-Sent Events)
+- Tool calling support with modal confirmations
+- Tax data modal for viewing and editing user information
 - Local LLM processing (privacy-first, no cloud dependency)
 - Swiss tax knowledge base (deductions, allowances, tax optimization)
 
@@ -17,13 +17,14 @@ An intelligent tax assistant powered by local LLM (LMStudio) and built with Angu
 tax-gpt/
 ├── client/          # Angular 20 frontend
 │   ├── src/app/
-│   │   ├── components/  # Chat and file upload UI
+│   │   ├── components/  # Chat and tax data modal UI
 │   │   ├── services/    # API communication
 │   │   └── models/      # TypeScript interfaces
 ├── server/          # Node.js/Express backend
 │   ├── src/
-│   │   ├── routes/      # API endpoints
-│   │   ├── services/    # Business logic
+│   │   ├── routes/      # API endpoints (chat)
+│   │   ├── services/    # Business logic (tax-agent)
+│   │   ├── tools/       # Mastra tools
 │   │   ├── config/      # LMStudio configuration
 │   │   └── types/       # TypeScript types
 └── package.json     # Root scripts
@@ -70,8 +71,6 @@ NODE_ENV=development
 CLIENT_URL=http://localhost:4200
 LMSTUDIO_URL=http://192.168.0.188:1234
 LMSTUDIO_MODEL=openai/gpt-oss-20b
-MAX_FILE_SIZE=10485760
-UPLOAD_DIR=./uploads
 ```
 
 Adjust `LMSTUDIO_URL` and `LMSTUDIO_MODEL` if needed.
@@ -114,38 +113,23 @@ The chat interface loads automatically. You can:
 - Get guidance on deductions and allowances
 - Request help with specific tax situations
 - Ask for form-filling instructions
+- Request tax PDF generation through tool calls
 
 **Example questions:**
 - "What deductions can I claim as a single employee in Zurich?"
 - "How much can I contribute to Pillar 3a?"
 - "What professional expenses are deductible?"
 - "Explain the difference between cantonal and federal tax"
+- "Generate a tax summary PDF for me"
 
-### 3. Upload Tax Documents (PDF)
+### 3. Use Tool Calling Features
 
-Use the file upload component to:
-1. Drag and drop a PDF (Lohnausweis, receipts, etc.)
-2. Or click to select a file
-3. Click "Upload & Extract"
-4. The system will extract text and parse tax-relevant data
+The AI agent can call tools to:
+- View and edit your tax data (opens modal)
+- Generate tax summary PDFs
+- Perform calculations and provide structured responses
 
-### 4. Test with Mock Data
-
-The backend provides mock tax scenarios:
-- **Single Employee**: Young professional in Zurich
-- **Married with Children**: Family with rental income
-- **Self-Employed Freelancer**: Divorced freelancer with business expenses
-
-Access via API:
-```bash
-# Get scenarios list
-curl http://localhost:3000/api/tax-data/scenarios
-
-# Get specific scenario data
-curl http://localhost:3000/api/tax-data?scenario=single
-curl http://localhost:3000/api/tax-data?scenario=married
-curl http://localhost:3000/api/tax-data?scenario=freelancer
-```
+When the agent suggests using a tool, you'll see a confirmation modal before execution.
 
 ## API Endpoints
 
@@ -154,34 +138,17 @@ curl http://localhost:3000/api/tax-data?scenario=freelancer
 GET /api/health
 ```
 
-### Chat
+### Chat (SSE Streaming)
 ```
 POST /api/chat
+Content-Type: application/json
 Body: {
   "message": "Your question",
   "conversationHistory": [...]
 }
-```
 
-### Tax Data
-```
-GET /api/tax-data?scenario=single|married|freelancer
-GET /api/tax-data/scenarios
-```
-
-### File Upload
-```
-POST /api/upload/pdf
-Content-Type: multipart/form-data
-Body: file (PDF)
-```
-
-### Generate Tax Form
-```
-POST /api/chat/generate-form
-Body: {
-  "taxData": { ... }
-}
+Response: text/event-stream (Server-Sent Events)
+Events: connected, chunk, reasoning, tool-call, tool-result, done, error
 ```
 
 ## Project Structure Details
@@ -192,36 +159,36 @@ Body: {
 - Configured with Swiss tax system prompts
 - Specializes in Canton Zurich regulations
 - Handles conversation with context awareness
+- SSE streaming support for real-time responses
 
 **lmstudio.ts**: LMStudio connection
 - OpenAI-compatible API configuration
 - Model selection and management
 
-**pdf-extractor.ts**: PDF processing
-- Text extraction from PDFs
-- Swiss document parsing (Lohnausweis, etc.)
-- Number format handling (CHF)
+### Backend Tools
 
-**mock-data.ts**: Test data
-- Three predefined tax scenarios
-- Realistic Swiss tax situations
+**generate-tax-pdf.ts**: Tax PDF generation tool
+- Mastra tool for generating tax summary PDFs
+- Creates formatted documents with user tax data
 
 ### Frontend Components
 
 **Chat Component**: Main conversational interface
 - Message history display
-- Real-time AI responses
-- Typing indicators
+- Real-time streaming AI responses (SSE)
+- Auto-scrolling with smooth UX
+- Tool call confirmation modals
 - Error handling
 
-**File Upload Component**: PDF handling
-- Drag and drop support
-- File validation
-- Extraction result display
+**Tax Data Modal Component**: Tax information viewer/editor
+- Display user tax data
+- Edit tax information
+- Triggered by tool calls from AI agent
 
 **API Service**: Backend communication
-- HTTP client wrapper
-- Type-safe API calls
+- SSE streaming support
+- Type-safe event handling
+- Observable-based architecture
 - Error handling
 
 ## Configuration Files
@@ -245,7 +212,6 @@ Body: {
 - `LMSTUDIO_URL`: LMStudio API endpoint
 - `LMSTUDIO_MODEL`: Model name
 - `CLIENT_URL`: Frontend URL for CORS
-- `MAX_FILE_SIZE`: Max PDF upload size (bytes)
 
 ## Troubleshooting
 
@@ -258,15 +224,6 @@ Body: {
 2. Check the URL in `server/.env`
 3. Ensure model is loaded in LMStudio
 4. Test connection: `curl http://192.168.0.188:1234/v1/models`
-
-### PDF Upload Fails
-
-**Problem**: PDF upload returns error
-
-**Solutions**:
-1. Check file is valid PDF
-2. Verify file size < 10MB
-3. Check server console for details
 
 ### Chat Not Responding
 
@@ -357,7 +314,7 @@ Serve the built Angular app (`client/dist`) with your preferred static server.
 - **TypeScript**: Type safety
 - **Mastra**: AI agent framework
 - **AI SDK**: LLM integration
-- **pdf-parse**: PDF processing
+- **SSE**: Server-Sent Events for streaming
 
 ### AI
 - **LMStudio**: Local LLM hosting
@@ -368,23 +325,22 @@ Serve the built Angular app (`client/dist`) with your preferred static server.
 
 - **Local LLM**: No data sent to cloud
 - **CORS Protection**: Restricts cross-origin requests
-- **File Validation**: PDF-only uploads
-- **Size Limits**: 10MB max file size
 - **Input Sanitization**: Prevents injection attacks
+- **Tool Call Confirmation**: User approval required for tool execution
 
 ## Future Enhancements
 
 Potential improvements:
 - [ ] Multi-language support (DE, FR, IT)
-- [ ] PDF form generation (actual tax forms)
+- [ ] Official tax form PDF generation
 - [ ] Data persistence (save user data)
 - [ ] Authentication and user accounts
-- [ ] Real web API integration
-- [ ] More sophisticated PDF parsing
-- [ ] Tax calculation engine
-- [ ] Document templates
-- [ ] Export to Excel/PDF
+- [ ] Real web API integration (e-government services)
+- [ ] Advanced tax calculation engine
+- [ ] More tool integrations
+- [ ] Export to Excel
 - [ ] Calendar integration for deadlines
+- [ ] Document upload and OCR for tax documents
 
 ## License
 

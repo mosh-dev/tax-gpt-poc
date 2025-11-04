@@ -33,20 +33,14 @@ app.get('/api/health', (req: Request, res: Response) => {
 
 // Import routes
 import chatRoutes from './routes/chat';
-import taxDataRoutes from './routes/tax-data';
-import uploadRoutes from './routes/upload';
-import pdfRoutes from './routes/pdf';
 
 // Use routes
 app.use('/api/chat', chatRoutes);
-app.use('/api/tax-data', taxDataRoutes);
-app.use('/api/upload', uploadRoutes);
-app.use('/api/pdf', pdfRoutes);
 
 // Serve generated PDFs for download
 import * as path from 'path';
 // When running from dist/, we need to go to server/generated-pdfs
-const generatedPdfsPath = path.join(__dirname, '../server/generated-pdfs');
+const generatedPdfsPath = path.join(__dirname, '../../server/generated-pdfs');
 app.use('/downloads', express.static(generatedPdfsPath));
 
 // 404 handler

@@ -1,5 +1,5 @@
 import { Agent } from '@mastra/core/agent';
-import { getLMStudioModel, lmStudioConfig } from '../config/lmstudio';
+import { getLMStudioModel } from '../config/lmstudio';
 import { getTaxDataTool, calculateDeductionsTool, generateTaxPDFTool } from '../tools';
 
 /**
@@ -61,70 +61,6 @@ export class TaxAgent {
                 generateTaxPDFTool,
             },
         });
-
-        console.log(`✅ Tax Agent initialized with model: ${lmStudioConfig.model}`);
-        console.log(`🔗 Connected to LMStudio at: ${lmStudioConfig.url}`);
-        console.log(`🔧 Tools registered: get-tax-data, calculate-deductions, generate-tax-pdf`);
-    }
-
-    /**
-     * Send a message to the tax agent
-     * @param message User's message
-     * @param conversationHistory Optional conversation history for context
-     * @returns Agent's response
-     */
-    async chat(message: string, conversationHistory?: any[]) {
-        try {
-            // If we have conversation history, include it in the context
-            const context = conversationHistory
-                ? this.formatConversationHistory(conversationHistory)
-                : '';
-
-            const fullMessage = context ? `${context}\n\nUser: ${message}` : message;
-
-            const response = await this.agent.generate(fullMessage);
-
-            return {
-                success: true,
-                message: response.text || response,
-                timestamp: new Date().toISOString(),
-            };
-        } catch (error: any) {
-            console.error('Tax Agent Error:', error);
-            return {
-                success: false,
-                error: error.message || 'Failed to get response from tax agent',
-                timestamp: new Date().toISOString(),
-            };
-        }
-    }
-
-    /**
-     * Stream a message to the tax agent with SSE support
-     * @param message User's message
-     * @param conversationHistory Optional conversation history for context
-     * @returns Async generator that yields text chunks
-     */
-    async *streamChat(message: string, conversationHistory?: any[]) {
-        try {
-            // If we have conversation history, include it in the context
-            const context = conversationHistory
-                ? this.formatConversationHistory(conversationHistory)
-                : '';
-
-            const fullMessage = context ? `${context}\n\nUser: ${message}` : message;
-
-            // Use stream method from Mastra agent
-            const stream = await this.agent.stream(fullMessage);
-
-            // Yield chunks as they arrive
-            for await (const chunk of stream.textStream) {
-                yield chunk;
-            }
-        } catch (error: any) {
-            console.error('Tax Agent Streaming Error:', error);
-            throw error;
-        }
     }
 
     /**
@@ -163,20 +99,6 @@ export class TaxAgent {
         return history
             .map((msg) => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
             .join('\n');
-    }
-
-    /**
-     * Generate tax form based on conversation and data
-     */
-    async generateTaxForm(userData: any) {
-        const prompt = `Based on the following user tax data, generate a summary and recommendations for their Canton Zurich tax return: ${JSON.stringify(userData, null, 2)}
-        Provide:
-        1. A summary of their tax situation
-        2. Estimated tax liability
-        3. Potential deductions they might be missing
-        4. Next steps for filing their tax return`;
-
-        return await this.chat(prompt);
     }
 }
 

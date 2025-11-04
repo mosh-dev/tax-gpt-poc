@@ -28,7 +28,6 @@ export class Chat implements AfterViewChecked {
   isModalOpen = false;
   pendingTaxData: SwissTaxData | null = null;
   pendingScenario: string = '';
-  pendingToolCallId: string = '';
 
   // Auto-scroll control
   private shouldScrollToBottom = false;
@@ -48,7 +47,6 @@ export class Chat implements AfterViewChecked {
     // Create custom renderer for links
     const renderer = new marked.Renderer();
 
-    // Override link rendering to add target="_blank" and rel="noopener noreferrer"
     renderer.link = ({ href, title, text }) => {
       const titleAttr = title ? ` title="${title}"` : '';
       return `<a href="${href}"${titleAttr} target="_blank" rel="noopener noreferrer">${text}</a>`;
@@ -128,17 +126,14 @@ export class Chat implements AfterViewChecked {
       this.apiService.streamMessageWithTools(contextualMessage, this.messages).subscribe({
         next: (event) => {
           console.log('🎯 Frontend received event:', event);
-
           switch (event.type) {
             case 'connected':
-              console.log('✅ SSE connected');
               this.triggerScroll(); // Scroll when connected
               break;
 
             case 'chunk':
               if (event.content) {
                 // Append chunk to assistant message
-                console.log('📝 Appending chunk to message');
                 assistantMessage.content += event.content;
                 if (event.content.trim().length > 0) {
                   this.isLoading = false;
@@ -159,20 +154,20 @@ export class Chat implements AfterViewChecked {
               break;
 
             case 'reasoning-finish':
-              console.log('✅ Reasoning phase completed');
+              console.log('Reasoning phase completed');
               break;
 
             case 'step-finish':
-              console.log('✅ Step completed');
+              console.log('Step completed');
               break;
 
             case 'text-finish':
-              console.log('✅ Text generation completed');
+              console.log('Text generation completed');
               break;
 
             case 'tool-call':
               // Handle tool call - show loading indicator
-              console.log('🔧 Tool called:', {
+              console.log('Tool called:', {
                 toolName: event.toolName,
                 args: event.args,
                 toolCallId: event.toolCallId
@@ -259,14 +254,7 @@ export class Chat implements AfterViewChecked {
         if (event.result?.success && event.result?.data) {
           this.pendingTaxData = event.result.data;
           this.pendingScenario = event.result.scenario;
-          this.pendingToolCallId = event.toolCallId || '';
           this.isModalOpen = true;
-
-          // Update message to show tool was called
-          // assistantMessage.content = assistantMessage.content.replace(
-          //   `[Calling tool: ${event.toolName}...]`,
-          //   `[Retrieved ${event.result.scenario} tax data - awaiting confirmation]`
-          // );
         }
         break;
 
@@ -276,12 +264,12 @@ export class Chat implements AfterViewChecked {
           const downloadUrl = `http://localhost:3000${event.result.downloadUrl}`;
           assistantMessage.content = assistantMessage.content.replace(
             `[Calling tool: ${event.toolName}...]`,
-            `✅ ${event.result.message}\n\n📄 [Download PDF](${downloadUrl})`
+            `${event.result.message}\n\n📄 [Download PDF](${downloadUrl})`
           );
         } else {
           assistantMessage.content = assistantMessage.content.replace(
             `[Calling tool: ${event.toolName}...]`,
-            `❌ Failed to generate PDF: ${event.result?.error || 'Unknown error'}`
+            `Failed to generate PDF: ${event.result?.error || 'Unknown error'}`
           );
         }
         break;
@@ -324,24 +312,7 @@ export class Chat implements AfterViewChecked {
    * Handle modal confirmation - user confirms loading tax data
    */
   onConfirmTaxData() {
-    if (this.pendingTaxData) {
-      // Load the confirmed tax data
-      this.loadedTaxData = this.pendingTaxData;
-
-      // Add confirmation message to chat
-      this.messages.push({
-        role: 'assistant',
-        content: `Great! I've loaded your ${this.pendingScenario} tax scenario data into our conversation. I can now provide personalized advice based on your situation.`,
-        timestamp: new Date().toISOString()
-      });
-      this.triggerScroll(); // Scroll after adding confirmation message
-    }
-
-    // Close modal and clear pending state
     this.isModalOpen = false;
-    this.pendingTaxData = null;
-    this.pendingScenario = '';
-    this.pendingToolCallId = '';
   }
 
   /**
