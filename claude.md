@@ -93,7 +93,6 @@ tax-gpt/
 │   ├── tsconfig.json
 │   └── package.json
 ├── package.json            # Root package (scripts)
-├── instructions.md         # Original requirements
 └── CLAUDE.md              # This file (implementation plan)
 ```
 
