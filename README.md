@@ -36,7 +36,7 @@ tax-gpt/
 2. **npm** (v9 or higher)
 3. **LMStudio** running locally with a model loaded
    - Model: `openai/gpt-oss-20b` (or any compatible model)
-   - URL: `http://192.168.0.188:1234` (configured in `.env`)
+   - URL: `<LMSTUDIO_URL>` (configured in `.env`, default: `http://localhost:1234`)
 
 ## Installation
 
@@ -69,7 +69,7 @@ The server `.env` file is already configured at `server/.env`:
 PORT=3000
 NODE_ENV=development
 CLIENT_URL=http://localhost:4200
-LMSTUDIO_URL=http://192.168.0.188:1234
+LMSTUDIO_URL=<YOUR_LMSTUDIO_URL>
 LMSTUDIO_MODEL=openai/gpt-oss-20b
 ```
 
@@ -223,7 +223,7 @@ Events: connected, chunk, reasoning, tool-call, tool-result, done, error
 1. Verify LMStudio is running
 2. Check the URL in `server/.env`
 3. Ensure model is loaded in LMStudio
-4. Test connection: `curl http://192.168.0.188:1234/v1/models`
+4. Test connection: `curl <YOUR_LMSTUDIO_URL>/models`
 
 ### Chat Not Responding
 

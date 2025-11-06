@@ -9,7 +9,7 @@ dotenv.config();
  */
 export const lmStudioClient = createOpenAICompatible({
   name: 'lm-studio',
-  baseURL: process.env.LMSTUDIO_URL || 'http://192.168.0.188:1234/v1',
+  baseURL: process.env.LMSTUDIO_URL || 'http://192.168.0.107:1234/v1',
   headers: {
     'Content-Type': 'application/json',
   },

@@ -70,7 +70,7 @@ app.listen(PORT, () => {
   console.log(`📍 Port: ${PORT}`);
   console.log(`🌐 API: http://localhost:${PORT}/api`);
   console.log(`❤️  Health: http://localhost:${PORT}/api/health`);
-  console.log(`🤖 LMStudio: ${process.env.LMSTUDIO_URL || 'http://192.168.0.188:1234'}\n`);
+  console.log(`🤖 LMStudio: ${process.env.LMSTUDIO_URL || 'http://192.168.0.107:1234'}\n`);
 });
 
 export default app;

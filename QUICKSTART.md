@@ -5,7 +5,7 @@ Get Tax-GPT running in 5 minutes!
 ## Prerequisites
 
 - ✅ Node.js v18+ installed
-- ✅ LMStudio running at http://192.168.0.188:1234 with `openai/gpt-oss-20b` model loaded
+- ✅ LMStudio running at `<YOUR_LMSTUDIO_URL>` with `openai/gpt-oss-20b` model loaded
 
 ## Steps
 
@@ -23,7 +23,7 @@ cd server && npm install && cd ..
 
 Open your browser or use curl:
 ```bash
-curl http://192.168.0.188:1234/v1/models
+curl <YOUR_LMSTUDIO_URL>/models
 ```
 
 You should see your loaded model in the response.
@@ -74,9 +74,9 @@ curl http://localhost:3000/api/tax-data?scenario=single
 1. Check LMStudio is running
 2. Verify the URL in `server/.env`:
    ```
-   LMSTUDIO_URL=http://192.168.0.188:1234
+   LMSTUDIO_URL=<YOUR_LMSTUDIO_URL>
    ```
-3. Test connection: `curl http://192.168.0.188:1234/v1/models`
+3. Test connection: `curl <YOUR_LMSTUDIO_URL>/models`
 
 ### Port 3000 already in use?
 
@@ -122,8 +122,8 @@ Then restart the server.
          │ OpenAI-compatible API
          ↓
 ┌─────────────────┐
-│   LMStudio      │  Port 1234
-│  gpt-oss-20b    │  (192.168.0.188)
+│   LMStudio      │  <YOUR_LMSTUDIO_URL>
+│  gpt-oss-20b    │
 └─────────────────┘
 ```
 

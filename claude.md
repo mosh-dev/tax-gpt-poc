@@ -7,7 +7,7 @@ AI-assisted tax submission helper for Canton Zurich, Switzerland using locally h
 - **Frontend**: Angular 20+ with SCSS
 - **Backend**: Node.js/Express with TypeScript
 - **AI Framework**: Mastra
-- **LLM**: LMStudio at http://192.168.0.188:1234
+- **LLM**: LMStudio at `<YOUR_LMSTUDIO_URL>` (configured in `server/.env`)
 - **Model**: openai/gpt-oss-20b
 - **Tax Region**: Canton Zurich, Switzerland
 - **Data Source**: Mock data initially (web API integration later)
@@ -30,7 +30,7 @@ AI-assisted tax submission helper for Canton Zurich, Switzerland using locally h
 
 ### Phase 2: Backend (Node.js/Express) ✓
 5. ✓ Create Express server with CORS and error handling
-6. ✓ Setup Mastra agent with LMStudio connection (http://192.168.0.188:1234)
+6. ✓ Setup Mastra agent with LMStudio connection (configured via `server/.env`)
 7. ✓ Create chat endpoint with SSE streaming support
 8. ✓ Implement tool calling infrastructure
 
@@ -137,7 +137,7 @@ The Mastra agent will be configured with:
 
 ## Development Workflow
 
-1. **Start LMStudio**: Ensure http://192.168.0.188:1234 is running with gpt-oss-20b
+1. **Start LMStudio**: Ensure your LMStudio server is running with gpt-oss-20b (URL configured in `server/.env`)
 2. **Backend**: `cd server && npm run dev` (port 3000)
 3. **Frontend**: `cd client && npm start` (port 4200)
 4. **Both**: `npm run dev` from root (using concurrently)
