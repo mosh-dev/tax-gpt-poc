@@ -66,11 +66,13 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`\n🚀 Tax-GPT Server is running`);
-  console.log(`📍 Port: ${PORT}`);
-  console.log(`🌐 API: http://localhost:${PORT}/api`);
-  console.log(`❤️  Health: http://localhost:${PORT}/api/health`);
-  console.log(`🤖 LMStudio: ${process.env.LMSTUDIO_URL || 'http://192.168.0.107:1234'}\n`);
+  console.log(`\n🚀 Tax-GPT API Server is running`);
+  console.log(`📍   Port: ${PORT}`);
+  console.log(`🏭   Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`🌐   API: http://localhost:${PORT}/api`);
+  console.log(`❤️   Health: http://localhost:${PORT}/api/health`);
+  console.log(`📥   Downloads: http://localhost:${PORT}/downloads`);
+  console.log(`🤖   LMStudio: ${process.env.LMSTUDIO_URL || 'http://192.168.0.107:1234'}\n`);
 });
 
 export default app;
