@@ -9,8 +9,9 @@ const app: Express = express();
 const PORT = process.env.PORT || 3000;
 
 // Middleware
+// Allow all origins (for Docker/development flexibility)
 app.use(cors({
-  origin: process.env.CLIENT_URL || 'http://localhost:4200',
+  origin: true, // Allow any origin
   credentials: true
 }));
 app.use(express.json());

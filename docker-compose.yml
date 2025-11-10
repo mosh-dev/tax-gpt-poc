@@ -7,12 +7,17 @@ services:
       context: ./server
       dockerfile: Dockerfile
     container_name: tax-gpt-server
+    ports:
+      - "3000:3000"
     environment:
       - NODE_ENV=production
       - PORT=3000
       # LMStudio Configuration
       - LMSTUDIO_URL=${LMSTUDIO_URL:-http://host.docker.internal:1234}
       - LMSTUDIO_MODEL=${LMSTUDIO_MODEL:-openai/gpt-oss-20b}
+    extra_hosts:
+      # Enable host.docker.internal on Linux
+      - "host.docker.internal:host-gateway"
     restart: unless-stopped
     networks:
       - tax-gpt-network
