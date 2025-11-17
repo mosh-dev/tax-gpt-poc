@@ -108,9 +108,9 @@ export class ImageProcessor extends BaseDocumentProcessor {
       });
 
       // Configure worker with PSM (Page Segmentation Mode)
-      if (config.psm) {
+      if (config.psm !== undefined) {
         await worker.setParameters({
-          tessedit_pageseg_mode: config.psm.toString()
+          tessedit_pageseg_mode: config.psm as any
         });
       }
 

@@ -4,7 +4,7 @@
  */
 
 import { mongoRepository } from './mongo-repository';
-import { IMessage } from '../models';
+import { MessageData } from '../models';
 
 export interface ConversationMessage {
   role: 'user' | 'assistant' | 'system';
@@ -52,8 +52,8 @@ export class MongoDBMemory {
   async saveMessage(
     conversationId: string,
     message: ConversationMessage
-  ): Promise<IMessage> {
-    return await mongoRepository.createMessage({
+  ): Promise<MessageData> {
+    const msg = await mongoRepository.createMessage({
       conversationId,
       role: message.role,
       content: message.content,
@@ -61,6 +61,12 @@ export class MongoDBMemory {
       toolCalls: message.toolCalls || [],
       metadata: {},
     });
+
+    if (!msg) {
+      throw new Error('Failed to create message');
+    }
+
+    return msg;
   }
 
   /**

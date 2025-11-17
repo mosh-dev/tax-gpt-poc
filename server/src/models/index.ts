@@ -3,6 +3,6 @@
  * Export all database models
  */
 
-export { Conversation, IConversation } from './conversation.model';
-export { Message, IMessage } from './message.model';
-export { File, IFile } from './file.model';
+export { Conversation, IConversation, ConversationData } from './conversation.model';
+export { Message, IMessage, MessageData } from './message.model';
+export { File, IFile, FileData } from './file.model';

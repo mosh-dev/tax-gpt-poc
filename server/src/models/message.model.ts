@@ -5,7 +5,8 @@
 
 import mongoose, { Schema, Document } from 'mongoose';
 
-export interface IMessage extends Document {
+// Plain data interface (for lean queries)
+export interface MessageData {
   conversationId: string;
   role: 'user' | 'assistant' | 'system';
   content: string;
@@ -23,6 +24,9 @@ export interface IMessage extends Document {
   };
   createdAt: Date;
 }
+
+// Document interface (for Mongoose documents)
+export interface IMessage extends MessageData, Document {}
 
 const MessageSchema = new Schema<IMessage>(
   {

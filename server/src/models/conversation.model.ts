@@ -5,7 +5,8 @@
 
 import mongoose, { Schema, Document } from 'mongoose';
 
-export interface IConversation extends Document {
+// Plain data interface (for lean queries)
+export interface ConversationData {
   conversationId: string;
   title: string;
   taxYear?: number;
@@ -20,6 +21,9 @@ export interface IConversation extends Document {
   createdAt: Date;
   updatedAt: Date;
 }
+
+// Document interface (for Mongoose documents)
+export interface IConversation extends ConversationData, Document {}
 
 const ConversationSchema = new Schema<IConversation>(
   {

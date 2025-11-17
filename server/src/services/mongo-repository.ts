@@ -4,11 +4,18 @@
  * Provides abstraction over Mongoose models
  */
 
-import { Conversation, Message, File, IConversation, IMessage, IFile } from '../models';
+import {
+  Conversation,
+  Message,
+  File,
+  ConversationData,
+  MessageData,
+  FileData
+} from '../models';
 import { randomUUID } from 'crypto';
 import mongoose from 'mongoose';
 
-export interface ConversationData {
+export interface CreateConversationData {
   conversationId?: string;
   title: string;
   taxYear?: number;
@@ -16,7 +23,7 @@ export interface ConversationData {
   metadata?: any;
 }
 
-export interface MessageData {
+export interface CreateMessageData {
   conversationId: string;
   role: 'user' | 'assistant' | 'system';
   content: string;
@@ -25,7 +32,7 @@ export interface MessageData {
   metadata?: any;
 }
 
-export interface FileData {
+export interface CreateFileData {
   fileId: string;
   conversationId?: string;
   originalName: string;
@@ -48,20 +55,33 @@ export class MongoRepository {
   }
 
   /**
-   * Handle database operation with connection check
+   * Attempt to reconnect to database
    */
-  private async execute<T>(operation: () => Promise<T>, fallback: T): Promise<T> {
-    if (!this.isConnected()) {
-      console.warn('[MongoRepository] Database not connected, returning fallback value');
-      return fallback;
+  private async reconnect(): Promise<void> {
+    if (this.isConnected()) {
+      return;
     }
 
+    console.log('[MongoRepository] Attempting to reconnect to database...');
     try {
-      return await operation();
+      await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/tax-gpt');
+      console.log('[MongoRepository] Successfully reconnected to database');
     } catch (error) {
-      console.error('[MongoRepository] Database operation failed:', error);
-      return fallback;
+      console.error('[MongoRepository] Failed to reconnect to database:', error);
+      throw error;
     }
+  }
+
+  /**
+   * Handle database operation with connection check and reconnection
+   */
+  private async execute<T>(operation: () => Promise<T>): Promise<T> {
+    if (!this.isConnected()) {
+      console.warn('[MongoRepository] Database not connected, attempting reconnection...');
+      await this.reconnect();
+    }
+
+    return await operation();
   }
 
   // ==================== Conversation Operations ====================
@@ -69,42 +89,42 @@ export class MongoRepository {
   /**
    * Create a new conversation
    */
-  async createConversation(data: ConversationData): Promise<IConversation | null> {
+  async createConversation(data: CreateConversationData): Promise<ConversationData | null> {
     const conversationId = data.conversationId || randomUUID();
-    return this.execute(
+    const doc = await this.execute(
       async () => await Conversation.create({
         conversationId,
         title: data.title || 'New Tax Conversation',
         taxYear: data.taxYear,
         userId: data.userId,
         metadata: data.metadata || {},
-      }),
-      null
+      })
     );
+    return doc ? (doc.toObject() as ConversationData) : null;
   }
 
   /**
    * Find conversation by ID
    */
-  async findConversationById(conversationId: string): Promise<IConversation | null> {
-    return this.execute(
-      async () => await Conversation.findOne({ conversationId }).lean(),
-      null
+  async findConversationById(conversationId: string): Promise<ConversationData | null> {
+    const result = await this.execute(
+      async () => await Conversation.findOne({ conversationId }).lean()
     );
+    return result as ConversationData | null;
   }
 
   /**
    * Get all conversations
    */
-  async getAllConversations(userId?: string, limit: number = 50): Promise<IConversation[]> {
+  async getAllConversations(userId?: string, limit: number = 50): Promise<ConversationData[]> {
     const query = userId ? { userId } : {};
-    return this.execute(
+    const results = await this.execute(
       async () => await Conversation.find(query)
         .sort({ updatedAt: -1 })
         .limit(limit)
-        .lean(),
-      []
+        .lean()
     );
+    return results as ConversationData[];
   }
 
   /**
@@ -112,13 +132,12 @@ export class MongoRepository {
    */
   async updateConversation(
     conversationId: string,
-    updates: Partial<ConversationData>
+    updates: Partial<CreateConversationData>
   ): Promise<void> {
     await this.execute(
       async () => {
         await Conversation.updateOne({ conversationId }, { $set: updates });
-      },
-      undefined
+      }
     );
   }
 
@@ -129,8 +148,7 @@ export class MongoRepository {
     await this.execute(
       async () => {
         await Conversation.deleteOne({ conversationId });
-      },
-      undefined
+      }
     );
   }
 
@@ -141,7 +159,7 @@ export class MongoRepository {
     query: string,
     userId?: string,
     limit: number = 20
-  ): Promise<IConversation[]> {
+  ): Promise<ConversationData[]> {
     const searchQuery: any = {
       $or: [
         { title: { $regex: query, $options: 'i' } },
@@ -153,13 +171,13 @@ export class MongoRepository {
       searchQuery.userId = userId;
     }
 
-    return this.execute(
+    const results = await this.execute(
       async () => await Conversation.find(searchQuery)
         .sort({ updatedAt: -1 })
         .limit(limit)
-        .lean(),
-      []
+        .lean()
     );
+    return results as ConversationData[];
   }
 
   // ==================== Message Operations ====================
@@ -167,8 +185,8 @@ export class MongoRepository {
   /**
    * Create a new message
    */
-  async createMessage(data: MessageData): Promise<IMessage | null> {
-    return this.execute(
+  async createMessage(data: CreateMessageData): Promise<MessageData | null> {
+    const doc = await this.execute(
       async () => await Message.create({
         conversationId: data.conversationId,
         role: data.role,
@@ -176,9 +194,9 @@ export class MongoRepository {
         fileIds: data.fileIds || [],
         toolCalls: data.toolCalls || [],
         metadata: data.metadata || {},
-      }),
-      null
+      })
     );
+    return doc ? (doc.toObject() as MessageData) : null;
   }
 
   /**
@@ -187,14 +205,14 @@ export class MongoRepository {
   async getMessagesByConversationId(
     conversationId: string,
     limit: number = 200
-  ): Promise<IMessage[]> {
-    return this.execute(
+  ): Promise<MessageData[]> {
+    const results = await this.execute(
       async () => await Message.find({ conversationId })
         .sort({ createdAt: 1 })
         .limit(limit)
-        .lean(),
-      []
+        .lean()
     );
+    return results as MessageData[];
   }
 
   /**
@@ -204,8 +222,7 @@ export class MongoRepository {
     await this.execute(
       async () => {
         await Message.deleteMany({ conversationId });
-      },
-      undefined
+      }
     );
   }
 
@@ -214,8 +231,8 @@ export class MongoRepository {
   /**
    * Create a new file record
    */
-  async createFile(data: FileData): Promise<IFile | null> {
-    return this.execute(
+  async createFile(data: CreateFileData): Promise<FileData | null> {
+    const doc = await this.execute(
       async () => await File.create({
         fileId: data.fileId,
         conversationId: data.conversationId,
@@ -228,30 +245,29 @@ export class MongoRepository {
         ocrResult: data.ocrResult,
         uploadedAt: data.uploadedAt || new Date(),
         expiresAt: data.expiresAt,
-      }),
-      null
+      })
     );
+    return doc ? (doc.toObject() as FileData) : null;
   }
 
   /**
    * Find file by ID
    */
-  async findFileById(fileId: string): Promise<IFile | null> {
-    return this.execute(
-      async () => await File.findOne({ fileId }).lean(),
-      null
+  async findFileById(fileId: string): Promise<FileData | null> {
+    const result = await this.execute(
+      async () => await File.findOne({ fileId }).lean()
     );
+    return result as FileData | null;
   }
 
   /**
    * Update file
    */
-  async updateFile(fileId: string, updates: Partial<FileData>): Promise<void> {
+  async updateFile(fileId: string, updates: Partial<CreateFileData>): Promise<void> {
     await this.execute(
       async () => {
         await File.updateOne({ fileId }, { $set: updates });
-      },
-      undefined
+      }
     );
   }
 
@@ -266,8 +282,7 @@ export class MongoRepository {
     await this.execute(
       async () => {
         await File.updateOne({ fileId }, { $set: updateData });
-      },
-      undefined
+      }
     );
   }
 
@@ -278,48 +293,47 @@ export class MongoRepository {
     await this.execute(
       async () => {
         await File.deleteOne({ fileId });
-      },
-      undefined
+      }
     );
   }
 
   /**
    * Get files by conversation ID
    */
-  async getFilesByConversationId(conversationId: string): Promise<IFile[]> {
-    return this.execute(
+  async getFilesByConversationId(conversationId: string): Promise<FileData[]> {
+    const results = await this.execute(
       async () => await File.find({ conversationId })
         .sort({ uploadedAt: -1 })
-        .lean(),
-      []
+        .lean()
     );
+    return results as FileData[];
   }
 
   /**
    * Find expired files
    */
-  async findExpiredFiles(): Promise<IFile[]> {
-    return this.execute(
+  async findExpiredFiles(): Promise<FileData[]> {
+    const results = await this.execute(
       async () => await File.find({
         expiresAt: { $lt: new Date() },
-      }).lean(),
-      []
+      }).lean()
     );
+    return results as FileData[];
   }
 
   /**
    * Delete expired files
    */
   async deleteExpiredFiles(): Promise<number> {
-    return this.execute(
+    const result = await this.execute(
       async () => {
-        const result = await File.deleteMany({
+        const res = await File.deleteMany({
           expiresAt: { $lt: new Date() },
         });
-        return result.deletedCount || 0;
-      },
-      0
+        return res.deletedCount || 0;
+      }
     );
+    return result;
   }
 }
 

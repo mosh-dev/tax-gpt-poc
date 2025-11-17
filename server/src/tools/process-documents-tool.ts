@@ -24,7 +24,7 @@ export const processDocumentsTool = createTool({
 
       for (const fileId of fileIds) {
         // Get file metadata
-        const metadata = getFileMetadata(fileId);
+        const metadata = await getFileMetadata(fileId);
 
         if (!metadata) {
           results.push({

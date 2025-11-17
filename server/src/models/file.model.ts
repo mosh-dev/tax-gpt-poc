@@ -5,7 +5,8 @@
 
 import mongoose, { Schema, Document } from 'mongoose';
 
-export interface IFile extends Document {
+// Plain data interface (for lean queries)
+export interface FileData {
   fileId: string;
   conversationId?: string;
   originalName: string;
@@ -26,6 +27,9 @@ export interface IFile extends Document {
   uploadedAt: Date;
   expiresAt?: Date;
 }
+
+// Document interface (for Mongoose documents)
+export interface IFile extends FileData, Document {}
 
 const FileSchema = new Schema<IFile>(
   {

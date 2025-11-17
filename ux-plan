@@ -1,5 +1,0 @@
-- I have added a tax-gpt-ux folder with ui and ux design for the agent lets follow the design and integrate those features one by one.
-- Current setup does not handle deployment environment properly,
-lets configure the client and server with proper setup for everything each endpoint  mongodb connection openai endpoint apikey(I might use openai gpt model from my subscription)
-and other things which might be relevant.
-- Add Some basic guardrails for the agent to prevent prompt injection since now we are embedding document during chat.
