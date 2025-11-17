@@ -4,7 +4,7 @@
 AI-assisted tax submission helper for Canton Zurich, Switzerland using locally hosted LLM.
 
 ## Configuration
-- **Frontend**: Angular 20+ with SCSS
+- **Frontend**: React 18+ with TypeScript and Tailwind CSS
 - **Backend**: Node.js/Express with TypeScript
 - **Database**: MongoDB (localhost:27017)
 - **AI Framework**: Mastra with MongoDB memory
@@ -337,8 +337,8 @@ services:
 ## Implementation Phases
 
 ### Phase 1: Project Setup ✓
-1. ✓ Initialize Angular workspace and Express server structure
-2. ✓ Install dependencies: Mastra, AI SDK, Angular Material
+1. ✓ Initialize React workspace and Express server structure
+2. ✓ Install dependencies: Mastra, AI SDK, Radix UI, Tailwind CSS
 3. ✓ Configure TypeScript for both frontend/backend
 4. ✓ Setup development scripts (concurrent frontend/backend)
 
@@ -355,7 +355,7 @@ services:
 12. ✓ Add tools for tax PDF generation
 13. ✓ Implement SSE streaming for real-time responses
 
-### Phase 4: Angular Frontend ✓
+### Phase 4: React Frontend ✓
 14. ✓ Create chat interface with message history
 15. ✓ Add tax data modal component
 16. ✓ Implement SSE streaming service for real-time updates
@@ -385,9 +385,10 @@ services:
 - **@mastra/core** - AI agent framework
 - **@ai-sdk/openai-compatible** - LMStudio connection
 - **express** - Backend server with SSE support
-- **@angular/core** - Frontend framework
-- **@angular/material** - UI components
-- **rxjs** - Observable-based reactive programming
+- **react** - Frontend framework
+- **@radix-ui/** - UI component primitives
+- **tailwindcss** - Utility-first CSS framework
+- **react-router-dom** - Client-side routing
 
 ### Database Dependencies
 - **mongoose** - MongoDB object modeling for Node.js
@@ -413,16 +414,16 @@ services:
 
 ```
 tax-gpt/
-├── client/                 # Angular frontend
+├── client-react/           # React frontend
 │   ├── src/
-│   │   ├── app/
-│   │   │   ├── components/
-│   │   │   │   ├── chat/              # Chat interface with file upload
-│   │   │   │   └── tax-data-modal/    # Tax data modal
-│   │   │   ├── services/
-│   │   │   │   └── api.service.ts     # API service (SSE + file upload)
-│   │   │   └── models/                # TypeScript interfaces
-│   │   └── ...
+│   │   ├── components/
+│   │   │   ├── chat/              # Chat interface with file upload
+│   │   │   ├── ui/                # Reusable UI components (Radix + Tailwind)
+│   │   │   └── modals/            # Modal components
+│   │   ├── services/
+│   │   │   └── api.ts             # API service (SSE + file upload)
+│   │   ├── hooks/                 # Custom React hooks
+│   │   └── types/                 # TypeScript interfaces
 │   └── package.json
 ├── server/                 # Express backend
 │   ├── src/
@@ -521,7 +522,7 @@ The Mastra agent will be configured with:
 
 1. **Start LMStudio**: Ensure your LMStudio server is running with gpt-oss-20b (URL configured in `server/.env`)
 2. **Backend**: `cd server && npm run dev` (port 3000)
-3. **Frontend**: `cd client && npm start` (port 4200)
+3. **Frontend**: `cd client-react && npm run dev` (port 5173)
 4. **Both**: `npm run dev` from root (using concurrently)
 
 ## Recent Implementation Updates
@@ -548,7 +549,7 @@ The Mastra agent will be configured with:
 - **StreamEvent Interface**: Soft-typed interface for flexible event handling with Mastra's generic types
 - **Type Casting**: `const event = rawEvent as StreamEvent` to work with Mastra's `ChunkType<undefined>`
 
-#### Client-Side (`/client/src/app/services/api.service.ts`)
+#### Client-Side (Legacy Angular - now replaced with React)
 - **Exported Type System**:
   ```typescript
   export type StreamEventType =
@@ -572,7 +573,7 @@ The Mastra agent will be configured with:
 - **Observable SSE Stream**: `streamMessageWithTools()` returns `Observable<StreamEvent>`
 - **Proper SSE Parsing**: Handles `data: {...}\n\n` format with buffering for incomplete messages
 
-#### Chat Component (`/client/src/app/components/chat/chat.ts`)
+#### Chat Component (Legacy Angular - now replaced with React)
 - **Auto-Scroll Implementation**:
   - `AfterViewChecked` lifecycle hook for DOM updates
   - `@ViewChild('messagesContainer')` for direct element access
@@ -584,7 +585,7 @@ The Mastra agent will be configured with:
   - All event types properly handled with appropriate UI updates
 - **Type Safety**: Imports `StreamEvent` and `StreamEventType` for full type checking
 
-#### UI/UX (`/client/src/app/components/chat/chat.scss`)
+#### UI/UX (Legacy Angular - now replaced with React)
 - **Fixed Layout**: Changed `:host` from `overflow-y: auto` to `overflow: hidden`
 - **Scroll Container**: Only `.messages-container` scrolls, preventing UI shift during typing
 - **Responsive Design**: Proper flexbox layout for header, messages, and input sections
@@ -599,10 +600,7 @@ The Mastra agent will be configured with:
 **Files Modified:**
 - `/server/src/routes/chat.ts` - Complete event handling, client disconnect detection
 - `/server/src/services/tax-agent.ts` - Return type updates for streaming
-- `/client/src/app/services/api.service.ts` - Exported type system, SSE parsing
-- `/client/src/app/components/chat/chat.ts` - Event handling, auto-scroll, type imports
-- `/client/src/app/components/chat/chat.html` - Template reference for scroll container
-- `/client/src/app/components/chat/chat.scss` - Fixed overflow behavior
+- Legacy Angular frontend files (now replaced with React implementation in `/client-react`)
 
 ### Standalone OCR Document Processing (Latest)
 
@@ -688,13 +686,12 @@ The Mastra agent will be configured with:
 - `/server/src/tools/process-documents-tool.ts` - AI agent tool (Created)
 - `/server/src/services/tax-agent.ts` - Added processDocumentsTool
 - `/server/src/index.ts` - Updated to use centralized storage paths
-- `/client/src/app/services/api.service.ts` - Added uploadFiles method
-- `/client/src/app/components/chat/` - File selection UI with preview
+- Legacy Angular frontend files (now in React at `/client-react`)
 
 ### Code Cleanup - Removed Unused Features
 
 **Files Removed:**
-- `client/src/app/components/file-upload/` - Entire file upload component (HTML, SCSS, TS)
+- `client/` - Entire Angular frontend (replaced with React in `client-react/`)
 - `server/src/routes/pdf.ts` - PDF upload route
 - `server/src/routes/tax-data.ts` - Tax data API route
 - `server/src/routes/upload.ts` - Upload handling route
@@ -702,10 +699,9 @@ The Mastra agent will be configured with:
 - `IMPLEMENTATION_SUMMARY.md` - Old summary file
 
 **Rationale:**
-The application was simplified to focus on the core conversational interface with tool calling. PDF upload and separate tax data APIs were removed in favor of:
-- Direct chat-based interaction
-- Tool-triggered tax data modal
-- AI agent handles data through conversation context
+- Angular frontend replaced with React for better performance and modern development experience
+- Application simplified to focus on core conversational interface with tool calling
+- Direct chat-based interaction with tool-triggered modals
 - Cleaner architecture with fewer moving parts
 
 ## Current Status

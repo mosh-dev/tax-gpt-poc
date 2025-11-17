@@ -32,8 +32,11 @@ RUN npm ci --only=production
 # Copy built server from builder stage
 COPY --from=builder /app/dist ./dist
 
-# Create directory for generated PDFs
-RUN mkdir -p generated-pdfs
+# Create centralized storage directory structure
+RUN mkdir -p server/storage/uploads \
+             server/storage/pdfs \
+             server/storage/temp \
+             server/storage/tesseract-lang
 
 # Create a non-root user for security
 RUN addgroup -g 1001 -S nodejs && \

@@ -18,7 +18,7 @@ export const lmStudioClient = createOpenAICompatible({
 /**
  * Get the configured LMStudio model
  */
-export const getLMStudioModel = () => {
+export const getOpenAiModel = () => {
   const modelName = process.env.LMSTUDIO_MODEL || 'openai/gpt-oss-20b';
   return lmStudioClient(modelName);
 };

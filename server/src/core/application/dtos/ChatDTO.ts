@@ -9,6 +9,7 @@ export interface StreamChatRequestDTO {
   message: string;
   conversationId?: string;
   conversationHistory?: ChatMessageDTO[];
+  userId?: string; // Optional user ID for Mastra Memory resource scoping
 }
 
 export interface ChatMessageDTO {

@@ -4,18 +4,18 @@
   "description": "AI-assisted tax submission helper for Canton Zurich",
   "main": "server/dist/index.js",
   "scripts": {
-    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client:wait\"",
     "dev:server": "cd server && npm run dev",
     "dev:client": "cd client-react && npm run dev",
-    "dev:client:angular": "cd client && npm start",
+    "dev:client:wait": "wait-on http://localhost:3000/api/health && npm run dev:client",
     "build": "npm run build:server && npm run build:client",
     "build:server": "cd server && npm run build",
     "build:client": "cd client-react && npm run build",
     "start": "cd server && npm start"
   },
-  "dependencies": {},
   "devDependencies": {
-    "concurrently": "^9.0.1"
+    "concurrently": "^9.0.1",
+    "wait-on": "^9.0.3"
   },
   "private": true
 }

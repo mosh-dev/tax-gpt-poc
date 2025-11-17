@@ -72,7 +72,16 @@ export class StreamChatUseCase {
         timestamp: new Date().toISOString(),
       };
 
-      for await (const event of this.aiAgentService.streamChat(request.message, history)) {
+      // Use conversationId as threadId for Mastra Memory
+      const threadId = conversationId.value;
+      const resourceId = request.userId; // Optional user ID for memory scoping
+
+      for await (const event of this.aiAgentService.streamChat(
+        request.message,
+        history,
+        threadId,
+        resourceId
+      )) {
         // Collect assistant response for saving
         if (event.type === 'text-delta' || event.type === 'chunk') {
           assistantContent += event.content || '';

@@ -13,7 +13,10 @@
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^1.0.25",
-    "@mastra/core": "^0.23.3",
+    "@mastra/core": "^1.0.0-beta.2",
+    "@mastra/fastembed": "^1.0.0-beta.0",
+    "@mastra/memory": "^1.0.0-beta.0",
+    "@mastra/mongodb": "^1.0.0-beta.0",
     "@types/pdfkit": "^0.17.3",
     "canvas": "^3.2.0",
     "cors": "^2.8.5",

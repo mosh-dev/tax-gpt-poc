@@ -1,6 +1,26 @@
 version: '3.8'
 
 services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:latest
+    container_name: tax-gpt-mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      - MONGO_INITDB_DATABASE=tax-gpt
+    restart: unless-stopped
+    networks:
+      - tax-gpt-network
+    volumes:
+      - mongodb-data:/data/db
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
   # Backend API Server
   server:
     build:
@@ -15,9 +35,13 @@ services:
       # LMStudio Configuration
       - LMSTUDIO_URL=${LMSTUDIO_URL:-http://host.docker.internal:1234}
       - LMSTUDIO_MODEL=${LMSTUDIO_MODEL:-openai/gpt-oss-20b}
+      # MongoDB Configuration
+      - MONGODB_URI=${MONGODB_URI:-mongodb://mongodb:27017/tax-gpt}
     extra_hosts:
       # Enable host.docker.internal on Linux
       - "host.docker.internal:host-gateway"
+    depends_on:
+      - mongodb
     restart: unless-stopped
     networks:
       - tax-gpt-network
@@ -28,13 +52,13 @@ services:
       retries: 3
       start_period: 40s
     volumes:
-      # Persist generated PDFs
-      - pdf-data:/app/generated-pdfs
+      # Centralized storage for all files (uploads, PDFs, temp, tesseract data)
+      - ./server/storage:/app/server/storage
 
-  # Frontend Client (Angular + Nginx)
+  # Frontend Client (React + Nginx)
   client:
     build:
-      context: ./client
+      context: ./client-react
       dockerfile: Dockerfile
     container_name: tax-gpt-client
     ports:
@@ -56,5 +80,5 @@ networks:
     driver: bridge
 
 volumes:
-  pdf-data:
+  mongodb-data:
     driver: local

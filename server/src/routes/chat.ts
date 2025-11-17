@@ -1,5 +1,5 @@
 import { Request, Response, Router } from 'express';
-import { taxAgent } from '../services/tax-agent';
+import { taxAgent } from '../agent';
 import { ChatRequest, ChatResponse } from '../types';
 import { mongoMemory } from '../services/mongodb-memory';
 
@@ -148,7 +148,13 @@ router.post('/stream-with-tools', async (req: Request, res: Response) => {
 
         try {
             // Get the full stream with tool support using effective history
-            const fullStream = taxAgent.streamChatWithTools(message, effectiveHistory);
+            // Updated to support Mastra Memory: threadId, resourceId, conversationHistory
+            const fullStream = taxAgent.streamChatWithTools(
+                message,
+                conversationId, // Use conversationId as threadId
+                undefined, // resourceId (not used in legacy route)
+                effectiveHistory // conversation history for fallback
+            );
 
             // Collect assistant response for saving to database
             let assistantResponse = '';

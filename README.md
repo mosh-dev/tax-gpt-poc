@@ -1,6 +1,6 @@
 # Tax-GPT - AI-Assisted Tax Helper for Canton Zurich
 
-An intelligent tax assistant powered by local LLM (LMStudio) and built with Angular + Node.js + Mastra AI framework.
+An intelligent tax assistant powered by local LLM (LMStudio) and built with React + Node.js + Mastra AI framework.
 
 ## Features
 
@@ -15,16 +15,17 @@ An intelligent tax assistant powered by local LLM (LMStudio) and built with Angu
 
 ```
 tax-gpt/
-├── client/          # Angular 20 frontend
-│   ├── src/app/
-│   │   ├── components/  # Chat and tax data modal UI
+├── client-react/    # React 18 frontend
+│   ├── src/
+│   │   ├── components/  # Chat UI, modals, and reusable components
 │   │   ├── services/    # API communication
-│   │   └── models/      # TypeScript interfaces
+│   │   ├── hooks/       # Custom React hooks
+│   │   └── types/       # TypeScript interfaces
 ├── server/          # Node.js/Express backend
 │   ├── src/
 │   │   ├── routes/      # API endpoints (chat)
-│   │   ├── services/    # Business logic (tax-agent)
-│   │   ├── tools/       # Mastra tools
+│   │   ├── agent/       # Mastra agent and tools
+│   │   ├── services/    # Business logic
 │   │   ├── config/      # LMStudio configuration
 │   │   └── types/       # TypeScript types
 └── package.json     # Root scripts
@@ -51,7 +52,10 @@ cd server
 npm install
 cd ..
 
-# Client dependencies were installed during Angular setup
+# Install client dependencies
+cd client-react
+npm install
+cd ..
 ```
 
 ### 2. Configure LMStudio
@@ -68,7 +72,7 @@ The server `.env` file is already configured at `server/.env`:
 ```env
 PORT=3000
 NODE_ENV=development
-CLIENT_URL=http://localhost:4200
+CLIENT_URL=http://localhost:5173
 LMSTUDIO_URL=<YOUR_LMSTUDIO_URL>
 LMSTUDIO_MODEL=openai/gpt-oss-20b
 ```
@@ -86,7 +90,7 @@ npm run dev
 
 This starts:
 - Backend server on `http://localhost:3000`
-- Angular frontend on `http://localhost:4200`
+- React frontend on `http://localhost:5173`
 
 ### Option 2: Run Separately
 
@@ -96,15 +100,15 @@ cd server
 npm run dev
 
 # Terminal 2 - Frontend
-cd client
-npm start
+cd client-react
+npm run dev
 ```
 
 ## Usage
 
 ### 1. Access the Application
 
-Open your browser to `http://localhost:4200`
+Open your browser to `http://localhost:5173`
 
 ### 2. Chat with the Tax Assistant
 
@@ -188,7 +192,7 @@ Events: connected, chunk, reasoning, tool-call, tool-result, done, error
 **API Service**: Backend communication
 - SSE streaming support
 - Type-safe event handling
-- Observable-based architecture
+- React hooks integration
 - Error handling
 
 ## Configuration Files
@@ -272,7 +276,7 @@ cd server
 npm start
 ```
 
-Serve the built Angular app (`client/dist`) with your preferred static server.
+Serve the built React app (`client-react/dist`) with your preferred static server.
 
 ### Code Structure
 
@@ -303,10 +307,11 @@ Serve the built Angular app (`client/dist`) with your preferred static server.
 ## Technology Stack
 
 ### Frontend
-- **Angular 20**: Modern web framework
+- **React 18**: Modern web framework
 - **TypeScript**: Type-safe development
-- **RxJS**: Reactive programming
-- **SCSS**: Styling
+- **Tailwind CSS**: Utility-first styling
+- **Radix UI**: Accessible component primitives
+- **Vite**: Fast build tool
 
 ### Backend
 - **Node.js**: JavaScript runtime
@@ -357,7 +362,8 @@ For issues or questions:
 ## Credits
 
 Built with:
-- [Angular](https://angular.dev/)
+- [React](https://react.dev/)
 - [Mastra AI](https://mastra.ai/)
 - [LMStudio](https://lmstudio.ai/)
-- [Vercel AI SDK](https://sdk.vercel.ai/)
+- [Radix UI](https://www.radix-ui.com/)
+- [Tailwind CSS](https://tailwindcss.com/)

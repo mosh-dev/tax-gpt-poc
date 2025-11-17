@@ -4,7 +4,7 @@
  */
 
 import { IAIAgentService, StreamEvent, ChatMessage } from '../../../core/application/services';
-import { TaxAgent } from '../../../services/tax-agent';
+import { TaxAgent } from '../../../agent';
 
 export class MastraAIAgentService implements IAIAgentService {
   private taxAgent: TaxAgent;
@@ -15,9 +15,11 @@ export class MastraAIAgentService implements IAIAgentService {
 
   async *streamChat(
     message: string,
-    conversationHistory: ChatMessage[]
+    conversationHistory: ChatMessage[],
+    threadId?: string,
+    resourceId?: string
   ): AsyncIterable<StreamEvent> {
-    // Convert application ChatMessage to format expected by TaxAgent
+    // Convert application ChatMessage to format expected by TaxAgent (for legacy mode)
     const historyForAgent = conversationHistory.map(msg => ({
       role: msg.role,
       content: msg.content,
@@ -25,8 +27,13 @@ export class MastraAIAgentService implements IAIAgentService {
       toolCalls: msg.toolCalls,
     }));
 
-    // Stream from tax agent
-    for await (const event of this.taxAgent.streamChatWithTools(message, historyForAgent)) {
+    // Stream from tax agent (supports both Memory and legacy modes)
+    for await (const event of this.taxAgent.streamChatWithTools(
+      message,
+      threadId,
+      resourceId,
+      historyForAgent
+    )) {
       // Map event to StreamEvent format
       const mappedEvent: StreamEvent = {
         type: event.type || 'unknown',
