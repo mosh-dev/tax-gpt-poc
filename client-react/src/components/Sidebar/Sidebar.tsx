@@ -36,8 +36,8 @@ export default function Sidebar({
       {/* Sidebar */}
       <aside
         className={`
-          ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
-          fixed lg:relative
+          ${isOpen ? 'translate-x-0' : '-translate-x-full'}
+          fixed
           w-64 h-full bg-white border-r border-gray-200
           flex flex-col
           transition-transform duration-300 ease-in-out
@@ -45,15 +45,25 @@ export default function Sidebar({
         `}
       >
         {/* Header */}
-        <div className="p-4 border-b border-gray-200">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-9 h-9 bg-primary-600 rounded-full flex items-center justify-center text-white">
-              <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
-                <path d="M9 2L7 4H4C2.9 4 2 4.9 2 6v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3l-2-2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
-                <circle cx="12" cy="12" r="3" fill="white"/>
-              </svg>
+        <div className="p-4 border-gray-200">
+          <div className="flex items-center justify-between mb-4">
+            <div
+              className="cursor-pointer hover:opacity-80 transition-opacity"
+              onClick={onNewChat}
+            >
+              <h1 className="text-xl font-bold text-gray-900">TaxGPT</h1>
             </div>
-            <h1 className="text-base font-semibold text-gray-900">TaxGPT</h1>
+            {isOpen && (
+              <button
+                onClick={onToggle}
+                className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
+                title="Close sidebar"
+              >
+                <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" stroke="currentColor">
+                  <path d="M3 12h18M3 6h18M3 18h18" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </button>
+            )}
           </div>
 
           {/* New Chat Button */}
@@ -67,7 +77,7 @@ export default function Sidebar({
         </div>
 
         {/* Search */}
-        <div className="p-4 border-b border-gray-200">
+        <div className="p-4 border-gray-200">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
             <input
@@ -141,13 +151,6 @@ export default function Sidebar({
         </div>
       </aside>
 
-      {/* Overlay for mobile */}
-      {isOpen && (
-        <div
-          className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-30"
-          onClick={onToggle}
-        />
-      )}
     </>
   );
 }

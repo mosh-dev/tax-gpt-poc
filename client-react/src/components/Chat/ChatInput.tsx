@@ -105,7 +105,7 @@ export default function ChatInput({ onSendMessage, disabled, isUploading }: Chat
           placeholder="Ask me about your Swiss tax return or attach documents..."
           disabled={disabled}
           rows={1}
-          className="w-full px-4 py-3 pr-24 border border-gray-300 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50 resize-none"
+          className="w-full bg-white px-4 py-3 pr-24 border border-gray-300 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50 resize-none"
         />
 
         {/* Icons inside input on the right */}

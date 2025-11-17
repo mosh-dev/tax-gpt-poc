@@ -9,7 +9,7 @@ import { apiService } from './services/api';
 function App() {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loading, setLoading] = useState(true);
 
   // Load conversation ID from URL on mount
@@ -102,16 +102,6 @@ function App() {
   return (
     <ErrorBoundary>
       <div className="flex h-screen bg-gray-50 overflow-hidden">
-        {/* Mobile Menu Toggle */}
-        <button
-          onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-white rounded-lg shadow-lg"
-        >
-          <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
-            <path d="M3 12h18M3 6h18M3 18h18" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
-          </svg>
-        </button>
-
         <Sidebar
           conversations={conversations}
           currentConversationId={currentConversationId}
@@ -124,6 +114,22 @@ function App() {
         />
 
         <main className="flex-1 flex flex-col overflow-hidden">
+          {/* Header with Hamburger Menu and Logo */}
+          {!sidebarOpen && (
+            <div className="flex items-center gap-4 px-6 py-4 relative z-50">
+              <button
+                onClick={() => setSidebarOpen(!sidebarOpen)}
+                className="p-2 hover:bg-gray-200 rounded-lg transition-colors border border-gray-300 bg-white shadow-sm"
+                title="Open sidebar"
+              >
+                <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" stroke="currentColor">
+                  <path d="M3 12h18M3 6h18M3 18h18" strokeWidth="2" strokeLinecap="round"/>
+                </svg>
+              </button>
+              <h1 className="text-xl font-bold text-gray-900">TaxGPT</h1>
+            </div>
+          )}
+
           <div className="max-w-[1200px] w-full mx-auto flex flex-col h-full">
             {currentConversationId && currentConversationId !== 'new' ? (
               <Chat
