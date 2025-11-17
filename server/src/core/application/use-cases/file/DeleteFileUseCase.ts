@@ -3,8 +3,8 @@
  * Deletes file from storage and database
  */
 
-import { IFileRepository } from '../../../domain/repositories';
-import { FileId } from '../../../domain/value-objects';
+import { IFileRepository } from '../../../domain';
+import { FileId } from '../../../domain';
 import { IFileStorageService } from '../../services';
 
 export class DeleteFileUseCase {

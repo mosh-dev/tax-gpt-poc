@@ -3,8 +3,6 @@
  * Data Transfer Objects for chat operations
  */
 
-import { MessageDTO } from './MessageDTO';
-
 export interface StreamChatRequestDTO {
   message: string;
   conversationId?: string;

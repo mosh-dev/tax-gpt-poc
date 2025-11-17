@@ -3,8 +3,8 @@
  * Retrieves file metadata
  */
 
-import { IFileRepository } from '../../../domain/repositories';
-import { FileId } from '../../../domain/value-objects';
+import { IFileRepository } from '../../../domain';
+import { FileId } from '../../../domain';
 import { FileDTO } from '../../dtos';
 
 export class GetFileUseCase {

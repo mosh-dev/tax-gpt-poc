@@ -3,9 +3,9 @@
  * Handles file upload and storage
  */
 
-import { IFileRepository } from '../../../domain/repositories';
+import { IFileRepository } from '../../../domain';
 import { File as FileEntity } from '../../../domain/entities';
-import { FileId, ConversationId, FileMetadata } from '../../../domain/value-objects';
+import { FileId, ConversationId, FileMetadata } from '../../../domain';
 import { UploadFileDTO, FileDTO } from '../../dtos';
 import { IFileStorageService } from '../../services';
 
