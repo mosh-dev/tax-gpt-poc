@@ -1,0 +1,3 @@
+Right now there is no database setup to tract conversation history.
+I have setup a mongodb instance running on localhost:27017 port. Lets use this to keep tract of chat history and handle file upload properly with db tables. So that when the system will be deployed to docker it giver proper url for the file.
+Also i have added a tax-gpt-ux folder with ui and ux design for the agent lets follow the design and integrate those features one by one.
