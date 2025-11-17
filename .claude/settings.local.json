@@ -17,7 +17,8 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:docs.ag-ui.com)",
       "WebFetch(domain:mastra.ai)",
-      "WebFetch(domain:khaledgarbaya.net)"
+      "WebFetch(domain:khaledgarbaya.net)",
+      "Bash(npm uninstall:*)"
     ],
     "deny": [],
     "ask": []

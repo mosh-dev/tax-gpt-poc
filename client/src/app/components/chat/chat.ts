@@ -29,6 +29,10 @@ export class Chat implements AfterViewChecked {
   pendingTaxData: SwissTaxData | null = null;
   pendingScenario: string = '';
 
+  // File upload state
+  selectedFiles: File[] = []; // Files selected but not yet uploaded
+  isUploading = false;
+
   // Auto-scroll control
   private shouldScrollToBottom = false;
 
@@ -87,13 +91,53 @@ export class Chat implements AfterViewChecked {
    * Send message to tax assistant using SSE streaming with tool support
    */
   async sendMessage() {
-    if (!this.currentMessage.trim() || this.isLoading) {
+    if ((!this.currentMessage.trim() && this.selectedFiles.length === 0) || this.isLoading || this.isUploading) {
       return;
     }
 
+    // Upload files first if any are selected
+    let fileIds: string[] = [];
+
+    if (this.selectedFiles.length > 0) {
+      this.isUploading = true;
+
+      try {
+        const uploadResponse = await this.apiService.uploadFiles(this.selectedFiles).toPromise();
+
+        if (uploadResponse && uploadResponse.success) {
+          fileIds = uploadResponse.files.map(f => f.id);
+          console.log(`Uploaded ${fileIds.length} files:`, fileIds);
+        } else {
+          this.error = 'Failed to upload files';
+          this.isUploading = false;
+          return;
+        }
+      } catch (err: any) {
+        this.error = `Upload failed: ${err.message}`;
+        this.isUploading = false;
+        return;
+      }
+
+      this.isUploading = false;
+    }
+
+    // Build message content
+    let messageContent = this.currentMessage || 'I have uploaded some documents. Please analyze them.';
+
+    // Add file IDs to message for AI agent
+    if (fileIds.length > 0) {
+      messageContent += '\n\n[Uploaded Files]';
+      fileIds.forEach(id => {
+        messageContent += `\n[fileId: ${id}]`;
+      });
+    }
+
+    // Display message for user
+    const userDisplayMessage = this.currentMessage || `Uploaded ${this.selectedFiles.length} document(s)`;
+
     const userMessage: Message = {
       role: 'user',
-      content: this.currentMessage,
+      content: userDisplayMessage,
       timestamp: new Date().toISOString(),
       firstChunkLoaded: true
     };
@@ -101,8 +145,9 @@ export class Chat implements AfterViewChecked {
     this.messages.push(userMessage);
     this.triggerScroll(); // Scroll after user message
 
-    const messageToSend = this.currentMessage;
+    const messageToSend = messageContent;
     this.currentMessage = '';
+    this.selectedFiles = []; // Clear selected files after sending
     this.isLoading = true;
     this.error = null;
 
@@ -353,6 +398,64 @@ export class Chat implements AfterViewChecked {
    */
   private triggerScroll(): void {
     this.shouldScrollToBottom = true;
+  }
+
+  /**
+   * Handle file selection from input (don't upload yet)
+   */
+  onFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    if (!input.files || input.files.length === 0) {
+      return;
+    }
+
+    const files = Array.from(input.files);
+    this.error = null;
+
+    // Validate files
+    for (const file of files) {
+      // Validate file type
+      const isImage = file.type.startsWith('image/');
+      const isPDF = file.type === 'application/pdf';
+
+      if (!isImage && !isPDF) {
+        this.error = `Unsupported file type: ${file.name}. Only images and PDFs are supported.`;
+        continue;
+      }
+
+      // Validate file size (20MB max)
+      if (file.size > 20 * 1024 * 1024) {
+        this.error = `File too large: ${file.name}. Maximum size is 20MB.`;
+        continue;
+      }
+
+      // Add to selected files (avoid duplicates)
+      if (!this.selectedFiles.find(f => f.name === file.name && f.size === file.size)) {
+        this.selectedFiles.push(file);
+      }
+    }
+
+    // Reset input
+    input.value = '';
+  }
+
+  /**
+   * Remove a file from selected files
+   */
+  removeFile(file: File): void {
+    const index = this.selectedFiles.indexOf(file);
+    if (index > -1) {
+      this.selectedFiles.splice(index, 1);
+    }
+  }
+
+  /**
+   * Format file size for display
+   */
+  formatFileSize(bytes: number): string {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   }
 
   /**

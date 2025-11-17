@@ -12,12 +12,16 @@
     "@ai-sdk/openai-compatible": "^1.0.25",
     "@mastra/core": "^0.23.3",
     "@types/pdfkit": "^0.17.3",
+    "canvas": "^3.2.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "multer": "^2.0.2",
     "pdf-parse": "^2.4.5",
-    "pdfkit": "^0.17.2"
+    "pdfjs-dist": "^5.4.394",
+    "pdfkit": "^0.17.2",
+    "sharp": "^0.34.5",
+    "tesseract.js": "^6.0.1"
   },
   "private": true,
   "devDependencies": {

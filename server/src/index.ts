@@ -34,14 +34,16 @@ app.get('/api/health', (req: Request, res: Response) => {
 
 // Import routes
 import chatRoutes from './routes/chat';
+import filesRoutes from './routes/files';
 
 // Use routes
 app.use('/api/chat', chatRoutes);
+app.use('/api/files', filesRoutes);
 
 // Serve generated PDFs for download
 import * as path from 'path';
-// When running from dist/, we need to go to server/generated-pdfs
-const generatedPdfsPath = path.join(__dirname, '../../server/generated-pdfs');
+import { getStoragePath } from './config/storage';
+const generatedPdfsPath = getStoragePath('pdfs');
 app.use('/downloads', express.static(generatedPdfsPath));
 
 // 404 handler
@@ -67,13 +69,13 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 
 // Start server
 app.listen(PORT, () => {
-  console.log(`\n🚀 Tax-GPT API Server is running`);
-  console.log(`📍   Port: ${PORT}`);
-  console.log(`🏭   Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`🌐   API: http://localhost:${PORT}/api`);
-  console.log(`❤️   Health: http://localhost:${PORT}/api/health`);
-  console.log(`📥   Downloads: http://localhost:${PORT}/downloads`);
-  console.log(`🤖   LMStudio: ${process.env.LMSTUDIO_URL || 'http://192.168.0.107:1234'}\n`);
+  console.log(`\n[Tax-GPT] API Server is running`);
+  console.log(`[Server] Port: ${PORT}`);
+  console.log(`[Server] Environment: ${process.env.NODE_ENV || 'development'}`);
+  console.log(`[Server] API: http://localhost:${PORT}/api`);
+  console.log(`[Server] Health: http://localhost:${PORT}/api/health`);
+  console.log(`[Server] Downloads: http://localhost:${PORT}/downloads`);
+  console.log(`[Server] LMStudio: ${process.env.LMSTUDIO_URL || 'http://192.168.0.107:1234'}\n`);
 });
 
 export default app;

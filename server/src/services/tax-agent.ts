@@ -1,6 +1,7 @@
 import { Agent } from '@mastra/core/agent';
 import { getLMStudioModel } from '../config/lmstudio';
 import { getTaxDataTool, calculateDeductionsTool, generateTaxPDFTool } from '../tools';
+import { processDocumentsTool } from '../tools/process-documents-tool';
 
 /**
  * System prompt for the Swiss Tax Assistant
@@ -36,9 +37,15 @@ Important guidelines:
 Available Tools:
 - Use get-tax-data tool when the user asks to load their tax data, see their tax information, or retrieve tax details
 - Use calculate-deductions tool when the user wants to know potential deductions or optimize their tax situation
-- Use generate-tax-pdf tool when the user wants to generate, create, or download a PDF document of their tax return summary. This tool expects data in specific
+- Use generate-tax-pdf tool when the user wants to generate, create, or download a PDF document of their tax return summary
+- Use process-documents tool when the user has uploaded files and wants to extract text from them using OCR. The user will provide file IDs in their message.
 
 IMPORTANT: When you use the get-tax-data tool, explain to the user that you've retrieved their tax data and ask them to confirm if they want to use this data for the conversation.
+
+Document Processing Workflow:
+- When file IDs are provided in the user's message (format: [fileId: xxx]), call the process-documents tool with those IDs
+- After processing, analyze the extracted text and provide insights based on the content
+- Look for key tax information like income amounts, deductions, employer details, etc.
 
 Start conversations by understanding the user's tax situation, then guide them through relevant questions.`;
 
@@ -59,6 +66,7 @@ export class TaxAgent {
                 getTaxDataTool,
                 calculateDeductionsTool,
                 generateTaxPDFTool,
+                processDocumentsTool,
             },
         });
     }

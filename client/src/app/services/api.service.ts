@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Observable, from } from 'rxjs';
 import { Message } from '../models/tax.model';
 
 /**
@@ -122,4 +122,45 @@ export class ApiService {
       };
     });
   }
+
+  /**
+   * Upload files to server (no OCR processing yet)
+   * Returns file IDs that can be processed later by the AI agent
+   */
+  uploadFiles(files: File[]): Observable<FileUploadResponse> {
+    const formData = new FormData();
+
+    files.forEach(file => {
+      formData.append('files', file);
+    });
+
+    return from(
+      fetch(`${this.API_URL}/files/upload`, {
+        method: 'POST',
+        body: formData
+      }).then(response => {
+        if (!response.ok) {
+          throw new Error(`Upload failed: ${response.statusText}`);
+        }
+        return response.json();
+      })
+    );
+  }
+}
+
+/**
+ * File Upload Response Types
+ */
+export interface FileUploadResponse {
+  success: boolean;
+  count: number;
+  files: UploadedFile[];
+}
+
+export interface UploadedFile {
+  id: string;
+  name: string;
+  size: number;
+  type: string;
+  uploadedAt: string;
 }

@@ -2,6 +2,7 @@ import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 import { generateTaxReturnPDF } from '../services/pdf-generator';
 import { SwissTaxData } from '../types';
+import { getStoragePath } from '../config/storage';
 import * as fs from 'fs';
 import * as path from 'path';
 
@@ -64,8 +65,7 @@ export const generateTaxPDFTool = createTool({
       const pdfBuffer = await generateTaxReturnPDF(taxData as SwissTaxData);
 
       // Create output directory if it doesn't exist
-      // When running from dist/tools/, go up two levels to dist, then to server/generated-pdfs
-      const outputDir = path.join(__dirname, '../../../server/generated-pdfs');
+      const outputDir = getStoragePath('pdfs');
       if (!fs.existsSync(outputDir)) {
         fs.mkdirSync(outputDir, { recursive: true });
       }

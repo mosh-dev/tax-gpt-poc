@@ -1,0 +1,121 @@
+/**
+ * OCR Service Type Definitions
+ * Centralized type definitions for the OCR system
+ */
+
+export type SupportedLanguage = 'eng' | 'deu' | 'fra' | 'ita';
+export type FileType = 'image' | 'pdf' | 'unknown';
+export type ProcessingStatus = 'pending' | 'processing' | 'completed' | 'failed';
+
+/**
+ * Configuration for OCR processing
+ */
+export interface OCRConfig {
+  /** Tesseract language(s) to use */
+  language?: SupportedLanguage | string;
+  /** Tesseract OCR Engine Mode (0-3) */
+  oem?: number;
+  /** Tesseract Page Segmentation Mode (0-13) */
+  psm?: number;
+  /** Enable image preprocessing */
+  preprocessing?: boolean;
+  /** Maximum image dimension for processing */
+  maxImageSize?: number;
+  /** Enable confidence scoring */
+  enableConfidence?: boolean;
+}
+
+/**
+ * Result from OCR processing
+ */
+export interface OCRResult {
+  /** Extracted text content */
+  text: string;
+  /** Language used for OCR */
+  language: string;
+  /** Processing status */
+  status: ProcessingStatus;
+  /** Confidence score (0-100) if available */
+  confidence?: number;
+  /** Word count in extracted text */
+  wordCount: number;
+  /** Processing metadata */
+  metadata: OCRMetadata;
+  /** Any errors that occurred */
+  error?: string;
+}
+
+/**
+ * Metadata about OCR processing
+ */
+export interface OCRMetadata {
+  /** Original filename */
+  filename: string;
+  /** File type detected */
+  fileType: FileType;
+  /** File size in bytes */
+  fileSize: number;
+  /** Processing time in milliseconds */
+  processingTime: number;
+  /** Whether preprocessing was applied */
+  preprocessed: boolean;
+  /** Timestamp of processing */
+  timestamp: string;
+}
+
+/**
+ * Options for image preprocessing
+ */
+export interface PreprocessingOptions {
+  /** Convert to grayscale */
+  grayscale?: boolean;
+  /** Enhance contrast */
+  normalize?: boolean;
+  /** Maximum dimension (width/height) */
+  maxSize?: number;
+  /** Image quality (1-100) */
+  quality?: number;
+  /** Apply sharpening filter */
+  sharpen?: boolean;
+  /** Rotation angle (degrees) */
+  rotate?: number;
+}
+
+/**
+ * Document processor interface
+ * Allows for different processors for different file types
+ */
+export interface DocumentProcessor {
+  /** Check if processor supports this file type */
+  supports(fileType: FileType): boolean;
+  /** Process the document */
+  process(filePath: string, config: OCRConfig): Promise<OCRResult>;
+}
+
+/**
+ * Swiss tax document specific types
+ */
+export interface SwissTaxDocument {
+  /** Type of tax document */
+  documentType: 'lohnausweis' | 'steuererklarung' | 'receipt' | 'invoice' | 'other';
+  /** Canton (ZH, BE, etc.) */
+  canton?: string;
+  /** Tax year */
+  year?: number;
+  /** Extracted key-value pairs */
+  extractedData?: Record<string, string | number>;
+}
+
+/**
+ * Enhanced OCR result with tax document analysis
+ */
+export interface TaxDocumentResult extends OCRResult {
+  /** Tax document specific data */
+  taxDocument?: SwissTaxDocument;
+  /** Detected amounts (CHF) */
+  amounts?: number[];
+  /** Detected dates */
+  dates?: string[];
+  /** Key fields identified */
+  fields?: Record<string, string>;
+}
