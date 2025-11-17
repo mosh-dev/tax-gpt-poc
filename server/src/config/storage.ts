@@ -10,8 +10,7 @@ export const STORAGE_ROOT = path.join(__dirname, '../../storage');
 
 // Storage subdirectories
 export const STORAGE_PATHS = {
-  uploads: path.join(STORAGE_ROOT, 'uploads'),
-  pdfs: path.join(STORAGE_ROOT, 'pdfs'),
+  files: path.join(STORAGE_ROOT, 'files'),  // All files (uploads and generated PDFs)
   temp: path.join(STORAGE_ROOT, 'temp'),
   tesseract: path.join(STORAGE_ROOT, 'tesseract-lang')
 } as const;
@@ -27,10 +26,9 @@ export function getStoragePath(type: keyof typeof STORAGE_PATHS): string {
  * Storage structure:
  *
  * storage/                      (Mount this as Docker volume)
- * ├── uploads/                  User uploaded files (images, PDFs)
- * ├── pdfs/                     Generated tax PDF documents
+ * ├── files/                    All files (uploads, generated PDFs, documents)
  * ├── temp/                     Temporary files (OCR processing, etc.)
- * └── tesseract-lang/          Tesseract language training data
+ * └── tesseract-lang/           Tesseract language training data
  *     ├── eng.traineddata       English OCR model
  *     └── deu.traineddata       German OCR model
  */

@@ -44,10 +44,15 @@ export const processDocumentsTool = createTool({
             quality: quality || 'balanced'
           });
 
-          // Mark as processed
-          markFileAsProcessed(fileId);
-
           if (ocrResult.status === 'completed') {
+            // Mark as processed and save OCR result to database
+            await markFileAsProcessed(fileId, {
+              text: ocrResult.text,
+              language: ocrResult.language,
+              confidence: ocrResult.confidence,
+              wordCount: ocrResult.wordCount,
+            });
+
             results.push({
               fileId,
               fileName: metadata.originalName,
@@ -61,6 +66,9 @@ export const processDocumentsTool = createTool({
 
             console.log(`[ProcessDocumentsTool] Success: ${metadata.originalName}: ${ocrResult.wordCount} words`);
           } else {
+            // Mark as processed even if failed
+            await markFileAsProcessed(fileId);
+
             results.push({
               fileId,
               fileName: metadata.originalName,

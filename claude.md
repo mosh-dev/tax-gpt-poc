@@ -6,7 +6,8 @@ AI-assisted tax submission helper for Canton Zurich, Switzerland using locally h
 ## Configuration
 - **Frontend**: Angular 20+ with SCSS
 - **Backend**: Node.js/Express with TypeScript
-- **AI Framework**: Mastra
+- **Database**: MongoDB (localhost:27017)
+- **AI Framework**: Mastra with MongoDB memory
 - **LLM**: LMStudio at `<YOUR_LMSTUDIO_URL>` (configured in `server/.env`)
 - **Model**: openai/gpt-oss-20b
 - **Tax Region**: Canton Zurich, Switzerland
@@ -14,12 +15,14 @@ AI-assisted tax submission helper for Canton Zurich, Switzerland using locally h
 
 ## Key Features
 1. Conversational UI with SSE streaming for real-time responses
-2. AI-powered tax tips and guidance based on user data
-3. Tool calling system with user confirmation modals
-4. Interactive Q&A flow customized to user's tax situation
-5. Tax summary PDF generation through AI tools
-6. Tax data modal for viewing and editing user information
-7. Document upload with OCR processing (images and PDFs) - STANDALONE (No system dependencies)
+2. Persistent conversation history with MongoDB
+3. AI-powered tax tips and guidance based on user data
+4. Tool calling system with user confirmation modals
+5. Interactive Q&A flow customized to user's tax situation
+6. Tax summary PDF generation through AI tools
+7. Tax data modal for viewing and editing user information
+8. Document upload with OCR processing (images and PDFs) - STANDALONE (No system dependencies)
+9. File management with database tracking and automatic cleanup
 
 ## OCR Document Processing (Standalone - No System Dependencies)
 
@@ -191,6 +194,146 @@ volumes:
 - [ ] Increase page limit beyond 10 pages
 - [ ] Parallel page processing for faster multi-page PDFs
 
+## MongoDB Integration
+
+### Overview
+The application uses MongoDB for persistent storage of conversations, messages, and file metadata. This allows users to resume conversations and provides proper file tracking for Docker deployments.
+
+### Setup Requirements
+
+**MongoDB Installation:**
+```bash
+# Make sure MongoDB is running on localhost:27017
+# Windows: Download from https://www.mongodb.com/try/download/community
+# Mac: brew install mongodb-community
+# Linux: sudo apt-get install mongodb
+
+# Start MongoDB service
+# Windows: MongoDB runs as a service by default
+# Mac: brew services start mongodb-community
+# Linux: sudo systemctl start mongod
+```
+
+**Environment Configuration:**
+```env
+# server/.env
+MONGODB_URI=mongodb://localhost:27017/tax-gpt
+```
+
+### Database Models
+
+**Conversation Model** (`server/src/models/conversation.model.ts`):
+- Stores conversation metadata (title, tax year, user info)
+- Tracks conversation creation and updates
+- Indexed for efficient querying
+
+**Message Model** (`server/src/models/message.model.ts`):
+- Stores individual messages (user, assistant, system)
+- Links to conversation via conversationId
+- Includes tool calls and metadata
+- Indexed by conversationId and timestamp
+
+**File Model** (`server/src/models/file.model.ts`):
+- Stores uploaded file metadata
+- Tracks OCR processing status and results
+- Links to conversations
+- Automatic TTL expiry (1 hour by default)
+- Includes file URLs for Docker deployment
+
+### Features
+
+**Conversation Management:**
+- Automatic conversation creation and tracking
+- Resume previous conversations
+- Search and filter conversations
+- Delete conversations with all messages
+
+**Agent Memory:**
+- Persistent conversation history
+- Context preservation across sessions
+- Automatic message saving during streaming
+- Tool call tracking
+
+**File Management:**
+- Database-backed file metadata
+- Proper URL generation for Docker
+- OCR result storage in database
+- Automatic cleanup of expired files
+
+### API Endpoints
+
+**Conversation Endpoints:**
+```
+GET  /api/chat/conversations          Get all conversations
+GET  /api/chat/conversations/:id      Get specific conversation with messages
+DELETE /api/chat/conversations/:id    Delete conversation
+POST /api/chat/stream-with-tools      Stream chat (creates/resumes conversation)
+```
+
+**File Endpoints:**
+```
+POST   /api/files/upload      Upload files with conversationId
+GET    /api/files/:id          Get file metadata
+DELETE /api/files/:id          Delete file
+```
+
+### MongoDB Memory Service
+
+**Key Methods** (`server/src/services/mongodb-memory.ts`):
+- `getOrCreateConversation()` - Create or retrieve conversation
+- `saveMessage()` - Save user/assistant messages
+- `getHistory()` - Load conversation history
+- `updateConversationMetadata()` - Update metadata
+- `getAllConversations()` - List conversations for sidebar
+- `searchConversations()` - Search by title or metadata
+- `deleteConversation()` - Remove conversation and messages
+
+### Graceful Degradation
+
+The application continues to work without MongoDB:
+- Chat works with in-memory history (no persistence)
+- File uploads work (no database tracking)
+- Logs warnings but doesn't crash
+- Database-dependent endpoints return 503 status
+
+### Docker Deployment
+
+**MongoDB Connection:**
+```dockerfile
+services:
+  mongodb:
+    image: mongo:latest
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+
+  tax-gpt:
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017/tax-gpt
+    depends_on:
+      - mongodb
+```
+
+### Implemented Features
+- [x] MongoDB connection with graceful degradation
+- [x] Conversation and Message models
+- [x] File model with TTL expiry
+- [x] MongoDB memory service for agent
+- [x] Chat routes with conversation persistence
+- [x] File routes with database tracking
+- [x] Conversation management endpoints
+- [x] Automatic message saving during streaming
+- [x] OCR result storage in database
+
+### Future Enhancements
+- [ ] User authentication and multi-user support
+- [ ] Conversation sharing and export
+- [ ] Advanced search with full-text indexing
+- [ ] Conversation tagging and categorization
+- [ ] Analytics and usage statistics
+- [ ] Backup and restore functionality
+
 ## Implementation Phases
 
 ### Phase 1: Project Setup ✓
@@ -246,6 +389,10 @@ volumes:
 - **@angular/material** - UI components
 - **rxjs** - Observable-based reactive programming
 
+### Database Dependencies
+- **mongoose** - MongoDB object modeling for Node.js
+- **mongodb** - MongoDB native driver (installed with mongoose)
+
 ### OCR Dependencies (Standalone - No System Requirements)
 - **tesseract.js** - Pure JavaScript Tesseract OCR (no system binaries)
 - **pdfjs-dist** - Mozilla's PDF.js for PDF rendering in Node.js
@@ -281,12 +428,19 @@ tax-gpt/
 │   ├── src/
 │   │   ├── index.ts          # Main server file
 │   │   ├── config/
+│   │   │   ├── database.ts          # MongoDB connection
 │   │   │   └── storage.ts           # Centralized storage configuration
+│   │   ├── models/
+│   │   │   ├── conversation.model.ts  # Conversation schema
+│   │   │   ├── message.model.ts       # Message schema
+│   │   │   ├── file.model.ts          # File schema
+│   │   │   └── index.ts               # Model exports
 │   │   ├── routes/
-│   │   │   ├── chat.ts              # SSE streaming chat route
+│   │   │   ├── chat.ts              # SSE streaming chat route + conversation endpoints
 │   │   │   └── files.ts             # File upload route (deferred processing)
 │   │   ├── services/
 │   │   │   ├── tax-agent.ts         # Mastra AI agent
+│   │   │   ├── mongodb-memory.ts    # MongoDB memory service for agent
 │   │   │   ├── pdf-generator.ts     # PDF generation service
 │   │   │   └── ocr/                 # OCR service module
 │   │   │       ├── types.ts         # Type definitions
@@ -302,8 +456,7 @@ tax-gpt/
 │   │   │   └── process-documents-tool.ts
 │   │   └── types/            # TypeScript types
 │   ├── storage/              # Centralized storage (Docker volume)
-│   │   ├── uploads/          # User uploaded files
-│   │   ├── pdfs/             # Generated tax PDFs
+│   │   ├── files/            # All files (uploads and generated PDFs)
 │   │   ├── temp/             # Temporary OCR files
 │   │   └── tesseract-lang/   # Tesseract language data
 │   ├── tsconfig.json
@@ -315,12 +468,21 @@ tax-gpt/
 ## API Endpoints
 
 ### Backend API (Implemented)
-- `POST /api/chat` - SSE streaming chat with AI agent (includes tool calling)
-- `GET /api/health` - Health check
-- `POST /api/files/upload` - Upload files and get unique IDs (no OCR yet, deferred processing)
-- `GET /api/files/:id` - Get file metadata by ID
+
+**Chat & Conversations:**
+- `POST /api/chat/stream-with-tools` - SSE streaming chat with AI agent (includes tool calling, creates/resumes conversation)
+- `GET /api/chat/conversations` - Get all conversations (for sidebar)
+- `GET /api/chat/conversations/:id` - Get specific conversation with messages
+- `DELETE /api/chat/conversations/:id` - Delete conversation and all messages
+
+**File Management:**
+- `POST /api/files/upload` - Upload files and get unique IDs (no OCR yet, deferred processing, optional conversationId)
+- `GET /api/files/:id` - Get file metadata by ID (includes OCR result if processed)
 - `DELETE /api/files/:id` - Delete uploaded file by ID
-- `GET /downloads/:filename` - Download generated tax PDF
+
+**Other:**
+- `GET /api/health` - Health check
+- `GET /files/:filename` - Download or view any file (uploads and generated PDFs)
 
 ### SSE Event Types
 - `connected` - Connection established
@@ -460,8 +622,7 @@ The Mastra agent will be configured with:
 - **Storage Paths**:
   ```typescript
   export const STORAGE_PATHS = {
-    uploads: path.join(STORAGE_ROOT, 'uploads'),       // User uploads
-    pdfs: path.join(STORAGE_ROOT, 'pdfs'),             // Generated PDFs
+    files: path.join(STORAGE_ROOT, 'files'),           // All files (uploads & generated PDFs)
     temp: path.join(STORAGE_ROOT, 'temp'),             // Temp OCR files
     tesseract: path.join(STORAGE_ROOT, 'tesseract-lang') // Language data
   } as const;
@@ -551,6 +712,13 @@ The application was simplified to focus on the core conversational interface wit
 
 ✅ **Fully Implemented:**
 - SSE streaming chat interface with real-time token streaming
+- **MongoDB Integration:**
+  - Persistent conversation history with automatic saving
+  - Agent memory backed by database
+  - File metadata tracking in database
+  - Conversation management (list, retrieve, delete)
+  - Graceful degradation when database unavailable
+  - OCR result storage in database
 - Tool calling with user confirmation modals
 - Tax data modal component for viewing/editing user information
 - PDF generation through Mastra tools (tax return summaries)
@@ -566,8 +734,13 @@ The application was simplified to focus on the core conversational interface wit
 ## Next Steps
 
 Potential future enhancements:
-1. Add more Mastra tools (tax calculations, form validation, deduction optimizer)
-2. Implement data persistence (database integration for user profiles)
+1. **UX Improvements** (based on ux-plan):
+   - Implement sidebar with conversation history
+   - Add button-based responses for structured input
+   - Create starter prompt cards on welcome screen
+   - Add search functionality for conversations
+   - Implement progress tracking sidebar with steps
+2. Add more Mastra tools (tax calculations, form validation, deduction optimizer)
 3. Expand multi-language support (add French and Italian for other Swiss cantons)
 4. Authentication and user accounts with session management
 5. Integration with Swiss e-government APIs (eTax submission)
@@ -575,3 +748,4 @@ Potential future enhancements:
 7. Structured data extraction from documents (amounts, dates, categories)
 8. Document classification (Lohnausweis, receipts, invoices, etc.)
 9. Swiss tax form auto-fill from extracted OCR data
+10. Address autocomplete with suggestions

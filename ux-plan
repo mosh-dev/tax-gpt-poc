@@ -1,5 +1,5 @@
-Right now there is no database setup to tract conversation history.
-- I have setup a mongodb instance running on localhost:27017 port. Lets use this to keep track of chat history so that i can resume from where i started.
-- Lets handle file upload properly with db tables. So that when the system will be deployed to docker it giver proper url for the file.
-- All generated pdf will be uploaded to storage as file. Lets use one directory as for files and one table to keep track of them.
-- Also i have added a tax-gpt-ux folder with ui and ux design for the agent lets follow the design and integrate those features one by one.
+- I have added a tax-gpt-ux folder with ui and ux design for the agent lets follow the design and integrate those features one by one.
+- Current setup does not handle deployment environment properly,
+lets configure the client and server with proper setup for everything each endpoint  mongodb connection openai endpoint apikey(I might use openai gpt model from my subscription)
+and other things which might be relevant.
+- Add Some basic guardrails for the agent to prevent prompt injection since now we are embedding document during chat.

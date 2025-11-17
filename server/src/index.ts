@@ -1,6 +1,7 @@
 import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import { connectDatabase } from './config/database';
 
 // Load environment variables
 dotenv.config();
@@ -40,11 +41,11 @@ import filesRoutes from './routes/files';
 app.use('/api/chat', chatRoutes);
 app.use('/api/files', filesRoutes);
 
-// Serve generated PDFs for download
+// Serve all files for download
 import * as path from 'path';
 import { getStoragePath } from './config/storage';
-const generatedPdfsPath = getStoragePath('pdfs');
-app.use('/downloads', express.static(generatedPdfsPath));
+const filesPath = getStoragePath('files');
+app.use('/files', express.static(filesPath));
 
 // 404 handler
 app.use((req: Request, res: Response) => {
@@ -68,14 +69,21 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
 });
 
 // Start server
-app.listen(PORT, () => {
-  console.log(`\n[Tax-GPT] API Server is running`);
-  console.log(`[Server] Port: ${PORT}`);
-  console.log(`[Server] Environment: ${process.env.NODE_ENV || 'development'}`);
-  console.log(`[Server] API: http://localhost:${PORT}/api`);
-  console.log(`[Server] Health: http://localhost:${PORT}/api/health`);
-  console.log(`[Server] Downloads: http://localhost:${PORT}/downloads`);
-  console.log(`[Server] LMStudio: ${process.env.LMSTUDIO_URL || 'http://192.168.0.107:1234'}\n`);
-});
+async function startServer() {
+  // Connect to MongoDB
+  await connectDatabase();
+
+  app.listen(PORT, () => {
+    console.log(`\n[Tax-GPT] API Server is running`);
+    console.log(`[Server] Port: ${PORT}`);
+    console.log(`[Server] Environment: ${process.env.NODE_ENV || 'development'}`);
+    console.log(`[Server] API: http://localhost:${PORT}/api`);
+    console.log(`[Server] Health: http://localhost:${PORT}/api/health`);
+    console.log(`[Server] Files: http://localhost:${PORT}/files`);
+    console.log(`[Server] LMStudio: ${process.env.LMSTUDIO_URL || 'http://192.168.0.107:1234'}\n`);
+  });
+}
+
+startServer();
 
 export default app;
