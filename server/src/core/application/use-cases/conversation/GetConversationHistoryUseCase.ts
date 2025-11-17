@@ -1,0 +1,44 @@
+/**
+ * Get Conversation History Use Case
+ * Retrieves conversation with all messages
+ */
+
+import { IConversationRepository, IMessageRepository } from '../../../domain/repositories';
+import { ConversationId } from '../../../domain/value-objects';
+import { ConversationHistoryDTO, MessageDTO } from '../../dtos';
+
+export class GetConversationHistoryUseCase {
+  constructor(
+    private conversationRepository: IConversationRepository,
+    private messageRepository: IMessageRepository
+  ) {}
+
+  async execute(conversationId: string, limit: number = 200): Promise<ConversationHistoryDTO> {
+    const convId = ConversationId.create(conversationId);
+
+    // Check if conversation exists
+    const conversation = await this.conversationRepository.findById(convId);
+    if (!conversation) {
+      throw new Error(`Conversation not found: ${conversationId}`);
+    }
+
+    // Get messages
+    const messages = await this.messageRepository.findByConversationId(convId, limit);
+    const messageCount = await this.messageRepository.countByConversationId(convId);
+
+    return {
+      conversationId,
+      messages: messages.map(msg => ({
+        messageId: msg.id.value,
+        conversationId: msg.conversationId.value,
+        role: msg.role.toString() as 'user' | 'assistant' | 'system',
+        content: msg.content,
+        fileIds: msg.fileIds.map(id => id.value),
+        toolCalls: msg.toolCalls,
+        metadata: msg.metadata,
+        createdAt: msg.createdAt,
+      })),
+      totalCount: messageCount,
+    };
+  }
+}

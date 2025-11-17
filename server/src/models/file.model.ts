@@ -17,9 +17,10 @@ export interface FileData {
   processed: boolean;
   ocrResult?: {
     text: string;
-    language: string;
+    language?: string; // Made optional to match OCR service output
     confidence?: number;
-    wordCount: number;
+    wordCount?: number; // Made optional to match OCR service output
+    [key: string]: any; // Allow additional metadata
   };
   metadata?: {
     [key: string]: any;
