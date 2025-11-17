@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { Send, Paperclip, Trash2, X } from 'lucide-react';
+import { Send, Paperclip, Trash2, X, Mic } from 'lucide-react';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import type { Message, Conversation, StreamEvent } from '../../types';
@@ -506,7 +506,7 @@ Try asking:
       </div>
 
       {/* Input */}
-      <div className="flex-shrink-0 border-t border-gray-200 px-6 py-4">
+      <div className="flex-shrink-0 border-gray-200 px-6 py-4 text-center">
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
             {error}
@@ -528,7 +528,7 @@ Try asking:
           </div>
         )}
 
-        <div className="flex gap-2">
+        <div className="relative w-1/2 mx-auto">
           <input
             ref={fileInputRef}
             type="file"
@@ -537,36 +537,50 @@ Try asking:
             multiple
             className="hidden"
           />
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isLoading || isUploading}
-            className="p-3 text-gray-500 hover:bg-gray-100 rounded-lg disabled:opacity-50"
-          >
-            <Paperclip className="w-5 h-5" />
-          </button>
 
           <textarea
             ref={textareaRef}
             value={currentMessage}
             onChange={(e) => setCurrentMessage(e.target.value)}
             onKeyDown={handleKeyPress}
-            placeholder="Ask me about your Swiss tax return or attach documents..."
+            placeholder="Type message"
             disabled={isLoading}
-            rows={3}
-            className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50 resize-none"
+            rows={1}
+            className="w-full px-4 py-3 pr-32 border border-gray-300 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50 resize-none"
           />
 
-          <button
-            onClick={sendMessage}
-            disabled={(!currentMessage.trim() && selectedFiles.length === 0) || isLoading || isUploading}
-            className="px-6 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isUploading ? (
-              <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
-            ) : (
-              <Send className="w-5 h-5" />
-            )}
-          </button>
+          {/* Icons inside input on the right */}
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+            <button
+              disabled={isLoading || isUploading}
+              className="p-2 text-gray-500 hover:bg-gray-100 rounded-full disabled:opacity-50 transition-colors flex items-center justify-center"
+              title="Voice input"
+            >
+              <Mic className="w-5 h-5" />
+            </button>
+
+            <button
+              onClick={() => fileInputRef.current?.click()}
+              disabled={isLoading || isUploading}
+              className="p-2 text-gray-500 hover:bg-gray-100 rounded-full disabled:opacity-50 transition-colors flex items-center justify-center"
+              title="Attach file"
+            >
+              <Paperclip className="w-5 h-5" />
+            </button>
+
+            <button
+              onClick={sendMessage}
+              disabled={(!currentMessage.trim() && selectedFiles.length === 0) || isLoading || isUploading}
+              className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+              title="Send"
+            >
+              {isUploading ? (
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-600"></div>
+              ) : (
+                <Send className="w-5 h-5" />
+              )}
+            </button>
+          </div>
         </div>
       </div>
 

@@ -12,9 +12,27 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [loading, setLoading] = useState(true);
 
+  // Load conversation ID from URL on mount
   useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const conversationId = params.get('conversation');
+    if (conversationId) {
+      setCurrentConversationId(conversationId);
+    }
     loadConversations();
   }, []);
+
+  // Update URL when conversation changes
+  useEffect(() => {
+    if (currentConversationId && currentConversationId !== 'new') {
+      const params = new URLSearchParams(window.location.search);
+      params.set('conversation', currentConversationId);
+      window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
+    } else if (!currentConversationId) {
+      // Clear query param when going back to welcome
+      window.history.replaceState({}, '', window.location.pathname);
+    }
+  }, [currentConversationId]);
 
   const loadConversations = async () => {
     try {
@@ -106,22 +124,24 @@ function App() {
         />
 
         <main className="flex-1 flex flex-col overflow-hidden">
-          {currentConversationId && currentConversationId !== 'new' ? (
-            <Chat
-              conversationId={currentConversationId}
-              onConversationCreated={handleConversationCreated}
-            />
-          ) : currentConversationId === 'new' ? (
-            <Chat
-              conversationId={null}
-              onConversationCreated={handleConversationCreated}
-            />
-          ) : (
-            <Welcome
-              onStartChat={handleStartChat}
-              onSendMessage={handleSendFromWelcome}
-            />
-          )}
+          <div className="max-w-[1200px] w-full mx-auto flex flex-col h-full">
+            {currentConversationId && currentConversationId !== 'new' ? (
+              <Chat
+                conversationId={currentConversationId}
+                onConversationCreated={handleConversationCreated}
+              />
+            ) : currentConversationId === 'new' ? (
+              <Chat
+                conversationId={null}
+                onConversationCreated={handleConversationCreated}
+              />
+            ) : (
+              <Welcome
+                onStartChat={handleStartChat}
+                onSendMessage={handleSendFromWelcome}
+              />
+            )}
+          </div>
         </main>
       </div>
     </ErrorBoundary>

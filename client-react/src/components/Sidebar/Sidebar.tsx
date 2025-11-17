@@ -47,14 +47,13 @@ export default function Sidebar({
         {/* Header */}
         <div className="p-4 border-b border-gray-200">
           <div className="flex items-center gap-3 mb-4">
-            <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center text-white">
-              <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
-                <rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" strokeWidth="2"/>
-                <path d="M3 8H21" stroke="currentColor" strokeWidth="2"/>
-                <path d="M7 12H11" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+            <div className="w-9 h-9 bg-primary-600 rounded-full flex items-center justify-center text-white">
+              <svg viewBox="0 0 24 24" fill="currentColor" className="w-5 h-5">
+                <path d="M9 2L7 4H4C2.9 4 2 4.9 2 6v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3l-2-2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5z"/>
+                <circle cx="12" cy="12" r="3" fill="white"/>
               </svg>
             </div>
-            <h1 className="text-xl font-bold text-gray-900">TaxGPT</h1>
+            <h1 className="text-base font-semibold text-gray-900">TaxGPT</h1>
           </div>
 
           {/* New Chat Button */}
