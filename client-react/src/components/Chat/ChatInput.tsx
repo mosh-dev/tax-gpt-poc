@@ -69,7 +69,7 @@ export default function ChatInput({ onSendMessage, disabled, isUploading }: Chat
   };
 
   return (
-    <div className="flex-shrink-0 border-t border-gray-200 px-6 py-4">
+    <div className="flex-shrink-0 px-6 py-4">
       {/* Selected Files */}
       {selectedFiles.length > 0 && (
         <div className="mb-4 flex flex-wrap gap-2">

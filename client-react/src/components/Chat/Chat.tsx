@@ -315,7 +315,7 @@ export default function Chat({ threadId }: ChatProps) {
       setIsUploading(false);
     }
 
-    // Build message
+    // Build message for agent (with fileIds)
     let messageContent = currentMessage || 'I have uploaded some documents. Please analyze them.';
     if (fileIds.length > 0) {
       messageContent += '\n\n[Uploaded Files]';
@@ -324,7 +324,19 @@ export default function Chat({ threadId }: ChatProps) {
       });
     }
 
-    const userDisplayMessage = currentMessage || `Uploaded ${selectedFiles.length} document(s)`;
+    // Build display message for user (with filenames)
+    let userDisplayMessage = currentMessage;
+    if (selectedFiles.length > 0) {
+      const fileNames = selectedFiles.map(f => f.name).join(', ');
+      if (userDisplayMessage) {
+        userDisplayMessage += `\n\n📎 Attached: ${fileNames}`;
+      } else {
+        userDisplayMessage = `📎 Uploaded: ${fileNames}`;
+      }
+    }
+    if (!userDisplayMessage) {
+      userDisplayMessage = `Uploaded ${selectedFiles.length} document(s)`;
+    }
 
     const userMessage: Message = {
       conversationId: threadId || '',

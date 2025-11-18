@@ -36,9 +36,22 @@ server/.env
 .DS_Store
 Thumbs.db
 
-# Uploads
+# Uploads and Storage
 /server/uploads
-*.pdf
+/server/storage/*
+!/server/storage/.gitkeep
+!/server/storage/uploads/
+/server/storage/uploads/*
+!/server/storage/uploads/.gitkeep
+!/server/storage/pdfs/
+/server/storage/pdfs/*
+!/server/storage/pdfs/.gitkeep
+!/server/storage/temp/
+/server/storage/temp/*
+!/server/storage/temp/.gitkeep
+!/server/storage/tesseract-lang/
+/server/storage/tesseract-lang/*
+!/server/storage/tesseract-lang/.gitkeep
 
 # Logs
 *.log
