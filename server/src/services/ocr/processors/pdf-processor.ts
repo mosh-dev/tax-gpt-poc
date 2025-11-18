@@ -14,9 +14,7 @@ import path from 'path';
 import fs from 'fs/promises';
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { createCanvas } from 'canvas';
-
-// Import pdf-parse correctly (CommonJS module)
-const pdfParse = require('pdf-parse');
+import { PDFParse } from 'pdf-parse';
 
 export class PDFProcessor extends BaseDocumentProcessor {
   protected supportedTypes: FileType[] = ['pdf'];
@@ -89,7 +87,8 @@ export class PDFProcessor extends BaseDocumentProcessor {
   private async extractTextFromDigitalPDF(filePath: string): Promise<string> {
     try {
       const dataBuffer = await fs.readFile(filePath);
-      const data = await pdfParse(dataBuffer);
+      const pdfParse =  new PDFParse({ data: dataBuffer });
+      const data = await pdfParse.getText();
       return data.text.trim();
     } catch (error) {
       console.error('[PDFProcessor] Digital extraction failed:', error);

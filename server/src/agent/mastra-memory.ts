@@ -49,7 +49,7 @@ export function createMastraMemory(config: MemoryConfig): Memory {
     });
 
     return new Memory({
-      storage: storage as any, // Type assertion for beta package compatibility
+      storage: storage,
       vector,
       embedder: fastembed,
       options: {
@@ -67,7 +67,7 @@ export function createMastraMemory(config: MemoryConfig): Memory {
   console.log('[Mastra Memory] To enable semantic recall, configure MONGODB_ATLAS_URI in .env');
 
   return new Memory({
-    storage: storage as any, // Type assertion for beta package compatibility
+    storage: storage,
   });
 }
 

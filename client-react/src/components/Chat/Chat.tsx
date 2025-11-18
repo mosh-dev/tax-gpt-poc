@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Send, Paperclip, X, Mic } from 'lucide-react';
+import { Send, Paperclip, X } from 'lucide-react';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import type { Message, StreamEvent } from '../../types';
@@ -520,14 +520,6 @@ export default function Chat({ threadId }: ChatProps) {
 
           {/* Icons inside input on the right */}
           <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
-            <button
-              disabled={isLoading || isUploading}
-              className="p-2 text-gray-500 hover:bg-gray-100 rounded-full disabled:opacity-50 transition-colors flex items-center justify-center"
-              title="Voice input"
-            >
-              <Mic className="w-5 h-5" />
-            </button>
-
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={isLoading || isUploading}
