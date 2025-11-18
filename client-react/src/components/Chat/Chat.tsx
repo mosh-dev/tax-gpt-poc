@@ -160,15 +160,15 @@ export default function Chat({ threadId }: ChatProps) {
   const cleanMessageContent = (content: string): string => {
     // Remove [Uploaded Files] section and [fileId: xxx] tags
     const cleaned = content
-      .replace(/\n\n\[Uploaded Files\]\n?/g, '')
-      .replace(/\[fileId: [^\]]+\]\n?/g, '')
-      .replace(/\[Uploaded Files\]/g, '')
+      // .replace(/\n\n\[Uploaded Files\]\n?/g, '')
+      // .replace(/\[fileId: [^\]]+\]\n?/g, '')
+      // .replace(/\[Uploaded Files\]/g, '')
       .trim();
 
     // If nothing left after cleaning, show a default message
-    if (!cleaned) {
-      return '📎 *Documents uploaded for analysis*';
-    }
+    // if (!cleaned) {
+    //   return '📎 *Documents uploaded for analysis*';
+    // }
 
     return cleaned;
   };
