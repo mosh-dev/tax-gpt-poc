@@ -58,8 +58,7 @@ RUN npm install --omit=dev
 COPY --from=builder /app/dist ./dist
 
 # Create centralized storage directories
-RUN mkdir -p storage/uploads \
-             storage/pdfs \
+RUN mkdir -p storage/files \
              storage/temp \
              storage/tesseract-lang
 

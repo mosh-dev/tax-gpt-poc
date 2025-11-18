@@ -1,0 +1,3 @@
+include:
+  - path: ./server/docker-compose.yml
+  - path: ./client-react/docker-compose.yml
