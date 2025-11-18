@@ -104,7 +104,8 @@ export class MongoDBMemory {
   async getHistory(conversationId: string, limit: number = 50): Promise<any[]> {
     const messages = await mongoRepository.getMessagesByConversationId(conversationId, limit);
 
-    return messages.map((msg) => ({
+    return messages.map((msg: any) => ({
+      id: msg._id?.toString() || msg.id,
       conversationId: msg.conversationId,
       role: msg.role,
       content: msg.content,

@@ -158,6 +158,49 @@ export class TaxAgent {
             throw error;
         }
     }
+
+    /**
+     * Delete a thread from Mastra memory
+     * This deletes all messages associated with the thread
+     */
+    async deleteThread(threadId: string, resourceId?: string): Promise<void> {
+        if (!this.memory) {
+            console.warn('[TaxAgent] Memory not configured, skipping thread deletion');
+            return;
+        }
+
+        const effectiveResourceId = resourceId || 'default-user';
+        console.log(`[TaxAgent] Deleting Mastra thread: ${threadId}, Resource: ${effectiveResourceId}`);
+
+        try {
+            // Delete directly from MongoDB collections using Mastra's actual schema
+            const mongoose = await import('mongoose');
+            const db = mongoose.connection.db;
+
+            if (db) {
+                const threadsCollection = db.collection('mastra_threads');
+                const messagesCollection = db.collection('mastra_messages');
+
+                // Mastra stores threadId in 'id' field for threads
+                // and 'thread_id' (snake_case) for messages
+                const threadResult = await threadsCollection.deleteMany({
+                    id: threadId,
+                    resourceId: effectiveResourceId,
+                });
+
+                const msgResult = await messagesCollection.deleteMany({
+                    thread_id: threadId,
+                });
+
+                console.log(`[TaxAgent] Deleted Mastra data - threads: ${threadResult.deletedCount}, messages: ${msgResult.deletedCount}`);
+            } else {
+                console.warn('[TaxAgent] MongoDB connection not available for Mastra cleanup');
+            }
+        } catch (error) {
+            console.error('[TaxAgent] Error deleting Mastra thread:', error);
+            // Don't throw - deletion failure shouldn't break the main flow
+        }
+    }
 }
 
 // Note: The singleton is exported but will be initialized with Memory in the entry point

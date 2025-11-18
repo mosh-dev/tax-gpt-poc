@@ -35,7 +35,6 @@ export default function Chat({ threadId }: ChatProps) {
   const [error, setError] = useState<string | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
-  const [initialMessageProcessed, setInitialMessageProcessed] = useState(false);
 
   // Tax data modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -45,6 +44,7 @@ export default function Chat({ threadId }: ChatProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const initialMessageSentRef = useRef<string | null>(null); // Track which threadId we sent initial message for
 
   // Configure marked with custom renderer for links
   useEffect(() => {
@@ -60,27 +60,28 @@ export default function Chat({ threadId }: ChatProps) {
     });
   }, []);
 
-  // Load conversation messages when threadId changes
-  useEffect(() => {
-    loadConversation();
-    // Reset initial message flag when threadId changes
-    setInitialMessageProcessed(false);
-  }, [threadId]);
-
-  // Handle initial message from Welcome page navigation
+  // Handle thread changes and initial messages
   useEffect(() => {
     const state = location.state as LocationState | null;
 
-    if (state?.initialMessage && !initialMessageProcessed && !isLoading) {
-      setInitialMessageProcessed(true);
+    // Check if this is a new conversation with initial message
+    // Use ref to prevent double execution in React StrictMode
+    if (state?.initialMessage && initialMessageSentRef.current !== threadId) {
+      initialMessageSentRef.current = threadId;
 
       // Clear the location state to prevent re-sending on refresh
       window.history.replaceState({}, document.title);
 
+      // Don't load conversation - we're about to send the first message
+      setMessages([]);
+
       // Send the initial message
       sendInitialMessage(state.initialMessage, state.fileIds || []);
+    } else if (!state?.initialMessage) {
+      // Normal conversation load (no initial message)
+      loadConversation();
     }
-  }, [location.state, initialMessageProcessed, isLoading]);
+  }, [threadId]);
 
   // Auto-scroll
   useEffect(() => {
@@ -150,9 +151,28 @@ export default function Chat({ threadId }: ChatProps) {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
+  // Clean up message content for display (remove fileId tags)
+  const cleanMessageContent = (content: string): string => {
+    // Remove [Uploaded Files] section and [fileId: xxx] tags
+    const cleaned = content
+      .replace(/\n\n\[Uploaded Files\]\n?/g, '')
+      .replace(/\[fileId: [^\]]+\]\n?/g, '')
+      .replace(/\[Uploaded Files\]/g, '')
+      .trim();
+
+    // If nothing left after cleaning, show a default message
+    if (!cleaned) {
+      return '📎 *Documents uploaded for analysis*';
+    }
+
+    return cleaned;
+  };
+
   const parseMarkdown = (content: string): string => {
     try {
-      const html = marked.parse(content) as string;
+      // Clean up content before parsing
+      const cleanedContent = cleanMessageContent(content);
+      const html = marked.parse(cleanedContent) as string;
       return DOMPurify.sanitize(html, {
         ADD_ATTR: ['target', 'rel'],
       });

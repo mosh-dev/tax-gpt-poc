@@ -83,7 +83,12 @@ router.get('/conversations/:id', async (req: Request, res: Response) => {
 router.delete('/conversations/:id', async (req: Request, res: Response) => {
     try {
         const conversationId = req.params.id;
+
+        // Delete from MongoDB (our messages)
         await mongoMemory.deleteConversation(conversationId);
+
+        // Also delete from Mastra memory (agent's thread history)
+        await taxAgent.deleteThread(conversationId);
 
         res.json({
             success: true,
