@@ -7,10 +7,10 @@ import type { Conversation, Message, FileMetadata, StreamEvent, WorkflowStatus }
 
 // Get API base URL from environment variable
 // Empty string is valid (for Docker with nginx proxy using relative URLs)
-const API_BASE_URL = import.meta.env.AGENT_SERVER_URL;
+const API_BASE_URL = import.meta.env.VITE_AGENT_SERVER_URL;
 
 if (API_BASE_URL === undefined) {
-  throw new Error('AGENT_SERVER_URL environment variable is required but not defined');
+  throw new Error('VITE_AGENT_SERVER_URL environment variable is required but not defined');
 }
 
 // Export for use in other components

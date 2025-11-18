@@ -14,7 +14,7 @@ RUN npm install
 # Copy source code and config files
 COPY . .
 
-# Build the React app (Vite will inject AGENT_SERVER_URL)
+# Build the React app (Vite will inject VITE_AGENT_SERVER_URL)
 RUN npm run build
 
 # Stage 2: Production - Nginx
