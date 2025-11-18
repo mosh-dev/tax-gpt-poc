@@ -20,25 +20,31 @@ export interface ConversationMessage {
 
 export class MongoDBMemory {
   /**
-   * Generate a title from the first message (2-3 words)
+   * Generate a title from the first message (2-4 words)
    */
   private generateTitleFromMessage(message: string): string {
-    // Remove special characters and extra whitespace
-    const cleaned = message
+    // Remove file tags and special patterns first
+    let cleaned = message
       .replace(/\[.*?\]/g, '') // Remove [fileId: xxx] tags
-      .replace(/\[Uploaded Files\]/g, '') // Remove uploaded files marker
-      .replace(/[^\w\s]/g, ' ') // Replace special chars with space
-      .trim()
-      .split(/\s+/) // Split by whitespace
+      .replace(/\[Uploaded Files\]/g, ''); // Remove uploaded files marker
+
+    // Remove punctuation but keep letters (including Unicode like ä, ö, ü), numbers, and spaces
+    cleaned = cleaned
+      .replace(/[^\p{L}\p{N}\s]/gu, ' ') // Unicode-aware: keep letters, numbers, spaces
+      .trim();
+
+    // Split by whitespace and filter empty strings
+    const words = cleaned
+      .split(/\s+/)
       .filter(word => word.length > 0);
 
-    if (cleaned.length === 0) {
+    if (words.length === 0) {
       return 'New Conversation';
     }
 
     // Take first 2-4 words depending on length
-    const wordCount = Math.min(Math.max(2, cleaned.length), 4);
-    const titleWords = cleaned.slice(0, wordCount);
+    const wordCount = Math.min(Math.max(2, words.length), 4);
+    const titleWords = words.slice(0, wordCount);
     let title = titleWords.join(' ');
 
     // Truncate if too long (max 50 chars)
@@ -58,6 +64,8 @@ export class MongoDBMemory {
     const title = firstMessage
       ? this.generateTitleFromMessage(firstMessage)
       : 'New Conversation';
+
+    console.log(`[MongoDBMemory] getOrCreateConversation: id=${conversationId}, generatedTitle="${title}"`);
 
     // Use findOrCreate to prevent race conditions
     const conversation = await mongoRepository.findOrCreateConversation({
@@ -82,10 +90,42 @@ export class MongoDBMemory {
     conversationId: string,
     message: ConversationMessage
   ): Promise<MessageData> {
+    // Replace [fileId: xxx] tags with actual filenames for display
+    let content = message.content;
+    const fileIdMatches = content.match(/\[fileId: ([^\]]+)\]/g);
+
+    if (fileIdMatches) {
+      const fileIds: string[] = [];
+      for (const match of fileIdMatches) {
+        const fileIdMatch = match.match(/\[fileId: ([^\]]+)\]/);
+        if (fileIdMatch) {
+          fileIds.push(fileIdMatch[1]);
+        }
+      }
+
+      // Look up filenames from database
+      const filenames: string[] = [];
+      for (const fileId of fileIds) {
+        const file = await mongoRepository.findFileById(fileId);
+        if (file) {
+          filenames.push(file.originalName);
+        }
+      }
+
+      // Replace the [Uploaded Files] section with friendly format
+      if (filenames.length > 0) {
+        content = content
+          .replace(/\n\n\[Uploaded Files\]\n?/g, '')
+          .replace(/\[fileId: [^\]]+\]\n?/g, '')
+          .trim();
+        content += `\n\n📎 Attached: ${filenames.join(', ')}`;
+      }
+    }
+
     const msg = await mongoRepository.createMessage({
       conversationId,
       role: message.role,
-      content: message.content,
+      content: content,
       fileIds: message.fileIds || [],
       toolCalls: message.toolCalls || [],
       metadata: {},

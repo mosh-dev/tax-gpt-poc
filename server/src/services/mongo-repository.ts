@@ -108,18 +108,32 @@ export class MongoRepository {
    */
   async findOrCreateConversation(data: CreateConversationData): Promise<ConversationData | null> {
     const conversationId = data.conversationId || randomUUID();
+    const title = data.title || 'New Tax Conversation';
+
+    // Check if title is a "real" title (not default)
+    const isRealTitle = title !== 'New Tax Conversation' && title !== 'New Conversation';
+
+    // Build update object
+    const updateOp: any = {
+      $setOnInsert: {
+        conversationId,
+        taxYear: data.taxYear,
+        userId: data.userId,
+        metadata: data.metadata || {},
+      },
+    };
+
+    // If we have a real title, always update it; otherwise only set on insert
+    if (isRealTitle) {
+      updateOp.$set = { title };
+    } else {
+      updateOp.$setOnInsert.title = title;
+    }
+
     const doc = await this.execute(
       async () => await Conversation.findOneAndUpdate(
         { conversationId },
-        {
-          $setOnInsert: {
-            conversationId,
-            title: data.title || 'New Tax Conversation',
-            taxYear: data.taxYear,
-            userId: data.userId,
-            metadata: data.metadata || {},
-          }
-        },
+        updateOp,
         {
           upsert: true,
           new: true,
@@ -127,6 +141,10 @@ export class MongoRepository {
         }
       ).lean()
     );
+
+    // Log for debugging
+    console.log(`[MongoRepository] findOrCreateConversation: id=${conversationId}, title="${title}", isRealTitle=${isRealTitle}`);
+
     return doc as ConversationData | null;
   }
 

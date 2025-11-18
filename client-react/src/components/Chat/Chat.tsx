@@ -11,6 +11,7 @@ import TaxDataModal from './TaxDataModal';
 interface LocationState {
   initialMessage?: string;
   fileIds?: string[];
+  fileNames?: string[]; // Original filenames for display
 }
 
 interface ChatProps {
@@ -45,6 +46,7 @@ export default function Chat({ threadId }: ChatProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const initialMessageSentRef = useRef<string | null>(null); // Track which threadId we sent initial message for
+  const loadedThreadIdRef = useRef<string | null>(null); // Track which threadId we've loaded
 
   // Configure marked with custom renderer for links
   useEffect(() => {
@@ -68,6 +70,7 @@ export default function Chat({ threadId }: ChatProps) {
     // Use ref to prevent double execution in React StrictMode
     if (state?.initialMessage && initialMessageSentRef.current !== threadId) {
       initialMessageSentRef.current = threadId;
+      loadedThreadIdRef.current = threadId; // Mark as loaded to prevent loadConversation
 
       // Clear the location state to prevent re-sending on refresh
       window.history.replaceState({}, document.title);
@@ -76,9 +79,11 @@ export default function Chat({ threadId }: ChatProps) {
       setMessages([]);
 
       // Send the initial message
-      sendInitialMessage(state.initialMessage, state.fileIds || []);
-    } else if (!state?.initialMessage) {
+      sendInitialMessage(state.initialMessage, state.fileIds || [], state.fileNames || []);
+    } else if (!state?.initialMessage && loadedThreadIdRef.current !== threadId) {
       // Normal conversation load (no initial message)
+      // Use ref to prevent double execution in React StrictMode
+      loadedThreadIdRef.current = threadId;
       loadConversation();
     }
   }, [threadId]);
@@ -225,8 +230,8 @@ export default function Chat({ threadId }: ChatProps) {
   };
 
   // Send initial message from Welcome page navigation
-  const sendInitialMessage = async (message: string, fileIds: string[]) => {
-    // Build message content
+  const sendInitialMessage = async (message: string, fileIds: string[], fileNames: string[]) => {
+    // Build message content for agent (with fileIds)
     let messageContent = message;
     if (fileIds.length > 0) {
       messageContent += '\n\n[Uploaded Files]';
@@ -235,10 +240,16 @@ export default function Chat({ threadId }: ChatProps) {
       });
     }
 
+    // Build display message for user (with filenames)
+    let userDisplayMessage = message;
+    if (fileNames.length > 0) {
+      userDisplayMessage += `\n\n📎 Attached: ${fileNames.join(', ')}`;
+    }
+
     const userMessage: Message = {
       conversationId: threadId,
       role: 'user',
-      content: message,
+      content: userDisplayMessage,
       createdAt: new Date().toISOString(),
     };
 
@@ -320,7 +331,8 @@ export default function Chat({ threadId }: ChatProps) {
   };
 
   const sendMessage = async () => {
-    if ((!currentMessage.trim() && selectedFiles.length === 0) || isLoading || isUploading) {
+    // Always require a message (files alone are not enough)
+    if (!currentMessage.trim() || isLoading || isUploading) {
       return;
     }
 
@@ -340,7 +352,7 @@ export default function Chat({ threadId }: ChatProps) {
     }
 
     // Build message for agent (with fileIds)
-    let messageContent = currentMessage || 'I have uploaded some documents. Please analyze them.';
+    let messageContent = currentMessage;
     if (fileIds.length > 0) {
       messageContent += '\n\n[Uploaded Files]';
       fileIds.forEach(id => {
@@ -352,14 +364,7 @@ export default function Chat({ threadId }: ChatProps) {
     let userDisplayMessage = currentMessage;
     if (selectedFiles.length > 0) {
       const fileNames = selectedFiles.map(f => f.name).join(', ');
-      if (userDisplayMessage) {
-        userDisplayMessage += `\n\n📎 Attached: ${fileNames}`;
-      } else {
-        userDisplayMessage = `📎 Uploaded: ${fileNames}`;
-      }
-    }
-    if (!userDisplayMessage) {
-      userDisplayMessage = `Uploaded ${selectedFiles.length} document(s)`;
+      userDisplayMessage += `\n\n📎 Attached: ${fileNames}`;
     }
 
     const userMessage: Message = {
@@ -592,9 +597,9 @@ export default function Chat({ threadId }: ChatProps) {
 
             <button
               onClick={sendMessage}
-              disabled={(!currentMessage.trim() && selectedFiles.length === 0) || isLoading || isUploading}
+              disabled={!currentMessage.trim() || isLoading || isUploading}
               className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
-              title="Send"
+              title={selectedFiles.length > 0 && !currentMessage.trim() ? "Please add a message to send with your files" : "Send"}
             >
               {isUploading ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-600"></div>

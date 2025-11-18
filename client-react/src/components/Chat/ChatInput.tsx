@@ -52,7 +52,8 @@ export default function ChatInput({ onSendMessage, disabled, isUploading }: Chat
   };
 
   const handleSubmit = () => {
-    if ((!message.trim() && selectedFiles.length === 0) || disabled || isUploading) {
+    // Always require a message (files alone are not enough)
+    if (!message.trim() || disabled || isUploading) {
       return;
     }
 
@@ -121,9 +122,9 @@ export default function ChatInput({ onSendMessage, disabled, isUploading }: Chat
 
           <button
             onClick={handleSubmit}
-            disabled={(!message.trim() && selectedFiles.length === 0) || disabled || isUploading}
+            disabled={!message.trim() || disabled || isUploading}
             className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
-            title="Send"
+            title={selectedFiles.length > 0 && !message.trim() ? "Please add a message to send with your files" : "Send"}
           >
             {isUploading ? (
               <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-600"></div>

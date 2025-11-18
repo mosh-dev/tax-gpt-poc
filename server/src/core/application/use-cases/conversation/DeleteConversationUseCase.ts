@@ -3,8 +3,8 @@
  * Deletes conversation and all associated messages
  */
 
-import { IConversationRepository, IMessageRepository } from '../../../domain/repositories';
-import { ConversationId } from '../../../domain/value-objects';
+import { IConversationRepository, IMessageRepository } from '../../../domain';
+import { ConversationId } from '../../../domain';
 
 export class DeleteConversationUseCase {
   constructor(

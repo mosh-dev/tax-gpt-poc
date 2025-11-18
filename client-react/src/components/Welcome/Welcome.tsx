@@ -37,7 +37,9 @@ export default function Welcome({ }: WelcomeProps) {
     try {
       // Upload files first if any
       let fileIds: string[] = [];
+      let fileNames: string[] = [];
       if (files.length > 0) {
+        fileNames = files.map(f => f.name);
         const uploadedFiles = await apiService.uploadFiles(files);
         fileIds = uploadedFiles.map(f => f.fileId);
       }
@@ -51,6 +53,7 @@ export default function Welcome({ }: WelcomeProps) {
         state: {
           initialMessage: message,
           fileIds,
+          fileNames,
         }
       });
 
