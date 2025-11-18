@@ -29,11 +29,14 @@ export class PDFGeneratorService implements IPDFGeneratorService {
     // Get file stats
     const stats = await fs.stat(filePath);
 
+    // Import env here
+    const { env } = require('../../../config/env');
+
     return {
       filePath,
       fileName,
       size: stats.size,
-      url: `http://localhost:3000/files/${fileName}`, // TODO: Make baseUrl configurable
+      url: `${env.BASE_URL}/files/${fileName}`,
     };
   }
 

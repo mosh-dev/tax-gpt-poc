@@ -44,10 +44,13 @@ export class FileService {
     conversationId?: string,
     baseUrl?: string
   ): Promise<UploadedFileInfo> {
+    // Import env here to avoid circular dependency
+    const { env } = require('../config/env');
+
     const fileId = path.basename(file.filename, path.extname(file.filename));
     const fileUrl = baseUrl
       ? `${baseUrl}/files/${file.filename}`
-      : `http://localhost:3000/files/${file.filename}`;
+      : `${env.BASE_URL}/files/${file.filename}`;
 
     // Calculate expiry (1 hour from now)
     const expiresAt = new Date(Date.now() + 60 * 60 * 1000);

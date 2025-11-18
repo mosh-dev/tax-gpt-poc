@@ -1,32 +1,30 @@
 # Dependencies
-/node_modules
-/client/node_modules
-/server/node_modules
+node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 /.pnp
 .pnp.js
 
 # Build outputs
 /tmp
 /out-tsc
-/dist
-/client/dist
-/server/dist
+dist/
 /.angular/cache
 
 # Environment
 .env
 .env.local
+.env.dev
 .env.*.local
-server/.env
 
 # IDE
 .vscode/*
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
+!.vscode/extensions.json
 .idea/
 *.swp
 *.swo
@@ -36,22 +34,21 @@ server/.env
 .DS_Store
 Thumbs.db
 
-# Uploads and Storage
-/server/uploads
+# Storage (server/storage/)
 /server/storage/*
 !/server/storage/.gitkeep
-!/server/storage/uploads/
-/server/storage/uploads/*
-!/server/storage/uploads/.gitkeep
-!/server/storage/pdfs/
-/server/storage/pdfs/*
-!/server/storage/pdfs/.gitkeep
+!/server/storage/files/
+/server/storage/files/*
+!/server/storage/files/.gitkeep
 !/server/storage/temp/
 /server/storage/temp/*
 !/server/storage/temp/.gitkeep
 !/server/storage/tesseract-lang/
 /server/storage/tesseract-lang/*
 !/server/storage/tesseract-lang/.gitkeep
+
+# Tesseract language data (in case it ends up elsewhere)
+*.traineddata
 
 # Logs
 *.log

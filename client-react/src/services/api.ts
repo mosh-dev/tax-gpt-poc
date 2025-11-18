@@ -5,8 +5,21 @@
 
 import type { Conversation, Message, FileMetadata, StreamEvent } from '../types';
 
+<<<<<<< HEAD
 // Using Vite proxy, so no need for base URL
 const API_BASE_URL = 'http://localhost:3000';
+=======
+// Get API base URL from environment variable
+// Empty string is valid (for Docker with nginx proxy using relative URLs)
+const API_BASE_URL = import.meta.env.AGENT_SERVER_URL;
+
+if (API_BASE_URL === undefined) {
+  throw new Error('AGENT_SERVER_URL environment variable is required but not defined');
+}
+
+// Export for use in other components
+export { API_BASE_URL };
+>>>>>>> 05f07d7639729281a19ab1f4ce4d1e9b8d9c2144
 
 class ApiService {
   /**

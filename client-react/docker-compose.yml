@@ -1,0 +1,22 @@
+services:
+  client:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - AGENT_SERVER_URL=${AGENT_SERVER_URL:-}
+    container_name: tax-gpt-client
+    env_file:
+      - .env.dev
+    ports:
+      - "80:80"
+    restart: unless-stopped
+    depends_on:
+      server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:80"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s

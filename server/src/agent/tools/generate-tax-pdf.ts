@@ -83,11 +83,14 @@ export const generateTaxPDFTool = createTool({
       // Calculate file size
       const fileSizeKB = (pdfBuffer.length / 1024).toFixed(2);
 
+      // Import env here to avoid issues with tool execution
+      const { env } = require('../../config/env');
+
       return {
         success: true,
         fileName: pdfFileName,
         filePath: filePath,
-        downloadUrl: `http://localhost:3000/files/${pdfFileName}`,
+        downloadUrl: `${env.BASE_URL}/files/${pdfFileName}`,
         message: `Successfully generated tax return PDF for ${taxData.personalInfo.firstName} ${taxData.personalInfo.lastName} (Tax Year ${taxData.taxYear}). File size: ${fileSizeKB} KB. The PDF includes income summary, deductions, wealth declaration, and taxable income calculation.`,
       };
     } catch (error: any) {

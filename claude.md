@@ -620,7 +620,7 @@ The Mastra agent will be configured with:
 - **Storage Paths**:
   ```typescript
   export const STORAGE_PATHS = {
-    files: path.join(STORAGE_ROOT, 'files'),           // All files (uploads & generated PDFs)
+    files: path.join(STORAGE_ROOT, 'files'),           // All files (files & generated PDFs)
     temp: path.join(STORAGE_ROOT, 'temp'),             // Temp OCR files
     tesseract: path.join(STORAGE_ROOT, 'tesseract-lang') // Language data
   } as const;

@@ -10,7 +10,7 @@ export const STORAGE_ROOT = path.join(__dirname, '../../storage');
 
 // Storage subdirectories
 export const STORAGE_PATHS = {
-  files: path.join(STORAGE_ROOT, 'files'),  // All files (uploads and generated PDFs)
+  files: path.join(STORAGE_ROOT, 'files'),  // All files (files and generated PDFs)
   temp: path.join(STORAGE_ROOT, 'temp'),
   tesseract: path.join(STORAGE_ROOT, 'tesseract-lang')
 } as const;

@@ -75,9 +75,12 @@ export function createMastraMemory(config: MemoryConfig): Memory {
  * Create memory configuration from environment variables
  */
 export function createMemoryConfigFromEnv(): MemoryConfig {
-  const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/tax-gpt';
-  const dbName = process.env.MONGODB_DB_NAME || 'tax-gpt';
-  const mongoAtlasUri = process.env.MONGODB_ATLAS_URI;
+  // Import env here to avoid circular dependency
+  const { env } = require('../config/env');
+
+  const mongoUri = env.MONGODB_URI;
+  const dbName = env.MONGODB_DB_NAME;
+  const mongoAtlasUri = env.MONGODB_ATLAS_URI;
   const enableVectorStorage = !!mongoAtlasUri;
 
   return {
