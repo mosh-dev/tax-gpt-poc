@@ -16,7 +16,8 @@ export class ChatController {
    */
   async streamChat(req: Request, res: Response): Promise<void> {
     try {
-      const { message, conversationHistory, conversationId } = req.body;
+      // Support both threadId and conversationId for backwards compatibility
+      const { message, conversationHistory, conversationId, threadId } = req.body;
 
       // Validate request
       if (!message || message.trim().length === 0) {
@@ -34,10 +35,10 @@ export class ChatController {
       res.setHeader('Connection', 'keep-alive');
       res.setHeader('X-Accel-Buffering', 'no');
 
-      // Prepare request DTO
+      // Prepare request DTO - prefer threadId over conversationId
       const requestDTO: StreamChatRequestDTO = {
         message,
-        conversationId,
+        conversationId: threadId || conversationId,
         conversationHistory,
       };
 

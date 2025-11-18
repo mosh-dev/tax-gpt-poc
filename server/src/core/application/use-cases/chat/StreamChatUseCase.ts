@@ -65,16 +65,18 @@ export class StreamChatUseCase {
     const toolCalls: any[] = [];
 
     try {
-      // Send initial event with conversationId
+      // Send initial event with threadId (for client compatibility)
       yield {
         type: 'connected',
+        threadId: conversationId.value,
         conversationId: conversationId.value,
         timestamp: new Date().toISOString(),
       };
 
       // Use conversationId as threadId for Mastra Memory
       const threadId = conversationId.value;
-      const resourceId = request.userId; // Optional user ID for memory scoping
+      // resourceId is required by Mastra Memory - use default if not provided
+      const resourceId = request.userId || 'default-user';
 
       for await (const event of this.aiAgentService.streamChat(
         request.message,
@@ -82,34 +84,91 @@ export class StreamChatUseCase {
         threadId,
         resourceId
       )) {
-        // Collect assistant response for saving
-        if (event.type === 'text-delta' || event.type === 'chunk') {
-          assistantContent += event.content || '';
-        }
+        // Map Mastra events to client-expected format
+        const eventType = event.type as string;
 
-        // Collect tool calls
-        if (event.type === 'tool-call' && event.toolName && event.toolCallId) {
-          toolCalls.push({
-            toolName: event.toolName,
-            toolCallId: event.toolCallId,
-            args: event.args,
-          });
-        }
+        switch (eventType) {
+          case 'text-delta': {
+            // Extract text content from various possible locations
+            const textContent = event.content || (event as any).payload?.text || (event as any).textDelta || '';
+            assistantContent += textContent;
 
-        // Update tool results
-        if (event.type === 'tool-result' && event.toolCallId) {
-          const toolCall = toolCalls.find(tc => tc.toolCallId === event.toolCallId);
-          if (toolCall) {
-            toolCall.result = event.result;
+            // Map to 'chunk' type for client
+            yield {
+              type: 'chunk',
+              content: textContent,
+              conversationId: conversationId.value,
+              timestamp: new Date().toISOString(),
+            };
+            break;
           }
-        }
 
-        // Forward event to client
-        yield {
-          ...event,
-          conversationId: conversationId.value,
-          timestamp: event.timestamp || new Date().toISOString(),
-        };
+          case 'tool-call': {
+            const toolName = event.toolName || (event as any).payload?.toolName;
+            const toolCallId = event.toolCallId || (event as any).payload?.toolCallId;
+            const args = event.args || (event as any).payload?.args;
+
+            if (toolName && toolCallId) {
+              toolCalls.push({ toolName, toolCallId, args });
+            }
+
+            yield {
+              type: 'tool-call',
+              toolName,
+              toolCallId,
+              args,
+              conversationId: conversationId.value,
+              timestamp: new Date().toISOString(),
+            };
+            break;
+          }
+
+          case 'tool-result': {
+            const toolCallId = event.toolCallId || (event as any).payload?.toolCallId;
+            const result = event.result || (event as any).payload?.result;
+            const toolName = event.toolName || (event as any).payload?.toolName;
+
+            if (toolCallId) {
+              const toolCall = toolCalls.find(tc => tc.toolCallId === toolCallId);
+              if (toolCall) {
+                toolCall.result = result;
+              }
+            }
+
+            yield {
+              type: 'tool-result',
+              toolCallId,
+              toolName,
+              result,
+              conversationId: conversationId.value,
+              timestamp: new Date().toISOString(),
+            };
+            break;
+          }
+
+          case 'finish': {
+            yield {
+              type: 'done',
+              conversationId: conversationId.value,
+              timestamp: new Date().toISOString(),
+            };
+            break;
+          }
+
+          case 'error': {
+            yield {
+              type: 'error',
+              error: event.error || (event as any).payload?.error || 'Unknown error',
+              conversationId: conversationId.value,
+              timestamp: new Date().toISOString(),
+            };
+            break;
+          }
+
+          // Ignore other event types (reasoning, step-start, etc.)
+          default:
+            break;
+        }
       }
 
       // 5. Save assistant message

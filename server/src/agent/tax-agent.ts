@@ -91,62 +91,43 @@ export class TaxAgent {
     /**
      * Stream a message to the tax agent with tool calling support
      * @param message User's message
-     * @param threadId Optional thread ID for conversation history (Mastra Memory)
+     * @param threadId Thread ID for conversation history (REQUIRED)
      * @param resourceId Optional resource ID (e.g., user ID) for memory scoping
-     * @param conversationHistory Optional legacy conversation history (if not using Mastra Memory)
      * @returns Async generator that yields stream events (text, tool-call, tool-result, finish)
      */
     async *streamChatWithTools(
         message: string,
-        threadId?: string,
-        resourceId?: string,
-        conversationHistory?: any[]
+        threadId: string,
+        resourceId?: string
     ): AsyncGenerator<any, void, unknown> {
         try {
-            // If Mastra Memory is configured, use it
-            if (this.memory && threadId) {
-                console.log(`[TaxAgent] Using Mastra Memory - Thread: ${threadId}, Resource: ${resourceId || 'none'}`);
+            if (!threadId) {
+                throw new Error('threadId is required for conversation management');
+            }
 
-                // Create memory options with resource (required by AgentMemoryOption)
-                const stream = await this.agent.stream(message, {
-                    memory: {
-                        thread: threadId,
-                        resource: resourceId || '', // Use empty string if no resource provided
-                    },
-                });
+            if (!this.memory) {
+                throw new Error('Mastra Memory is not configured. Cannot manage conversations without memory.');
+            }
 
-                for await (const event of stream.fullStream) {
-                    yield event as any;
-                }
-            } else {
-                // Fallback to legacy context-based approach
-                console.log('[TaxAgent] Using legacy conversation history (no Memory)');
+            // resourceId is required by Mastra Memory - use default if not provided
+            const effectiveResourceId = resourceId || 'default-user';
+            console.log(`[TaxAgent] Using Mastra Memory - Thread: ${threadId}, Resource: ${effectiveResourceId}`);
 
-                const context = conversationHistory
-                    ? this.formatConversationHistory(conversationHistory)
-                    : '';
+            // Create memory options with resource (required by AgentMemoryOption)
+            const stream = await this.agent.stream(message, {
+                memory: {
+                    thread: threadId,
+                    resource: effectiveResourceId,
+                },
+            });
 
-                const fullMessage = context ? `${context}\n\nUser: ${message}` : message;
-
-                const stream = await this.agent.stream(fullMessage);
-
-                for await (const event of stream.fullStream) {
-                    yield event as any;
-                }
+            for await (const event of stream.fullStream) {
+                yield event as any;
             }
         } catch (error: any) {
             console.error('Tax Agent Tool Streaming Error:', error);
             throw error;
         }
-    }
-
-    /**
-     * Format conversation history for context
-     */
-    private formatConversationHistory(history: any[]): string {
-        return history
-            .map((msg) => `${msg.role === 'user' ? 'User' : 'Assistant'}: ${msg.content}`)
-            .join('\n');
     }
 }
 

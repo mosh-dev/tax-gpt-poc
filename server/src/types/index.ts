@@ -12,7 +12,7 @@ export interface Message {
  */
 export interface ChatRequest {
   message: string;
-  conversationHistory?: Message[];
+  threadId?: string; // Optional for new conversations, will be generated on server
   userId?: string;
 }
 

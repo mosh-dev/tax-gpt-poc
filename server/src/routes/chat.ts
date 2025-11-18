@@ -106,7 +106,7 @@ router.delete('/conversations/:id', async (req: Request, res: Response) => {
 router.post('/stream-with-tools', async (req: Request, res: Response) => {
     console.log(req.body);
     try {
-        const {message, conversationHistory, conversationId: requestConversationId}: ChatRequest & { conversationId?: string } = req.body;
+        const {message, threadId: requestThreadId}: ChatRequest & { threadId?: string } = req.body;
 
         if (!message || message.trim().length === 0) {
             return res.status(400).json({
@@ -116,22 +116,24 @@ router.post('/stream-with-tools', async (req: Request, res: Response) => {
             });
         }
 
-        // Get or create conversation and load history
-        let conversationId = requestConversationId;
-        conversationId = await mongoMemory.getOrCreateConversation(requestConversationId);
+        // Get or create conversation (threadId) - pass message for title generation
+        const threadId = await mongoMemory.getOrCreateConversation(requestThreadId, message);
+
+        if (!threadId) {
+            return res.status(500).json({
+                success: false,
+                error: 'Failed to create or retrieve conversation thread',
+                timestamp: new Date().toISOString(),
+            });
+        }
+
+        console.log(`[Chat] Using threadId: ${threadId}${requestThreadId ? ' (existing)' : ' (new)'}`);
 
         // Save user message to database
-        await mongoMemory.saveMessage(conversationId, {
+        await mongoMemory.saveMessage(threadId, {
             role: 'user',
             content: message,
         });
-
-        // Load conversation history from database
-        const dbHistory = await mongoMemory.getHistory(conversationId);
-        console.log(`[Chat] Loaded ${dbHistory.length} messages from MongoDB for conversation ${conversationId}`);
-
-        // Use database history if available, otherwise fall back to request history
-        const effectiveHistory = dbHistory.length > 0 ? dbHistory : (conversationHistory || []);
 
         // Set SSE headers
         res.setHeader('Content-Type', 'text/event-stream');
@@ -139,21 +141,19 @@ router.post('/stream-with-tools', async (req: Request, res: Response) => {
         res.setHeader('Connection', 'keep-alive');
         res.setHeader('X-Accel-Buffering', 'no');
 
-        // Send initial connection message with conversationId
+        // Send initial connection message with threadId
         res.write(`data: ${JSON.stringify({
             type: 'connected',
-            conversationId: conversationId,
+            threadId: threadId,
             timestamp: new Date().toISOString()
         })}\n\n`);
 
         try {
-            // Get the full stream with tool support using effective history
-            // Updated to support Mastra Memory: threadId, resourceId, conversationHistory
+            // Stream with Mastra Memory - threadId is REQUIRED
             const fullStream = taxAgent.streamChatWithTools(
                 message,
-                conversationId, // Use conversationId as threadId
-                undefined, // resourceId (not used in legacy route)
-                effectiveHistory // conversation history for fallback
+                threadId, // threadId is mandatory
+                undefined // resourceId (optional, for user scoping)
             );
 
             // Collect assistant response for saving to database
@@ -327,13 +327,13 @@ router.post('/stream-with-tools', async (req: Request, res: Response) => {
             console.log('Stream completed successfully');
 
             // Save assistant response to database
-            if (conversationId && assistantResponse.trim()) {
-                await mongoMemory.saveMessage(conversationId, {
+            if (threadId && assistantResponse.trim()) {
+                await mongoMemory.saveMessage(threadId, {
                     role: 'assistant',
                     content: assistantResponse,
                     toolCalls: toolCalls.length > 0 ? toolCalls : undefined,
                 });
-                console.log(`[Chat] Saved assistant response to MongoDB for conversation ${conversationId}`);
+                console.log(`[Chat] Saved assistant response to MongoDB for thread ${threadId}`);
             }
 
             res.end();

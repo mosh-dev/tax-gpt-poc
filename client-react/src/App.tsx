@@ -1,102 +1,41 @@
 import { useState, useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import Sidebar from './components/Sidebar/Sidebar';
 import Chat from './components/Chat/Chat';
 import Welcome from './components/Welcome/Welcome';
 import ErrorBoundary from './components/ErrorBoundary';
-import type { Conversation } from './types';
-import { apiService } from './services/api';
+import { useConversations } from './contexts/ConversationContext';
 
 function App() {
-  const [conversations, setConversations] = useState<Conversation[]>([]);
-  const [currentConversationId, setCurrentConversationId] = useState<string | null>(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const { conversations, loading, deleteConversation, setCurrentThreadId } = useConversations();
+  const [sidebarOpen, setSidebarOpen] = useState(true); // Keep sidebar open by default
 
-  // Load conversation ID from URL on mount
+  const threadId = searchParams.get('threadId');
+
+  // Update context when URL changes
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const conversationId = params.get('conversation');
-    if (conversationId) {
-      setCurrentConversationId(conversationId);
-    }
-    loadConversations();
-  }, []);
-
-  // Update URL when conversation changes
-  useEffect(() => {
-    if (currentConversationId && currentConversationId !== 'new') {
-      const params = new URLSearchParams(window.location.search);
-      params.set('conversation', currentConversationId);
-      window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
-    } else if (!currentConversationId) {
-      // Clear query param when going back to welcome
-      window.history.replaceState({}, '', window.location.pathname);
-    }
-  }, [currentConversationId]);
-
-  const loadConversations = async () => {
-    try {
-      setLoading(true);
-      const data = await apiService.getConversations();
-      setConversations(Array.isArray(data) ? data : []);
-    } catch (error) {
-      console.error('Failed to load conversations:', error);
-      setConversations([]);
-    } finally {
-      setLoading(false);
-    }
-  };
+    setCurrentThreadId(threadId);
+  }, [threadId, setCurrentThreadId]);
 
   const handleNewChat = () => {
-    setCurrentConversationId(null);
+    navigate('/');
   };
 
   const handleSelectConversation = (conversationId: string) => {
-    setCurrentConversationId(conversationId);
+    navigate(`/?threadId=${conversationId}`);
   };
 
   const handleDeleteConversation = async (conversationId: string) => {
     try {
-      await apiService.deleteConversation(conversationId);
-      setConversations(prev => prev.filter(c => c.conversationId !== conversationId));
-      if (currentConversationId === conversationId) {
-        setCurrentConversationId(null);
+      await deleteConversation(conversationId);
+      if (threadId === conversationId) {
+        navigate('/');
       }
     } catch (error) {
       console.error('Failed to delete conversation:', error);
     }
-  };
-
-  const handleConversationCreated = (conversation: Conversation) => {
-    setConversations(prev => [conversation, ...prev]);
-    setCurrentConversationId(conversation.conversationId);
-  };
-
-  const handleStartChat = (message: string) => {
-    // Create a new conversation with the initial message
-    // The Chat component will handle the actual creation
-    setCurrentConversationId('new');
-    // Store the initial message temporarily
-    sessionStorage.setItem('initialMessage', message);
-  };
-
-  const handleSendFromWelcome = async (message: string, files: File[]) => {
-    // Store the initial message
-    sessionStorage.setItem('initialMessage', message);
-
-    // Upload files if any and store their IDs
-    if (files.length > 0) {
-      try {
-        const uploadedFiles = await apiService.uploadFiles(files);
-        const fileIds = uploadedFiles.map(f => f.fileId).join(',');
-        sessionStorage.setItem('initialFileIds', fileIds);
-      } catch (error) {
-        console.error('Failed to upload files:', error);
-      }
-    }
-
-    // Transition to chat
-    setCurrentConversationId('new');
   };
 
   return (
@@ -104,7 +43,7 @@ function App() {
       <div className="flex h-screen bg-gray-50 overflow-hidden">
         <Sidebar
           conversations={conversations}
-          currentConversationId={currentConversationId}
+          currentConversationId={threadId}
           onNewChat={handleNewChat}
           onSelectConversation={handleSelectConversation}
           onDeleteConversation={handleDeleteConversation}
@@ -131,20 +70,12 @@ function App() {
           )}
 
           <div className="max-w-[1200px] w-full mx-auto flex flex-col h-full">
-            {currentConversationId && currentConversationId !== 'new' ? (
-              <Chat
-                conversationId={currentConversationId}
-                onConversationCreated={handleConversationCreated}
-              />
-            ) : currentConversationId === 'new' ? (
-              <Chat
-                conversationId={null}
-                onConversationCreated={handleConversationCreated}
-              />
+            {threadId ? (
+              <Chat key={threadId} threadId={threadId} />
             ) : (
               <Welcome
-                onStartChat={handleStartChat}
-                onSendMessage={handleSendFromWelcome}
+                onStartChat={() => {}}
+                onSendMessage={() => {}}
               />
             )}
           </div>

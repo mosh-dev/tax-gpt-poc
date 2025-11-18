@@ -46,7 +46,7 @@ export default class ErrorBoundary extends Component<Props, State> {
             </p>
             <button
               onClick={this.handleReset}
-              className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors"
             >
               <RefreshCw className="w-5 h-5" />
               Reload Page

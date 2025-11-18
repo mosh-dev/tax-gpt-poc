@@ -84,4 +84,5 @@ export interface StreamEvent {
   timestamp: string;
   eventType?: string;
   raw?: any;
+  threadId?: string; // For 'connected' event
 }

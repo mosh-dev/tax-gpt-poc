@@ -20,9 +20,33 @@ export interface ConversationMessage {
 
 export class MongoDBMemory {
   /**
+   * Generate a title from the first message (2-3 words)
+   */
+  private generateTitleFromMessage(message: string): string {
+    // Remove special characters and extra whitespace
+    const cleaned = message
+      .replace(/\[.*?\]/g, '') // Remove [fileId: xxx] tags
+      .replace(/[^\w\s]/g, ' ') // Replace special chars with space
+      .trim()
+      .split(/\s+/) // Split by whitespace
+      .filter(word => word.length > 0);
+
+    if (cleaned.length === 0) {
+      return 'New Conversation';
+    }
+
+    // Take first 3 words or fewer
+    const titleWords = cleaned.slice(0, 3);
+    const title = titleWords.join(' ');
+
+    // Capitalize first letter
+    return title.charAt(0).toUpperCase() + title.slice(1);
+  }
+
+  /**
    * Create or get existing conversation
    */
-  async getOrCreateConversation(conversationId?: string): Promise<string> {
+  async getOrCreateConversation(conversationId?: string, firstMessage?: string): Promise<string> {
     if (conversationId) {
       const existing = await mongoRepository.findConversationById(conversationId);
       if (existing) {
@@ -30,10 +54,15 @@ export class MongoDBMemory {
       }
     }
 
+    // Generate title from first message or use default
+    const title = firstMessage
+      ? this.generateTitleFromMessage(firstMessage)
+      : 'New Conversation';
+
     // Create new conversation
     const conversation = await mongoRepository.createConversation({
       conversationId,
-      title: 'New Tax Conversation',
+      title,
       metadata: {},
     });
 
@@ -72,14 +101,16 @@ export class MongoDBMemory {
   /**
    * Get conversation history
    */
-  async getHistory(conversationId: string, limit: number = 50): Promise<ConversationMessage[]> {
+  async getHistory(conversationId: string, limit: number = 50): Promise<any[]> {
     const messages = await mongoRepository.getMessagesByConversationId(conversationId, limit);
 
     return messages.map((msg) => ({
+      conversationId: msg.conversationId,
       role: msg.role,
       content: msg.content,
       fileIds: msg.fileIds,
       toolCalls: msg.toolCalls,
+      createdAt: msg.createdAt?.toISOString() || new Date().toISOString(),
     }));
   }
 

@@ -58,9 +58,6 @@ export function createMastraMemory(config: MemoryConfig): Memory {
           topK: 3, // Retrieve top 3 semantically similar messages
           messageRange: 2, // Include 2 neighboring messages around each match
         },
-        threads: {
-          generateTitle: true, // Auto-generate conversation titles
-        },
       },
     });
   }
@@ -71,11 +68,6 @@ export function createMastraMemory(config: MemoryConfig): Memory {
 
   return new Memory({
     storage: storage as any, // Type assertion for beta package compatibility
-    options: {
-      threads: {
-        generateTitle: true,
-      },
-    },
   });
 }
 

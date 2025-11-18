@@ -19,20 +19,16 @@ export class MastraAIAgentService implements IAIAgentService {
     threadId?: string,
     resourceId?: string
   ): AsyncIterable<StreamEvent> {
-    // Convert application ChatMessage to format expected by TaxAgent (for legacy mode)
-    const historyForAgent = conversationHistory.map(msg => ({
-      role: msg.role,
-      content: msg.content,
-      fileIds: msg.fileIds,
-      toolCalls: msg.toolCalls,
-    }));
+    // threadId is now REQUIRED by TaxAgent
+    if (!threadId) {
+      throw new Error('threadId is required for conversation management');
+    }
 
-    // Stream from tax agent (supports both Memory and legacy modes)
+    // Stream from tax agent (threadId is mandatory)
     for await (const event of this.taxAgent.streamChatWithTools(
       message,
       threadId,
-      resourceId,
-      historyForAgent
+      resourceId
     )) {
       // Map event to StreamEvent format
       const mappedEvent: StreamEvent = {

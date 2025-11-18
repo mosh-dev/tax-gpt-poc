@@ -1,14 +1,20 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Send, Paperclip, X, Mic } from 'lucide-react';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
-import type { Message, Conversation, StreamEvent } from '../../types';
+import type { Message, StreamEvent } from '../../types';
 import { apiService } from '../../services/api';
+import { useConversations } from '../../contexts/ConversationContext';
 import TaxDataModal from './TaxDataModal';
 
+interface LocationState {
+  initialMessage?: string;
+  fileIds?: string[];
+}
+
 interface ChatProps {
-  conversationId: string | null;
-  onConversationCreated?: (conversation: Conversation) => void;
+  threadId: string;
 }
 
 interface SwissTaxData {
@@ -19,13 +25,17 @@ interface SwissTaxData {
   [key: string]: any;
 }
 
-export default function Chat({ conversationId }: ChatProps) {
+export default function Chat({ threadId }: ChatProps) {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const { loadConversations } = useConversations();
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentMessage, setCurrentMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [initialMessageProcessed, setInitialMessageProcessed] = useState(false);
 
   // Tax data modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -45,60 +55,42 @@ export default function Chat({ conversationId }: ChatProps) {
     });
   }, []);
 
-  // Load conversation messages
+  // Load conversation messages when threadId changes
   useEffect(() => {
-    if (conversationId) {
-      loadConversation();
-    } else {
-      initializeChat();
+    loadConversation();
+    // Reset initial message flag when threadId changes
+    setInitialMessageProcessed(false);
+  }, [threadId]);
 
-      // Check for initial message from Welcome screen
-      const initialMessage = sessionStorage.getItem('initialMessage');
-      const initialFileIds = sessionStorage.getItem('initialFileIds');
+  // Handle initial message from Welcome page navigation
+  useEffect(() => {
+    const state = location.state as LocationState | null;
 
-      if (initialMessage) {
-        sessionStorage.removeItem('initialMessage');
+    if (state?.initialMessage && !initialMessageProcessed && !isLoading) {
+      setInitialMessageProcessed(true);
 
-        // If there are file IDs, auto-send the message with files
-        if (initialFileIds) {
-          sessionStorage.removeItem('initialFileIds');
-          // Auto-send message with file IDs
-          sendMessageWithFileIds(initialMessage, initialFileIds.split(','));
-        } else {
-          // Auto-send the message without files
-          sendMessageWithFileIds(initialMessage, []);
-        }
-      }
+      // Clear the location state to prevent re-sending on refresh
+      window.history.replaceState({}, document.title);
+
+      // Send the initial message
+      sendInitialMessage(state.initialMessage, state.fileIds || []);
     }
-  }, [conversationId]);
+  }, [location.state, initialMessageProcessed, isLoading]);
 
   // Auto-scroll
   useEffect(() => {
     scrollToBottom();
   }, [messages, isLoading]);
 
-  const initializeChat = () => {
-    setMessages([
-      {
-        conversationId: '',
-        role: 'assistant',
-        content: `Hallo! I'm your Swiss tax assistant for Canton Zurich. I can help you with your tax return by loading your tax data, calculating deductions, and generating PDF documents. Just ask me naturally!
-
-Try asking:
-- Get my single tax data
-- Load married tax scenario
-- Calculate my deductions
-- Generate a PDF of my tax return`,
-        createdAt: new Date().toISOString(),
-      },
-    ]);
-  };
-
   const loadConversation = async () => {
-    if (!conversationId) return;
+    if (!threadId) {
+      // New conversation - don't load anything
+      setMessages([]);
+      return;
+    }
 
     try {
-      const data = await apiService.getConversation(conversationId);
+      const data = await apiService.getConversation(threadId);
       setMessages(data.messages);
     } catch (err) {
       console.error('Failed to load conversation:', err);
@@ -203,9 +195,10 @@ Try asking:
     }
   };
 
-  const sendMessageWithFileIds = async (message: string, fileIds: string[]) => {
-    // Build message with file IDs
-    let messageContent = message || 'I have uploaded some documents. Please analyze them.';
+  // Send initial message from Welcome page navigation
+  const sendInitialMessage = async (message: string, fileIds: string[]) => {
+    // Build message content
+    let messageContent = message;
     if (fileIds.length > 0) {
       messageContent += '\n\n[Uploaded Files]';
       fileIds.forEach(id => {
@@ -213,21 +206,19 @@ Try asking:
       });
     }
 
-    const userDisplayMessage = message || `Uploaded ${fileIds.length} document(s)`;
-
     const userMessage: Message = {
-      conversationId: conversationId || '',
+      conversationId: threadId,
       role: 'user',
-      content: userDisplayMessage,
+      content: message,
       createdAt: new Date().toISOString(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    setMessages([userMessage]);
     setIsLoading(true);
     setError(null);
 
     const assistantMessage: Message = {
-      conversationId: conversationId || '',
+      conversationId: threadId,
       role: 'assistant',
       content: '',
       createdAt: new Date().toISOString(),
@@ -238,9 +229,12 @@ Try asking:
     try {
       let firstChunk = false;
 
-      for await (const event of apiService.streamChat(messageContent, conversationId || undefined, fileIds)) {
+      for await (const event of apiService.streamChat(messageContent, threadId, fileIds)) {
         switch (event.type) {
           case 'connected':
+            console.log('[Chat] Connected with threadId:', event.threadId);
+            // Refresh sidebar to show new conversation
+            loadConversations();
             break;
 
           case 'chunk':
@@ -296,7 +290,7 @@ Try asking:
     if (selectedFiles.length > 0) {
       setIsUploading(true);
       try {
-        const uploadedFiles = await apiService.uploadFiles(selectedFiles, conversationId || undefined);
+        const uploadedFiles = await apiService.uploadFiles(selectedFiles, threadId || undefined);
         fileIds = uploadedFiles.map(f => f.fileId);
       } catch (err: any) {
         setError(`Upload failed: ${err.message}`);
@@ -318,7 +312,7 @@ Try asking:
     const userDisplayMessage = currentMessage || `Uploaded ${selectedFiles.length} document(s)`;
 
     const userMessage: Message = {
-      conversationId: conversationId || '',
+      conversationId: threadId || '',
       role: 'user',
       content: userDisplayMessage,
       createdAt: new Date().toISOString(),
@@ -331,7 +325,7 @@ Try asking:
     setError(null);
 
     const assistantMessage: Message = {
-      conversationId: conversationId || '',
+      conversationId: threadId || '',
       role: 'assistant',
       content: '',
       createdAt: new Date().toISOString(),
@@ -341,10 +335,20 @@ Try asking:
 
     try {
       let firstChunk = false;
+      let receivedThreadId: string | null = null;
 
-      for await (const event of apiService.streamChat(messageContent, conversationId || undefined, fileIds)) {
+      for await (const event of apiService.streamChat(messageContent, threadId, fileIds)) {
         switch (event.type) {
           case 'connected':
+            // Capture threadId from server (for new conversations)
+            if (event.threadId && !threadId) {
+              receivedThreadId = event.threadId;
+              console.log('[Chat] Received new threadId from server:', receivedThreadId);
+              // Navigate to URL with threadId
+              navigate(`/?threadId=${receivedThreadId}`, { replace: true });
+              // Refresh sidebar to show new conversation
+              loadConversations();
+            }
             break;
 
           case 'chunk':
@@ -420,7 +424,7 @@ Try asking:
             <div
               className={`max-w-2xl ${
                 message.role === 'user'
-                  ? 'bg-primary-600 text-white rounded-2xl rounded-br-none'
+                  ? 'bg-primary-600 rounded-2xl rounded-br-none'
                   : 'bg-gray-100 text-gray-900 rounded-2xl rounded-tl-none'
               } px-6 py-4`}
             >
@@ -437,7 +441,7 @@ Try asking:
             </div>
 
             {message.role === 'user' && (
-              <div className="w-10 h-10 bg-gray-700 rounded-lg flex-shrink-0 flex items-center justify-center text-white">
+              <div className="w-10 h-10 bg-gray-700 rounded-lg flex-shrink-0 flex items-center justify-center">
                 <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
                   <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2"/>
                   <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>

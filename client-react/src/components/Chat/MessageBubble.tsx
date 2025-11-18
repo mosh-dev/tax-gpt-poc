@@ -58,7 +58,7 @@ export default function MessageBubble({ message, onButtonClick }: MessageBubbleP
         <div
           className={`${
             message.role === 'user'
-              ? 'bg-primary-600 text-white rounded-2xl rounded-br-md'
+              ? 'bg-primary-600 rounded-2xl rounded-br-md'
               : 'bg-gray-100 text-gray-900 rounded-2xl rounded-tl-md'
           } px-6 py-4`}
         >
@@ -116,7 +116,7 @@ export default function MessageBubble({ message, onButtonClick }: MessageBubbleP
 
       {/* Avatar - User */}
       {message.role === 'user' && (
-        <div className="w-10 h-10 bg-gray-700 rounded-full flex-shrink-0 flex items-center justify-center text-white">
+        <div className="w-10 h-10 bg-gray-700 rounded-full flex-shrink-0 flex items-center justify-center ">
           <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
             <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2" />
             <path

@@ -9,7 +9,7 @@ export default function ChatHeader({ onClearChat }: ChatHeaderProps) {
     <div className="flex-shrink-0 border-b border-gray-200 px-6 py-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center text-white">
+          <div className="w-10 h-10 bg-primary-600 rounded-lg flex items-center justify-center">
             <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
               <rect
                 x="4"

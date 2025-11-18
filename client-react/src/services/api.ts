@@ -17,21 +17,26 @@ class ApiService {
     if (!response.ok) {
       throw new Error('Failed to fetch conversations');
     }
-    return response.json();
+    const data = await response.json();
+    return data.conversations || [];
   }
 
   /**
    * Get a specific conversation with messages
    */
   async getConversation(conversationId: string): Promise<{
-    conversation: Conversation;
+    conversationId: string;
     messages: Message[];
   }> {
     const response = await fetch(`${API_BASE_URL}/api/chat/conversations/${conversationId}`);
     if (!response.ok) {
       throw new Error('Failed to fetch conversation');
     }
-    return response.json();
+    const data = await response.json();
+    return {
+      conversationId: data.conversationId,
+      messages: data.messages || []
+    };
   }
 
   /**
@@ -49,10 +54,13 @@ class ApiService {
   /**
    * Stream chat with tools (SSE)
    * Returns an async generator for streaming events
+   * @param message User's message
+   * @param threadId Optional thread ID for existing conversations (new threadId generated on server if not provided)
+   * @param fileIds Optional file IDs for uploaded documents
    */
   async* streamChat(
     message: string,
-    conversationId?: string,
+    threadId?: string,
     fileIds?: string[]
   ): AsyncGenerator<StreamEvent> {
     const response = await fetch(`${API_BASE_URL}/api/chat/stream-with-tools`, {
@@ -62,7 +70,7 @@ class ApiService {
       },
       body: JSON.stringify({
         message,
-        conversationId,
+        threadId,
         fileIds,
       }),
     });
@@ -83,7 +91,23 @@ class ApiService {
       while (true) {
         const { done, value } = await reader.read();
 
-        if (done) break;
+        if (done) {
+          // Process any remaining data in buffer before closing
+          if (buffer.trim()) {
+            const remainingLines = buffer.split('\n');
+            for (const line of remainingLines) {
+              if (line.startsWith('data: ')) {
+                try {
+                  const data = JSON.parse(line.slice(6));
+                  yield data as StreamEvent;
+                } catch (error) {
+                  console.error('Failed to parse remaining SSE data:', error);
+                }
+              }
+            }
+          }
+          break;
+        }
 
         buffer += decoder.decode(value, { stream: true });
 
@@ -110,15 +134,15 @@ class ApiService {
   /**
    * Upload files
    */
-  async uploadFiles(files: File[], conversationId?: string): Promise<FileMetadata[]> {
+  async uploadFiles(files: File[], threadId?: string): Promise<FileMetadata[]> {
     const formData = new FormData();
 
     files.forEach(file => {
       formData.append('files', file);
     });
 
-    if (conversationId) {
-      formData.append('conversationId', conversationId);
+    if (threadId) {
+      formData.append('conversationId', threadId); // Backend still uses conversationId for files
     }
 
     const response = await fetch(`${API_BASE_URL}/api/files/upload`, {
