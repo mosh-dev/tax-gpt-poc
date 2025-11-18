@@ -6,3 +6,4 @@
 export { createConversationRoutes } from './conversation.routes';
 export { createChatRoutes } from './chat.routes';
 export { createFileRoutes } from './file.routes';
+export { workflowRoutes } from './workflow.routes';

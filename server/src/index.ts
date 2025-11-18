@@ -10,7 +10,7 @@ import { getStoragePath } from './config/storage';
 import { env } from './config/env';
 import { TaxAgent } from './agent';
 import { initializeContainer } from './di';
-import { createConversationRoutes, createChatRoutes, createFileRoutes } from './presentation/http/routes';
+import { createConversationRoutes, createChatRoutes, createFileRoutes, workflowRoutes } from './presentation/http/routes';
 import { MastraAIAgentService, TesseractOCRService } from './infrastructure/services';
 
 const app: Express = express();
@@ -74,6 +74,7 @@ async function setupApplication() {
   app.use('/api/chat/conversations', conversationRoutes);
   app.use('/api/chat', chatRoutes);
   app.use('/api/files', fileRoutes);
+  app.use('/api/workflows', workflowRoutes);
 
   console.log('[Setup] Routes configured');
 

@@ -86,3 +86,71 @@ export interface StreamEvent {
   raw?: any;
   threadId?: string; // For 'connected' event
 }
+
+// Workflow types for human-in-the-loop tax calculation
+export interface WorkflowStatus {
+  runId: string;
+  threadId: string;
+  workflowId: string;
+  status: 'running' | 'suspended' | 'completed' | 'failed';
+  currentStep?: string;
+  suspendPayload?: any;
+  result?: any;
+  error?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PersonalInfo {
+  firstName: string;
+  lastName: string;
+  dateOfBirth?: string;
+  maritalStatus: 'single' | 'married' | 'divorced' | 'widowed';
+  numberOfChildren: number;
+  canton: string;
+  municipality?: string;
+  taxYear: number;
+}
+
+export interface TaxDocument {
+  fileId: string;
+  fileName: string;
+  fileType: string;
+  extractedText?: string;
+}
+
+export interface ExtractedTaxData {
+  income: {
+    employment: number;
+    selfEmployment: number;
+    investments: number;
+    rental: number;
+    other: number;
+  };
+  deductions: {
+    professionalExpenses: number;
+    insurance: number;
+    pillar3a: number;
+    childcare: number;
+    education: number;
+    donations: number;
+    other: number;
+  };
+  wealth: {
+    bankAccounts: number;
+    securities: number;
+    realEstate: number;
+    vehicles: number;
+    other: number;
+  };
+  confirmed: boolean;
+}
+
+export interface TaxCalculationResult {
+  grossIncome: number;
+  totalDeductions: number;
+  taxableIncome: number;
+  estimatedTax: number;
+  taxRate: number;
+  recommendations: string[];
+}

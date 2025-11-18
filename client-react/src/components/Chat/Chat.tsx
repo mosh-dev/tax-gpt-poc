@@ -7,11 +7,14 @@ import type { Message, StreamEvent } from '../../types';
 import { apiService, API_BASE_URL } from '../../services/api';
 import { useConversations } from '../../contexts/ConversationContext';
 import TaxDataModal from './TaxDataModal';
+import TaxCalculationWorkflow from '../Workflow/TaxCalculationWorkflow';
 
 interface LocationState {
   initialMessage?: string;
   fileIds?: string[];
   fileNames?: string[]; // Original filenames for display
+  startWorkflow?: boolean;
+  workflowType?: string;
 }
 
 interface ChatProps {
@@ -42,6 +45,9 @@ export default function Chat({ threadId }: ChatProps) {
   const [pendingTaxData, setPendingTaxData] = useState<SwissTaxData | null>(null);
   const [pendingScenario, setPendingScenario] = useState('');
 
+  // Workflow state
+  const [showWorkflow, setShowWorkflow] = useState(false);
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -66,6 +72,16 @@ export default function Chat({ threadId }: ChatProps) {
   useEffect(() => {
     const state = location.state as LocationState | null;
 
+    // Check if this is a workflow start
+    if (state?.startWorkflow && state?.workflowType === 'tax-calculation') {
+      loadedThreadIdRef.current = threadId;
+      // Clear the location state to prevent re-triggering on refresh
+      window.history.replaceState({}, document.title);
+      setMessages([]);
+      setShowWorkflow(true);
+      return;
+    }
+
     // Check if this is a new conversation with initial message
     // Use ref to prevent double execution in React StrictMode
     if (state?.initialMessage && initialMessageSentRef.current !== threadId) {
@@ -77,13 +93,15 @@ export default function Chat({ threadId }: ChatProps) {
 
       // Don't load conversation - we're about to send the first message
       setMessages([]);
+      setShowWorkflow(false);
 
       // Send the initial message
       sendInitialMessage(state.initialMessage, state.fileIds || [], state.fileNames || []);
-    } else if (!state?.initialMessage && loadedThreadIdRef.current !== threadId) {
+    } else if (!state?.initialMessage && !state?.startWorkflow && loadedThreadIdRef.current !== threadId) {
       // Normal conversation load (no initial message)
       // Use ref to prevent double execution in React StrictMode
       loadedThreadIdRef.current = threadId;
+      setShowWorkflow(false);
       loadConversation();
     }
   }, [threadId]);
@@ -466,6 +484,45 @@ export default function Chat({ threadId }: ChatProps) {
       sendMessage();
     }
   };
+
+  // Handle workflow completion
+  const handleWorkflowComplete = (result: any) => {
+    console.log('Workflow completed:', result);
+    setShowWorkflow(false);
+    // Optionally add a message about completion
+    if (result?.summary) {
+      const completionMessage: Message = {
+        conversationId: threadId,
+        role: 'assistant',
+        content: result.summary,
+        createdAt: new Date().toISOString(),
+      };
+      setMessages([completionMessage]);
+    }
+    loadConversations();
+  };
+
+  const handleWorkflowCancel = () => {
+    setShowWorkflow(false);
+    navigate('/', { replace: true });
+  };
+
+  // Show workflow if active
+  if (showWorkflow) {
+    return (
+      <div className="flex flex-col h-full">
+        <div className="flex-1 overflow-y-auto px-6 py-8">
+          <div className="max-w-3xl mx-auto">
+            <TaxCalculationWorkflow
+              threadId={threadId}
+              onComplete={handleWorkflowComplete}
+              onCancel={handleWorkflowCancel}
+            />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col h-full">
