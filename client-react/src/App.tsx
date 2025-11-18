@@ -53,23 +53,21 @@ function App() {
         />
 
         <main className="flex-1 flex flex-col overflow-hidden">
-          {/* Header with Hamburger Menu and Logo */}
-          {!sidebarOpen && (
-            <div className="flex items-center gap-4 px-6 py-4 relative z-50">
-              <button
-                onClick={() => setSidebarOpen(!sidebarOpen)}
-                className="p-2 hover:bg-gray-200 rounded-lg transition-colors border border-gray-300 bg-white shadow-sm"
-                title="Open sidebar"
-              >
-                <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" stroke="currentColor">
-                  <path d="M3 12h18M3 6h18M3 18h18" strokeWidth="2" strokeLinecap="round"/>
-                </svg>
-              </button>
-              <h1 className="text-xl font-bold text-gray-900">TaxGPT</h1>
-            </div>
-          )}
+          {/* Header with Hamburger Menu and Logo - always present for consistent layout */}
+          <div className={`flex items-center gap-4 px-6 py-4 relative z-50 ${sidebarOpen ? 'invisible' : ''}`}>
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="p-2 hover:bg-gray-200 rounded-lg transition-colors border border-gray-300 bg-white shadow-sm"
+              title="Open sidebar"
+            >
+              <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6" stroke="currentColor">
+                <path d="M3 12h18M3 6h18M3 18h18" strokeWidth="2" strokeLinecap="round"/>
+              </svg>
+            </button>
+            <h1 className="text-xl font-bold text-gray-900">TaxGPT</h1>
+          </div>
 
-          <div className="max-w-[1200px] w-full mx-auto flex flex-col h-full">
+          <div className="max-w-[1200px] w-full mx-auto flex flex-col flex-1 overflow-hidden">
             {threadId ? (
               <Chat key={threadId} threadId={threadId} />
             ) : (

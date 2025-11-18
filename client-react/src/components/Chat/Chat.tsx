@@ -46,12 +46,20 @@ export default function Chat({ threadId }: ChatProps) {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Configure marked
+  // Configure marked with custom renderer for links
   useEffect(() => {
+    const renderer = new marked.Renderer();
+
+    // Custom link renderer to open links in new tab
+    renderer.link = ({ href, title, text }) => {
+      const titleAttr = title ? ` title="${title}"` : '';
+      return `<a href="${href}"${titleAttr} target="_blank" rel="noopener noreferrer">${text}</a>`;
+    };
+
     marked.setOptions({
       breaks: false,
       gfm: true,
-      renderer: new marked.Renderer(),
+      renderer: renderer,
     });
   }, []);
 
@@ -93,8 +101,10 @@ export default function Chat({ threadId }: ChatProps) {
       const data = await apiService.getConversation(threadId);
       setMessages(data.messages);
     } catch (err) {
-      console.error('Failed to load conversation:', err);
-      setError('Failed to load conversation');
+      // Conversation not found (404) - this is expected for new conversations
+      // The conversation will be created when the first message is sent
+      // Just start with empty messages, no need to show an error
+      setMessages([]);
     }
   };
 
@@ -424,15 +434,15 @@ export default function Chat({ threadId }: ChatProps) {
             <div
               className={`max-w-2xl ${
                 message.role === 'user'
-                  ? 'bg-primary-600 rounded-2xl rounded-br-none'
+                  ? 'bg-primary-600 text-white rounded-2xl rounded-br-none'
                   : 'bg-gray-100 text-gray-900 rounded-2xl rounded-tl-none'
               } px-6 py-4`}
             >
-              <div className="text-sm font-semibold mb-2">
+              <div className={`text-sm font-semibold mb-2 ${message.role === 'user' ? 'text-white' : 'text-gray-900'}`}>
                 {message.role === 'user' ? 'You' : 'Assistant'}
               </div>
               <div
-                className="prose prose-sm max-w-none"
+                className={message.role === 'user' ? 'prose-chat-user' : 'prose-chat'}
                 dangerouslySetInnerHTML={{ __html: parseMarkdown(message.content) }}
               />
               <div className={`text-xs mt-2 ${message.role === 'user' ? 'text-primary-100' : 'text-gray-500'}`}>

@@ -1,8 +1,418 @@
 @import "tailwindcss";
 
+/* Custom theme */
+@theme {
+  --color-primary-50: #eff6ff;
+  --color-primary-100: #dbeafe;
+  --color-primary-200: #bfdbfe;
+  --color-primary-300: #93c5fd;
+  --color-primary-400: #60a5fa;
+  --color-primary-500: #3b82f6;
+  --color-primary-600: #2563eb;
+  --color-primary-700: #1d4ed8;
+  --color-primary-800: #1e40af;
+  --color-primary-900: #1e3a8a;
+}
+
 /* Custom styles */
 @layer base {
   body {
     font-family: system-ui, -apple-system, sans-serif;
+  }
+
+  /* Ensure all interactive elements have pointer cursor */
+  a,
+  button,
+  [role="button"],
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"] {
+    cursor: pointer;
+  }
+}
+
+/* Markdown prose styling for chat messages */
+@layer components {
+  /* Base prose styles for assistant messages */
+  .prose-chat {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #1f2937;
+  }
+
+  /* Headings */
+  .prose-chat h1,
+  .prose-chat h2,
+  .prose-chat h3,
+  .prose-chat h4,
+  .prose-chat h5,
+  .prose-chat h6 {
+    font-weight: 600;
+    margin-top: 1.25em;
+    margin-bottom: 0.5em;
+    color: #111827;
+  }
+
+  .prose-chat h1 {
+    font-size: 1.5em;
+  }
+
+  .prose-chat h2 {
+    font-size: 1.3em;
+  }
+
+  .prose-chat h3 {
+    font-size: 1.15em;
+  }
+
+  .prose-chat h4,
+  .prose-chat h5,
+  .prose-chat h6 {
+    font-size: 1em;
+  }
+
+  /* Paragraphs */
+  .prose-chat p {
+    margin-top: 0.75em;
+    margin-bottom: 0.75em;
+  }
+
+  .prose-chat p:first-child {
+    margin-top: 0;
+  }
+
+  .prose-chat p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Links */
+  .prose-chat a {
+    color: #2563eb;
+    text-decoration: underline;
+    text-decoration-color: #93c5fd;
+    text-underline-offset: 2px;
+    font-weight: 500;
+    transition: all 0.15s ease;
+  }
+
+  .prose-chat a:hover {
+    color: #1d4ed8;
+    text-decoration-color: #2563eb;
+  }
+
+  /* Lists */
+  .prose-chat ul,
+  .prose-chat ol {
+    margin-top: 0.75em;
+    margin-bottom: 0.75em;
+    padding-left: 1.5em;
+  }
+
+  .prose-chat ul {
+    list-style-type: disc;
+  }
+
+  .prose-chat ol {
+    list-style-type: decimal;
+  }
+
+  .prose-chat li {
+    margin-top: 0.375em;
+    margin-bottom: 0.375em;
+    padding-left: 0.375em;
+  }
+
+  .prose-chat li::marker {
+    color: #6b7280;
+  }
+
+  .prose-chat ul ul,
+  .prose-chat ol ul {
+    list-style-type: circle;
+    margin-top: 0.375em;
+    margin-bottom: 0.375em;
+  }
+
+  .prose-chat ul ul ul,
+  .prose-chat ol ul ul {
+    list-style-type: square;
+  }
+
+  /* Nested lists */
+  .prose-chat li > ul,
+  .prose-chat li > ol {
+    margin-top: 0.375em;
+    margin-bottom: 0.375em;
+  }
+
+  /* Code - inline */
+  .prose-chat code {
+    background-color: #f3f4f6;
+    color: #dc2626;
+    padding: 0.2em 0.4em;
+    border-radius: 0.25rem;
+    font-size: 0.85em;
+    font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace;
+    font-weight: 500;
+  }
+
+  /* Code - block */
+  .prose-chat pre {
+    background-color: #1f2937;
+    color: #e5e7eb;
+    padding: 1em;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    font-size: 0.85em;
+    line-height: 1.7;
+  }
+
+  .prose-chat pre code {
+    background-color: transparent;
+    color: inherit;
+    padding: 0;
+    font-size: inherit;
+    font-weight: normal;
+  }
+
+  /* Blockquotes */
+  .prose-chat blockquote {
+    border-left: 4px solid #3b82f6;
+    padding-left: 1em;
+    margin: 1em 0;
+    color: #4b5563;
+    font-style: italic;
+    background-color: #f9fafb;
+    padding: 0.75em 1em;
+    border-radius: 0 0.375rem 0.375rem 0;
+  }
+
+  .prose-chat blockquote p {
+    margin: 0;
+  }
+
+  /* Tables */
+  .prose-chat table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 1em;
+    margin-bottom: 1em;
+    font-size: 0.85em;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb;
+  }
+
+  .prose-chat thead {
+    background-color: #f3f4f6;
+  }
+
+  .prose-chat th {
+    padding: 0.75em 1em;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 2px solid #d1d5db;
+  }
+
+  .prose-chat td {
+    padding: 0.75em 1em;
+    border-bottom: 1px solid #e5e7eb;
+    color: #4b5563;
+  }
+
+  .prose-chat tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  .prose-chat tbody tr:hover {
+    background-color: #f9fafb;
+  }
+
+  /* Horizontal rules */
+  .prose-chat hr {
+    border: none;
+    border-top: 1px solid #e5e7eb;
+    margin: 1.5em 0;
+  }
+
+  /* Strong and emphasis */
+  .prose-chat strong {
+    font-weight: 600;
+    color: #111827;
+  }
+
+  .prose-chat em {
+    font-style: italic;
+  }
+
+  /* Definition lists */
+  .prose-chat dl {
+    margin-top: 0.75em;
+    margin-bottom: 0.75em;
+  }
+
+  .prose-chat dt {
+    font-weight: 600;
+    color: #111827;
+    margin-top: 0.75em;
+  }
+
+  .prose-chat dd {
+    margin-left: 1.5em;
+    color: #4b5563;
+  }
+
+  /* Task lists */
+  .prose-chat input[type="checkbox"] {
+    margin-right: 0.5em;
+    accent-color: #2563eb;
+  }
+
+  /* Images */
+  .prose-chat img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 0.5rem;
+    margin: 1em 0;
+  }
+
+  /* Keyboard shortcuts / kbd */
+  .prose-chat kbd {
+    background-color: #f3f4f6;
+    border: 1px solid #d1d5db;
+    border-radius: 0.25rem;
+    padding: 0.125em 0.375em;
+    font-size: 0.85em;
+    font-family: ui-monospace, SFMono-Regular, monospace;
+    box-shadow: 0 1px 0 #d1d5db;
+  }
+
+  /* User message prose (inverted colors for dark background) */
+  .prose-chat-user {
+    font-size: 0.9rem;
+    line-height: 1.6;
+    color: #ffffff;
+  }
+
+  .prose-chat-user h1,
+  .prose-chat-user h2,
+  .prose-chat-user h3,
+  .prose-chat-user h4,
+  .prose-chat-user h5,
+  .prose-chat-user h6 {
+    font-weight: 600;
+    margin-top: 1.25em;
+    margin-bottom: 0.5em;
+    color: #ffffff;
+  }
+
+  .prose-chat-user p {
+    margin-top: 0.75em;
+    margin-bottom: 0.75em;
+  }
+
+  .prose-chat-user p:first-child {
+    margin-top: 0;
+  }
+
+  .prose-chat-user p:last-child {
+    margin-bottom: 0;
+  }
+
+  .prose-chat-user a {
+    color: #bfdbfe;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
+  .prose-chat-user a:hover {
+    color: #ffffff;
+  }
+
+  .prose-chat-user strong {
+    font-weight: 600;
+    color: #ffffff;
+  }
+
+  .prose-chat-user code {
+    background-color: rgba(255, 255, 255, 0.2);
+    color: #ffffff;
+    padding: 0.2em 0.4em;
+    border-radius: 0.25rem;
+    font-size: 0.85em;
+  }
+
+  .prose-chat-user pre {
+    background-color: rgba(0, 0, 0, 0.3);
+    color: #ffffff;
+    padding: 1em;
+    border-radius: 0.5rem;
+    overflow-x: auto;
+    margin: 1em 0;
+  }
+
+  .prose-chat-user pre code {
+    background-color: transparent;
+    padding: 0;
+  }
+
+  .prose-chat-user ul,
+  .prose-chat-user ol {
+    margin-top: 0.75em;
+    margin-bottom: 0.75em;
+    padding-left: 1.5em;
+  }
+
+  .prose-chat-user ul {
+    list-style-type: disc;
+  }
+
+  .prose-chat-user ol {
+    list-style-type: decimal;
+  }
+
+  .prose-chat-user li {
+    margin-top: 0.375em;
+    margin-bottom: 0.375em;
+    padding-left: 0.375em;
+  }
+
+  .prose-chat-user li::marker {
+    color: #bfdbfe;
+  }
+
+  .prose-chat-user blockquote {
+    border-left: 4px solid rgba(255, 255, 255, 0.5);
+    padding-left: 1em;
+    margin: 1em 0;
+    color: #dbeafe;
+    font-style: italic;
+  }
+
+  .prose-chat-user table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 1em 0;
+    font-size: 0.85em;
+  }
+
+  .prose-chat-user th,
+  .prose-chat-user td {
+    padding: 0.5em 0.75em;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  .prose-chat-user th {
+    background-color: rgba(255, 255, 255, 0.1);
+    font-weight: 600;
+  }
+
+  .prose-chat-user hr {
+    border: none;
+    border-top: 1px solid rgba(255, 255, 255, 0.3);
+    margin: 1.5em 0;
   }
 }

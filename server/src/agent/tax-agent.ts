@@ -100,27 +100,56 @@ export class TaxAgent {
         threadId: string,
         resourceId?: string
     ): AsyncGenerator<any, void, unknown> {
-        try {
-            if (!threadId) {
-                throw new Error('threadId is required for conversation management');
-            }
+        if (!threadId) {
+            throw new Error('threadId is required for conversation management');
+        }
 
-            if (!this.memory) {
-                throw new Error('Mastra Memory is not configured. Cannot manage conversations without memory.');
-            }
+        if (!this.memory) {
+            throw new Error('Mastra Memory is not configured. Cannot manage conversations without memory.');
+        }
 
-            // resourceId is required by Mastra Memory - use default if not provided
-            const effectiveResourceId = resourceId || 'default-user';
-            console.log(`[TaxAgent] Using Mastra Memory - Thread: ${threadId}, Resource: ${effectiveResourceId}`);
+        // resourceId is required by Mastra Memory - use default if not provided
+        const effectiveResourceId = resourceId || 'default-user';
+        console.log(`[TaxAgent] Using Mastra Memory - Thread: ${threadId}, Resource: ${effectiveResourceId}`);
 
-            // Create memory options with resource (required by AgentMemoryOption)
-            const stream = await this.agent.stream(message, {
+        // Helper function to create stream
+        const createStream = async () => {
+            return await this.agent.stream(message, {
                 memory: {
                     thread: threadId,
                     resource: effectiveResourceId,
                 },
             });
+        };
 
+        let stream;
+        let retried = false;
+
+        try {
+            stream = await createStream();
+        } catch (error: any) {
+            // If first attempt fails (e.g., thread not found), retry once
+            // This allows Mastra to create the thread on second attempt
+            const errorMessage = error.message?.toLowerCase() || '';
+            if (errorMessage.includes('thread') || errorMessage.includes('not found') || errorMessage.includes('does not exist')) {
+                console.log(`[TaxAgent] First attempt failed with thread error, retrying...`);
+                retried = true;
+                try {
+                    stream = await createStream();
+                } catch (retryError: any) {
+                    console.error('[TaxAgent] Retry also failed:', retryError);
+                    throw retryError;
+                }
+            } else {
+                throw error;
+            }
+        }
+
+        if (retried) {
+            console.log(`[TaxAgent] Retry successful`);
+        }
+
+        try {
             for await (const event of stream.fullStream) {
                 yield event as any;
             }

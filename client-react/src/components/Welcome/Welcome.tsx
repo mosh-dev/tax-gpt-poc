@@ -70,7 +70,7 @@ export default function Welcome({ }: WelcomeProps) {
     handleStartNewChat(message, files);
   };
   return (
-    <div className="flex-1 flex items-center justify-center px-4 py-12 bg-gradient-to-b from-gray-50 to-white">
+    <div className="flex-1 flex items-center justify-center px-4 py-12">
       <div className="max-w-3xl w-full text-center">
         {/* Greeting */}
         <div className="mb-8">
