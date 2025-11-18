@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Import General Sans font from Fontshare */
+@import url('https://api.fontshare.com/v2/css?f[]=general-sans@200,300,400,500,600,700&display=swap');
+
 /* Custom theme */
 @theme {
   --color-primary-50: #eff6ff;
@@ -17,7 +20,7 @@
 /* Custom styles */
 @layer base {
   body {
-    font-family: system-ui, -apple-system, sans-serif;
+    font-family: 'General Sans', system-ui, -apple-system, sans-serif;
   }
 
   /* Ensure all interactive elements have pointer cursor */
@@ -151,7 +154,7 @@
     color: #dc2626;
     padding: 0.2em 0.4em;
     border-radius: 0.25rem;
-    font-size: 0.85em;
+    font-size: 0.95em;
     font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace;
     font-weight: 500;
   }
@@ -165,7 +168,7 @@
     overflow-x: auto;
     margin-top: 1em;
     margin-bottom: 1em;
-    font-size: 0.85em;
+    font-size: 0.95em;
     line-height: 1.7;
   }
 
@@ -199,7 +202,7 @@
     border-collapse: collapse;
     margin-top: 1em;
     margin-bottom: 1em;
-    font-size: 0.85em;
+    font-size: 0.95em;
     overflow: hidden;
     border-radius: 0.5rem;
     border: 1px solid #e5e7eb;
@@ -285,7 +288,7 @@
     border: 1px solid #d1d5db;
     border-radius: 0.25rem;
     padding: 0.125em 0.375em;
-    font-size: 0.85em;
+    font-size: 0.95em;
     font-family: ui-monospace, SFMono-Regular, monospace;
     box-shadow: 0 1px 0 #d1d5db;
   }
@@ -342,7 +345,7 @@
     color: #ffffff;
     padding: 0.2em 0.4em;
     border-radius: 0.25rem;
-    font-size: 0.85em;
+    font-size: 0.95em;
   }
 
   .prose-chat-user pre {
@@ -396,7 +399,7 @@
     width: 100%;
     border-collapse: collapse;
     margin: 1em 0;
-    font-size: 0.85em;
+    font-size: 0.95em;
   }
 
   .prose-chat-user th,
