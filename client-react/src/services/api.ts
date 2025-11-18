@@ -6,7 +6,7 @@
 import type { Conversation, Message, FileMetadata, StreamEvent } from '../types';
 
 // Using Vite proxy, so no need for base URL
-const API_BASE_URL = '';
+const API_BASE_URL = 'http://localhost:3000';
 
 class ApiService {
   /**
@@ -63,6 +63,7 @@ class ApiService {
     threadId?: string,
     fileIds?: string[]
   ): AsyncGenerator<StreamEvent> {
+    debugger;
     const response = await fetch(`${API_BASE_URL}/api/chat/stream-with-tools`, {
       method: 'POST',
       headers: {
