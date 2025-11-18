@@ -1,53 +1,66 @@
-# Server Dockerfile - Node.js/Express API
-
-# Stage 1: Build TypeScript
-FROM node:20-alpine AS builder
+# ================================
+# Stage 1: Builder
+# ================================
+FROM node:22-slim AS builder
 
 WORKDIR /app
 
+# Install build dependencies for canvas & other native packages
+RUN apt-get update && apt-get install -y \
+    python3 \
+    build-essential \
+    libcairo2-dev \
+    libpango1.0-dev \
+    libjpeg-dev \
+    libgif-dev \
+    librsvg2-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 # Copy package files
-COPY package*.json ./
+COPY package.json ./
 COPY tsconfig.json ./
 
-# Install dependencies (including dev dependencies for build)
-RUN npm ci
+# Install dependencies
+RUN npm install
 
 # Copy source code
 COPY src ./src
 
-RUN npm install
-
 # Build TypeScript
 RUN npm run build
 
-# Stage 2: Production Image
-FROM node:20-alpine
+
+
+# ================================
+# Stage 2: Production
+# ================================
+FROM node:22-slim AS production
 
 WORKDIR /app
 
-# Copy package files
-COPY package*.json ./
+# Copy only package.json
+COPY package.json ./
 
-# Install production dependencies only
-RUN npm ci --only=production
+# Install only production dependencies
+RUN npm install --omit=dev
 
-# Copy built server from builder stage
+# Copy built output from builder
 COPY --from=builder /app/dist ./dist
 
-# Create centralized storage directory structure
+# Create centralized storage directories
 RUN mkdir -p server/storage/uploads \
              server/storage/pdfs \
              server/storage/temp \
              server/storage/tesseract-lang
 
-# Create a non-root user for security
-RUN addgroup -g 1001 -S nodejs && \
-    adduser -S nodejs -u 1001
+# Create non-root user
+RUN groupadd -g 1001 nodejs && \
+    useradd -u 1001 -g nodejs -s /bin/bash -m nodejs
 
-# Change ownership to nodejs user
+# Fix permissions
 RUN chown -R nodejs:nodejs /app
 
-# Switch to non-root user
+# Switch to restricted user
 USER nodejs
 
 # Expose port
@@ -57,5 +70,5 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=40s \
   CMD node -e "require('http').get('http://localhost:3000/api/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
 
-# Start the server
+# Start server
 CMD ["node", "dist/index.js"]
