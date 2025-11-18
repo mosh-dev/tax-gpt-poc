@@ -90,23 +90,6 @@ export class MongoRepository {
   // ==================== Conversation Operations ====================
 
   /**
-   * Create a new conversation
-   */
-  async createConversation(data: CreateConversationData): Promise<ConversationData | null> {
-    const conversationId = data.conversationId || randomUUID();
-    const doc = await this.execute(
-      async () => await Conversation.create({
-        conversationId,
-        title: data.title || 'New Tax Conversation',
-        taxYear: data.taxYear,
-        userId: data.userId,
-        metadata: data.metadata || {},
-      })
-    );
-    return doc ? (doc.toObject() as ConversationData) : null;
-  }
-
-  /**
    * Find or create conversation (atomic operation to prevent race conditions)
    */
   async findOrCreateConversation(data: CreateConversationData): Promise<ConversationData | null> {

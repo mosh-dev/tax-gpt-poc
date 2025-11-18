@@ -3,9 +3,27 @@
  * Manages workflow runs and their state
  */
 
+import { Mastra } from '@mastra/core';
+import { MongoDBStore } from '@mastra/mongodb';
 import { taxCalculationWorkflow } from './tax-calculation-workflow';
+import { env } from '../../config/env';
 
-// Store active workflow runs (in production, use database)
+// Create MongoDB storage for workflow snapshots
+const workflowStorage = new MongoDBStore({
+  id: 'tax-gpt-workflow-storage',
+  url: env.MONGODB_URI,
+  dbName: env.MONGODB_DB_NAME,
+});
+
+// Create Mastra instance with storage and workflows
+const mastra = new Mastra({
+  storage: workflowStorage,
+  workflows: {
+    taxCalculation: taxCalculationWorkflow,
+  },
+});
+
+// Store active workflow run IDs mapped to their internal Mastra run IDs
 const workflowRuns = new Map<string, any>();
 
 export interface WorkflowStatus {
@@ -29,15 +47,19 @@ export class WorkflowService {
     console.log(`[WorkflowService] Starting tax calculation workflow for thread: ${threadId}`);
 
     try {
-      // Create workflow run
-      const run = await taxCalculationWorkflow.createRun();
+      // Get workflow from Mastra instance (ensures storage is configured)
+      const workflow = mastra.getWorkflow('taxCalculation');
 
-      // Store the run
-      const runId = `run_${Date.now()}_${threadId}`;
+      // Create workflow run
+      const run = await workflow.createRun();
+
+      // Store the run with its internal ID for later resume
+      const runId = run.runId;
       workflowRuns.set(runId, {
         run,
         threadId,
         workflowId: 'tax-calculation-workflow',
+        createdAt: new Date(),
       });
 
       // Start the workflow
@@ -124,7 +146,7 @@ export class WorkflowService {
 
       // Handle suspended state
       if (result.status === 'suspended' && result.suspended) {
-        const suspendedStepId = result.suspended[0];
+        const suspendedStepId = result.suspended[0][0];
         status.currentStep = suspendedStepId;
 
         // Get suspend payload from the step

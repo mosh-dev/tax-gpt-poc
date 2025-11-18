@@ -60,6 +60,25 @@ class ApiService {
   }
 
   /**
+   * Save messages to a conversation (for workflow steps)
+   */
+  async saveMessages(threadId: string, messages: Array<{ role: string; content: string }>): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/api/chat/messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        threadId,
+        messages,
+      }),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to save messages');
+    }
+  }
+
+  /**
    * Stream chat with tools (SSE)
    * Returns an async generator for streaming events
    * @param message User's message

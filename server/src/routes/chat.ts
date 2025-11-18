@@ -77,6 +77,56 @@ router.get('/conversations/:id', async (req: Request, res: Response) => {
 });
 
 /**
+ * POST /api/chat/messages
+ * Save messages to a conversation (for workflow steps)
+ */
+router.post('/messages', async (req: Request, res: Response) => {
+    try {
+        const { threadId, messages } = req.body;
+
+        if (!threadId) {
+            return res.status(400).json({
+                success: false,
+                error: 'threadId is required',
+            });
+        }
+
+        if (!messages || !Array.isArray(messages) || messages.length === 0) {
+            return res.status(400).json({
+                success: false,
+                error: 'messages array is required',
+            });
+        }
+
+        // Ensure conversation exists
+        await mongoMemory.getOrCreateConversation(threadId, messages[0]?.content || 'Tax Calculation Workflow');
+
+        // Save each message
+        for (const msg of messages) {
+            await mongoMemory.saveMessage(threadId, {
+                role: msg.role,
+                content: msg.content,
+                toolCalls: msg.toolCalls,
+            });
+        }
+
+        console.log(`[Chat] Saved ${messages.length} workflow messages to thread ${threadId}`);
+
+        res.json({
+            success: true,
+            threadId,
+            savedCount: messages.length,
+        });
+    } catch (error: any) {
+        console.error('[Chat] Failed to save messages:', error);
+        res.status(500).json({
+            success: false,
+            error: error.message || 'Failed to save messages',
+        });
+    }
+});
+
+/**
  * DELETE /api/chat/conversations/:id
  * Delete a conversation
  */
