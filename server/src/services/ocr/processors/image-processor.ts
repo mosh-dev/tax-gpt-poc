@@ -97,9 +97,12 @@ export class ImageProcessor extends BaseDocumentProcessor {
 
       // Create Tesseract worker
       // tesseract.js will auto-download language files from CDN on first use
-      console.log(`[ImageProcessor] Creating Tesseract worker for language: ${language}`);
+      const langPath = getStoragePath('tesseract');
+      console.log(`[ImageProcessor] Creating Tesseract worker for language: ${language}, langPath: ${langPath}`);
 
       worker = await createWorker(language, config.oem, {
+        langPath: langPath,
+        cachePath: langPath,
         logger: m => console.log(`[Tesseract] ${m.status}: ${Math.round((m.progress || 0) * 100)}%`)
       });
 
