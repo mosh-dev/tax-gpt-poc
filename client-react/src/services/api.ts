@@ -63,7 +63,6 @@ class ApiService {
     threadId?: string,
     fileIds?: string[]
   ): AsyncGenerator<StreamEvent> {
-    debugger;
     const response = await fetch(`${API_BASE_URL}/api/chat/stream-with-tools`, {
       method: 'POST',
       headers: {
