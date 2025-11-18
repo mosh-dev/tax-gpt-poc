@@ -104,6 +104,33 @@ export class MongoRepository {
   }
 
   /**
+   * Find or create conversation (atomic operation to prevent race conditions)
+   */
+  async findOrCreateConversation(data: CreateConversationData): Promise<ConversationData | null> {
+    const conversationId = data.conversationId || randomUUID();
+    const doc = await this.execute(
+      async () => await Conversation.findOneAndUpdate(
+        { conversationId },
+        {
+          $setOnInsert: {
+            conversationId,
+            title: data.title || 'New Tax Conversation',
+            taxYear: data.taxYear,
+            userId: data.userId,
+            metadata: data.metadata || {},
+          }
+        },
+        {
+          upsert: true,
+          new: true,
+          setDefaultsOnInsert: true
+        }
+      ).lean()
+    );
+    return doc as ConversationData | null;
+  }
+
+  /**
    * Find conversation by ID
    */
   async findConversationById(conversationId: string): Promise<ConversationData | null> {

@@ -235,6 +235,8 @@ export default function Chat({ threadId }: ChatProps) {
 
     try {
       let firstChunk = false;
+      let streamCompleted = false;
+      let hasError = false;
 
       for await (const event of apiService.streamChat(messageContent, threadId, fileIds)) {
         switch (event.type) {
@@ -276,16 +278,18 @@ export default function Chat({ threadId }: ChatProps) {
 
           case 'done':
             console.log('Stream completed');
+            streamCompleted = true;
             break;
 
           case 'error':
+            hasError = true;
             setError(event.error || 'Stream error occurred');
             break;
         }
       }
 
-      // If no content was received, show error
-      if (!firstChunk) {
+      // Only show "no response" error if stream completed normally but with no content
+      if (!firstChunk && streamCompleted && !hasError) {
         setError('No response received from assistant');
       }
     } catch (err: any) {
@@ -361,6 +365,8 @@ export default function Chat({ threadId }: ChatProps) {
     try {
       let firstChunk = false;
       let receivedThreadId: string | null = null;
+      let streamCompleted = false;
+      let hasError = false;
 
       for await (const event of apiService.streamChat(messageContent, threadId, fileIds)) {
         switch (event.type) {
@@ -408,16 +414,18 @@ export default function Chat({ threadId }: ChatProps) {
 
           case 'done':
             console.log('Stream completed');
+            streamCompleted = true;
             break;
 
           case 'error':
+            hasError = true;
             setError(event.error || 'Stream error occurred');
             break;
         }
       }
 
-      // If no content was received, show error
-      if (!firstChunk) {
+      // Only show "no response" error if stream completed normally but with no content
+      if (!firstChunk && streamCompleted && !hasError) {
         setError('No response received from assistant');
       }
     } catch (err: any) {

@@ -26,6 +26,7 @@ export class MongoDBMemory {
     // Remove special characters and extra whitespace
     const cleaned = message
       .replace(/\[.*?\]/g, '') // Remove [fileId: xxx] tags
+      .replace(/\[Uploaded Files\]/g, '') // Remove uploaded files marker
       .replace(/[^\w\s]/g, ' ') // Replace special chars with space
       .trim()
       .split(/\s+/) // Split by whitespace
@@ -35,9 +36,15 @@ export class MongoDBMemory {
       return 'New Conversation';
     }
 
-    // Take first 3 words or fewer
-    const titleWords = cleaned.slice(0, 3);
-    const title = titleWords.join(' ');
+    // Take first 2-4 words depending on length
+    const wordCount = Math.min(Math.max(2, cleaned.length), 4);
+    const titleWords = cleaned.slice(0, wordCount);
+    let title = titleWords.join(' ');
+
+    // Truncate if too long (max 50 chars)
+    if (title.length > 50) {
+      title = title.substring(0, 47) + '...';
+    }
 
     // Capitalize first letter
     return title.charAt(0).toUpperCase() + title.slice(1);
@@ -47,20 +54,13 @@ export class MongoDBMemory {
    * Create or get existing conversation
    */
   async getOrCreateConversation(conversationId?: string, firstMessage?: string): Promise<string> {
-    if (conversationId) {
-      const existing = await mongoRepository.findConversationById(conversationId);
-      if (existing) {
-        return existing.conversationId;
-      }
-    }
-
     // Generate title from first message or use default
     const title = firstMessage
       ? this.generateTitleFromMessage(firstMessage)
       : 'New Conversation';
 
-    // Create new conversation
-    const conversation = await mongoRepository.createConversation({
+    // Use findOrCreate to prevent race conditions
+    const conversation = await mongoRepository.findOrCreateConversation({
       conversationId,
       title,
       metadata: {},
