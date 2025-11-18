@@ -8,15 +8,5 @@ export default defineConfig({
   envPrefix: ['VITE_', 'AGENT_'],
   server: {
     port: 4200,
-    proxy: {
-      '/api': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-      },
-      '/files': {
-        target: 'http://localhost:3000',
-        changeOrigin: true,
-      },
-    },
   },
 })
