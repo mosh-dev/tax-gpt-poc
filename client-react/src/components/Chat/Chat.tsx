@@ -291,9 +291,7 @@ export default function Chat({ threadId }: ChatProps) {
     // Send a message asking to start the workflow - LLM will use start-workflow tool
     // Display message is clean, API message includes context for LLM
     const displayContent = `I want to calculate my taxes for this year. Please start the tax calculation workflow.`;
-    const apiContent = `${displayContent}
-
-[Context: threadId=${threadIdToUse}]`;
+    const apiContent = `${displayContent} [Context: threadId=${threadIdToUse}]`;
 
     const userMessage: Message = {
       conversationId: threadIdToUse,
@@ -580,6 +578,8 @@ export default function Chat({ threadId }: ChatProps) {
         messageContent += `\n[fileId: ${id}]`;
       });
     }
+
+    messageContent += ` [Context: threadId=${threadId}]`;
 
     // Build display message for user (with filenames)
     let userDisplayMessage = message;
