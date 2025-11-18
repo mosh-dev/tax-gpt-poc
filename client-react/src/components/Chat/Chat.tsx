@@ -48,18 +48,15 @@ export default function Chat({ threadId }: ChatProps) {
 
   // Configure marked with custom renderer for links
   useEffect(() => {
-    const renderer = new marked.Renderer();
-
-    // Custom link renderer to open links in new tab
-    renderer.link = ({ href, title, text }) => {
-      const titleAttr = title ? ` title="${title}"` : '';
-      return `<a href="${href}"${titleAttr} target="_blank" rel="noopener noreferrer">${text}</a>`;
-    };
-
-    marked.setOptions({
+    marked.use({
       breaks: false,
       gfm: true,
-      renderer: renderer,
+      renderer: {
+        link({ href, title, text }) {
+          const titleAttr = title ? ` title="${title}"` : '';
+          return `<a href="${href}"${titleAttr} target="_blank" rel="noopener noreferrer">${text}</a>`;
+        }
+      }
     });
   }, []);
 
@@ -156,7 +153,9 @@ export default function Chat({ threadId }: ChatProps) {
   const parseMarkdown = (content: string): string => {
     try {
       const html = marked.parse(content) as string;
-      return DOMPurify.sanitize(html);
+      return DOMPurify.sanitize(html, {
+        ADD_ATTR: ['target', 'rel'],
+      });
     } catch (error) {
       console.error('Markdown parsing error:', error);
       return content;
@@ -234,8 +233,6 @@ export default function Chat({ threadId }: ChatProps) {
       createdAt: new Date().toISOString(),
     };
 
-    setMessages(prev => [...prev, assistantMessage]);
-
     try {
       let firstChunk = false;
 
@@ -250,11 +247,15 @@ export default function Chat({ threadId }: ChatProps) {
           case 'chunk':
             if (event.content) {
               assistantMessage.content += event.content;
-              if (!firstChunk && event.content.trim().length > 0) {
+              // Only show message bubble when we have actual non-empty content
+              if (!firstChunk && assistantMessage.content.trim().length > 0) {
+                // Add assistant message only when first real content arrives
+                setMessages(prev => [...prev, { ...assistantMessage }]);
                 setIsLoading(false);
                 firstChunk = true;
+              } else if (firstChunk) {
+                setMessages(prev => [...prev.slice(0, -1), { ...assistantMessage }]);
               }
-              setMessages(prev => [...prev.slice(0, -1), { ...assistantMessage }]);
             }
             break;
 
@@ -264,7 +265,13 @@ export default function Chat({ threadId }: ChatProps) {
 
           case 'tool-result':
             handleToolResult(event, assistantMessage);
-            setMessages(prev => [...prev.slice(0, -1), { ...assistantMessage }]);
+            if (!firstChunk) {
+              setMessages(prev => [...prev, { ...assistantMessage }]);
+              setIsLoading(false);
+              firstChunk = true;
+            } else {
+              setMessages(prev => [...prev.slice(0, -1), { ...assistantMessage }]);
+            }
             break;
 
           case 'done':
@@ -277,14 +284,12 @@ export default function Chat({ threadId }: ChatProps) {
         }
       }
 
-      // If no content was received, remove empty message
-      if (assistantMessage.content.trim().length === 0) {
-        setMessages(prev => prev.slice(0, -1));
+      // If no content was received, show error
+      if (!firstChunk) {
         setError('No response received from assistant');
       }
     } catch (err: any) {
       setError(err.message || 'Failed to send message');
-      setMessages(prev => prev.slice(0, -1));
     } finally {
       setIsLoading(false);
     }
@@ -341,8 +346,6 @@ export default function Chat({ threadId }: ChatProps) {
       createdAt: new Date().toISOString(),
     };
 
-    setMessages(prev => [...prev, assistantMessage]);
-
     try {
       let firstChunk = false;
       let receivedThreadId: string | null = null;
@@ -364,11 +367,15 @@ export default function Chat({ threadId }: ChatProps) {
           case 'chunk':
             if (event.content) {
               assistantMessage.content += event.content;
-              if (!firstChunk && event.content.trim().length > 0) {
+              // Only show message bubble when we have actual non-empty content
+              if (!firstChunk && assistantMessage.content.trim().length > 0) {
+                // Add assistant message only when first real content arrives
+                setMessages(prev => [...prev, { ...assistantMessage }]);
                 setIsLoading(false);
                 firstChunk = true;
+              } else if (firstChunk) {
+                setMessages(prev => [...prev.slice(0, -1), { ...assistantMessage }]);
               }
-              setMessages(prev => [...prev.slice(0, -1), { ...assistantMessage }]);
             }
             break;
 
@@ -378,7 +385,13 @@ export default function Chat({ threadId }: ChatProps) {
 
           case 'tool-result':
             handleToolResult(event, assistantMessage);
-            setMessages(prev => [...prev.slice(0, -1), { ...assistantMessage }]);
+            if (!firstChunk) {
+              setMessages(prev => [...prev, { ...assistantMessage }]);
+              setIsLoading(false);
+              firstChunk = true;
+            } else {
+              setMessages(prev => [...prev.slice(0, -1), { ...assistantMessage }]);
+            }
             break;
 
           case 'done':
@@ -391,14 +404,12 @@ export default function Chat({ threadId }: ChatProps) {
         }
       }
 
-      // If no content was received, remove empty message
-      if (assistantMessage.content.trim().length === 0) {
-        setMessages(prev => prev.slice(0, -1));
+      // If no content was received, show error
+      if (!firstChunk) {
         setError('No response received from assistant');
       }
     } catch (err: any) {
       setError(err.message || 'Failed to send message');
-      setMessages(prev => prev.slice(0, -1));
     } finally {
       setIsLoading(false);
     }
@@ -432,10 +443,10 @@ export default function Chat({ threadId }: ChatProps) {
             )}
 
             <div
-              className={`max-w-2xl ${
+              className={`max-w-2xl shadow-sm ${
                 message.role === 'user'
-                  ? 'bg-primary-600 text-white rounded-2xl rounded-br-none'
-                  : 'bg-gray-100 text-gray-900 rounded-2xl rounded-tl-none'
+                  ? 'bg-primary-600 text-white rounded-2xl rounded-br-none shadow-primary-600/20'
+                  : 'bg-gray-100 text-gray-900 rounded-2xl rounded-tl-none shadow-gray-300/50'
               } px-6 py-4`}
             >
               <div className={`text-sm font-semibold mb-2 ${message.role === 'user' ? 'text-white' : 'text-gray-900'}`}>
@@ -471,7 +482,7 @@ export default function Chat({ threadId }: ChatProps) {
                 <path d="M9 15c.5.5 1.5 1 3 1s2.5-.5 3-1" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
               </svg>
             </div>
-            <div className="bg-gray-100 rounded-2xl rounded-tl-none px-6 py-4">
+            <div className="bg-gray-100 rounded-2xl rounded-tl-none px-6 py-4 shadow-sm shadow-gray-300/50">
               <div className="flex gap-1">
                 <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
                 <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
@@ -529,7 +540,7 @@ export default function Chat({ threadId }: ChatProps) {
           />
 
           {/* Icons inside input on the right */}
-          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 pb-1">
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={isLoading || isUploading}

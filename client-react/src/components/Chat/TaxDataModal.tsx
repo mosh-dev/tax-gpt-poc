@@ -30,8 +30,71 @@ export default function TaxDataModal({
     return `CHF ${amount.toLocaleString()}`;
   };
 
+  const isYearField = (key: string): boolean => {
+    const yearFields = ['year', 'taxyear', 'fiscalyear', 'birthyear'];
+    return yearFields.includes(key.toLowerCase().replace(/[_\s]/g, ''));
+  };
+
+  const isCurrencyField = (key: string): boolean => {
+    const currencyFields = ['income', 'salary', 'deduction', 'tax', 'amount', 'expense', 'asset', 'wealth', 'contribution', 'pension', 'rent', 'cost', 'fee', 'payment', 'refund'];
+    const lowerKey = key.toLowerCase();
+    return currencyFields.some(field => lowerKey.includes(field));
+  };
+
+  const formatSimpleValue = (key: string, value: any): string => {
+    if (value === null || value === undefined) return '-';
+    if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+    if (typeof value === 'number') {
+      if (isYearField(key)) return String(value);
+      if (isCurrencyField(key) || value >= 100) return formatCurrency(value);
+      return String(value);
+    }
+    return String(value);
+  };
+
+  const renderValue = (key: string, value: any): React.ReactNode => {
+    if (value === null || value === undefined) return '-';
+    if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+    if (typeof value === 'number') {
+      if (isYearField(key)) return String(value);
+      if (isCurrencyField(key) || value >= 100) return formatCurrency(value);
+      return String(value);
+    }
+    if (typeof value === 'object') {
+      if (Array.isArray(value)) {
+        if (value.length === 0) return '-';
+        return (
+          <div className="space-y-1">
+            {value.map((item, idx) => (
+              <div key={idx} className="text-sm">
+                {typeof item === 'object'
+                  ? Object.entries(item).map(([k, v]) => `${k}: ${v}`).join(', ')
+                  : String(item)
+                }
+              </div>
+            ))}
+          </div>
+        );
+      }
+      // Nested object
+      const entries = Object.entries(value);
+      if (entries.length === 0) return '-';
+      return (
+        <div className="space-y-1">
+          {entries.map(([k, v]) => (
+            <div key={k} className="text-sm">
+              <span className="text-gray-500 capitalize">{k.replace(/([A-Z])/g, ' $1').trim()}:</span>{' '}
+              {formatSimpleValue(k, v)}
+            </div>
+          ))}
+        </div>
+      );
+    }
+    return String(value);
+  };
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200">
@@ -52,33 +115,27 @@ export default function TaxDataModal({
             </p>
           </div>
 
-          <div className="space-y-4">
+          <div className="space-y-3">
             {Object.entries(taxData).map(([key, value]) => (
-              <div key={key} className="flex justify-between py-2 border-b border-gray-100">
-                <span className="text-gray-700 font-medium capitalize">
+              <div key={key} className="py-2 border-b border-gray-100">
+                <div className="text-gray-500 text-sm font-medium capitalize mb-1">
                   {key.replace(/([A-Z])/g, ' $1').trim()}
-                </span>
-                <span className="text-gray-900 font-semibold">
-                  {typeof value === 'number' ? formatCurrency(value) : String(value)}
-                </span>
+                </div>
+                <div className="text-gray-900 font-semibold">
+                  {renderValue(key, value)}
+                </div>
               </div>
             ))}
           </div>
         </div>
 
         {/* Footer */}
-        <div className="flex gap-3 p-6 border-t border-gray-200">
-          <button
-            onClick={onCancel}
-            className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-          >
-            Cancel
-          </button>
+        <div className="p-6 border-t border-gray-200">
           <button
             onClick={onConfirm}
-            className="flex-1 px-4 py-2 bg-primary-600 rounded-lg hover:bg-primary-700 transition-colors"
+            className="w-full px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
           >
-            Confirm
+            Continue
           </button>
         </div>
       </div>

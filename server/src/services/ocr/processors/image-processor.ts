@@ -95,16 +95,12 @@ export class ImageProcessor extends BaseDocumentProcessor {
 
       console.log(`[ImageProcessor] Processing with tesseract.js: ${language}`);
 
-      // Ensure tesseract language directory exists
-      const langPath = getStoragePath('tesseract');
-      await fs.mkdir(langPath, { recursive: true });
+      // Create Tesseract worker
+      // tesseract.js will auto-download language files from CDN on first use
+      console.log(`[ImageProcessor] Creating Tesseract worker for language: ${language}`);
 
-      // Create Tesseract worker with custom language data path
       worker = await createWorker(language, config.oem, {
-        langPath: langPath,
-        cachePath: langPath,
-        // Optional: Add custom logger for debugging
-        // logger: m => console.log(m)
+        logger: m => console.log(`[Tesseract] ${m.status}: ${Math.round((m.progress || 0) * 100)}%`)
       });
 
       // Configure worker with PSM (Page Segmentation Mode)
