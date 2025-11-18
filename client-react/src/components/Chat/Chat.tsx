@@ -908,7 +908,7 @@ export default function Chat({ threadId }: ChatProps) {
       <div className="flex-shrink-0 border-gray-200 px-6 py-4 text-center">
         {error && (
           <div className="mb-4 p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm">
-            {error}
+            {JSON.stringify(error)}
           </div>
         )}
 
