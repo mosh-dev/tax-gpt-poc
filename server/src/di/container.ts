@@ -168,7 +168,7 @@ export let container: Container;
 /**
  * Initialize container
  */
-export function initializeContainer(baseUrl?: string): Container {
+export function initializeContainer(baseUrl: string): Container {
   container = new Container(baseUrl);
   return container;
 }

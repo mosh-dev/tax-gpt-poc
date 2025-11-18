@@ -8,12 +8,6 @@ pnpm-debug.log*
 # Build outputs
 dist/
 
-# Environment
-.env
-.env.local
-.env.dev
-.env.*.local
-
 # IDE
 .vscode/*
 !.vscode/settings.json

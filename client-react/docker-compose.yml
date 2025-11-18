@@ -3,8 +3,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-      args:
-        - AGENT_SERVER_URL=${AGENT_SERVER_URL:-}
     container_name: tax-gpt-client
     env_file:
       - .env.dev

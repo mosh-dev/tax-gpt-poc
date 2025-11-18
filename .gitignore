@@ -13,12 +13,6 @@ pnpm-debug.log*
 dist/
 /.angular/cache
 
-# Environment
-.env
-.env.local
-.env.dev
-.env.*.local
-
 # IDE
 .vscode/*
 !.vscode/settings.json
