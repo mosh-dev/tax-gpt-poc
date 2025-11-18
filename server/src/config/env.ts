@@ -7,7 +7,7 @@
 import dotenv from 'dotenv';
 
 // Load environment variables
-dotenv.config();
+dotenv.config({override: true});
 
 /**
  * Get required environment variable or throw error
@@ -53,8 +53,7 @@ export const env = {
   MONGODB_ATLAS_URI: getOptionalEnv('MONGODB_ATLAS_URI'),
 
   // File Upload Configuration
-  MAX_FILE_SIZE: parseInt(getRequiredEnv('MAX_FILE_SIZE'), 10),
-  UPLOAD_DIR: getRequiredEnv('UPLOAD_DIR'),
+  MAX_FILE_SIZE: parseInt(getRequiredEnv('MAX_FILE_SIZE'), 10)
 } as const;
 
 // Validate configuration at startup
