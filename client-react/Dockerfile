@@ -1,20 +1,18 @@
 # Frontend Dockerfile - React + Vite + Nginx
 
 # Stage 1: Build React App
-FROM node:20-alpine AS builder
+FROM node:22-alpine AS builder
 
 WORKDIR /app
 
 # Copy package files
-COPY package*.json ./
-
-# Install dependencies
-RUN npm ci
+COPY package.json ./
 
 # Copy source code and config files
 COPY . .
 
 # Build the React app
+RUN npm install
 RUN npm run build
 
 # Stage 2: Production - Nginx
