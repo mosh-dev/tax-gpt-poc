@@ -5,20 +5,15 @@
 
 import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
-import path from 'path';
 import { connectDatabase } from './config/database';
 import { getStoragePath } from './config/storage';
+import { env } from './config/env';
 import { TaxAgent } from './agent';
 import { initializeContainer } from './di';
 import { createConversationRoutes, createChatRoutes, createFileRoutes } from './presentation/http/routes';
 import { MastraAIAgentService, TesseractOCRService } from './infrastructure/services';
 
-// Load environment variables
-dotenv.config();
-
 const app: Express = express();
-const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors({
@@ -51,8 +46,7 @@ async function setupApplication() {
   await connectDatabase();
 
   // Initialize DI container
-  const baseUrl = process.env.BASE_URL || `http://localhost:${PORT}`;
-  const container = initializeContainer(baseUrl);
+  const container = initializeContainer(env.BASE_URL);
 
   console.log('[Setup] DI Container initialized');
 
@@ -103,8 +97,8 @@ async function setupApplication() {
 
     res.status(500).json({
       error: 'Internal Server Error',
-      message: process.env.NODE_ENV === 'development' ? err.message : 'Something went wrong',
-      ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
+      message: env.NODE_ENV === 'development' ? err.message : 'Something went wrong',
+      ...(env.NODE_ENV === 'development' && { stack: err.stack })
     });
   });
 }
@@ -116,14 +110,15 @@ async function startServer() {
   try {
     await setupApplication();
 
-    app.listen(PORT, () => {
+    app.listen(env.PORT, () => {
       console.log(`\n[Tax-GPT] API Server is running (Clean Architecture)`);
-      console.log(`[Server] Port: ${PORT}`);
-      console.log(`[Server] Environment: ${process.env.NODE_ENV || 'development'}`);
-      console.log(`[Server] API: http://localhost:${PORT}/api`);
-      console.log(`[Server] Health: http://localhost:${PORT}/api/health`);
-      console.log(`[Server] Files: http://localhost:${PORT}/files`);
-      console.log(`[Server] LMStudio: ${process.env.LMSTUDIO_URL || 'http://192.168.0.107:1234'}\n`);
+      console.log(`[Server] Port: ${env.PORT}`);
+      console.log(`[Server] Environment: ${env.NODE_ENV}`);
+      console.log(`[Server] Base URL: ${env.BASE_URL}`);
+      console.log(`[Server] API: ${env.BASE_URL}/api`);
+      console.log(`[Server] Health: ${env.BASE_URL}/api/health`);
+      console.log(`[Server] Files: ${env.BASE_URL}/files`);
+      console.log(`[Server] LLM: ${env.LLM_BASE_URL}\n`);
     });
   } catch (error) {
     console.error('[Server] Failed to start:', error);

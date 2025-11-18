@@ -1,6 +1,6 @@
 import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
-import { getOpenAiModel } from '../config/lmstudio';
+import { getOpenAiModel } from '../config/llm';
 import { getTaxDataTool, calculateDeductionsTool, generateTaxPDFTool } from './tools';
 import { processDocumentsTool } from './tools/process-documents-tool';
 import { createMastraMemory, createMemoryConfigFromEnv } from './mastra-memory';

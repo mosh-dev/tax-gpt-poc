@@ -71,7 +71,7 @@ export class Container {
   public chatController?: ChatController; // Optional, requires stream chat use case
   public fileController?: FileController; // Optional, requires upload/process use cases
 
-  constructor(baseUrl: string = 'http://localhost:3000') {
+  constructor(baseUrl: string) {
     // 1. Initialize repositories
     this.conversationRepository = new MongoConversationRepository();
     this.messageRepository = new MongoMessageRepository();

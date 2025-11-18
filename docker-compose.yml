@@ -1,5 +1,8 @@
 version: '3.8'
 
+# Combined docker-compose for running both client and server together
+# For separate deployment, use individual docker-compose files in server/ and client-react/
+
 services:
   # Backend API Server
   server:
@@ -9,11 +12,9 @@ services:
     container_name: tax-gpt-server
     ports:
       - "3000:3000"
-    environment:
-      - NODE_ENV=production
-      - PORT=3000
+    env_file:
+      - ./server/.env.dev
     extra_hosts:
-      # Enable host.docker.internal on Linux
       - "host.docker.internal:host-gateway"
     restart: unless-stopped
     networks:
@@ -25,15 +26,18 @@ services:
       retries: 3
       start_period: 40s
     volumes:
-      # Centralized storage for all files (uploads, PDFs, temp, tesseract data)
-      - ./server/storage:/app/server/storage
+      - ./server/storage:/app/storage
 
   # Frontend Client (React + Nginx)
   client:
     build:
       context: ./client-react
       dockerfile: Dockerfile
+      args:
+        - AGENT_SERVER_URL=${AGENT_SERVER_URL:-}
     container_name: tax-gpt-client
+    env_file:
+      - ./client-react/.env.dev
     ports:
       - "80:80"
     depends_on:
@@ -51,7 +55,3 @@ services:
 networks:
   tax-gpt-network:
     driver: bridge
-
-volumes:
-  mongodb-data:
-    driver: local

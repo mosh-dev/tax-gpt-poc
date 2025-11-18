@@ -62,9 +62,12 @@ export class MongoRepository {
       return;
     }
 
+    // Import env here to avoid circular dependency
+    const { env } = require('../config/env');
+
     console.log('[MongoRepository] Attempting to reconnect to database...');
     try {
-      await mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/tax-gpt');
+      await mongoose.connect(env.MONGODB_URI);
       console.log('[MongoRepository] Successfully reconnected to database');
     } catch (error) {
       console.error('[MongoRepository] Failed to reconnect to database:', error);

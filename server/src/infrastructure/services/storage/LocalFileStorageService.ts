@@ -12,7 +12,7 @@ export class LocalFileStorageService implements IFileStorageService {
   private readonly baseUrl: string;
   private readonly storagePath: string;
 
-  constructor(baseUrl: string = 'http://localhost:3000') {
+  constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
     this.storagePath = getStoragePath('files');
   }

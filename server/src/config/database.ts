@@ -4,8 +4,9 @@
  */
 
 import mongoose from 'mongoose';
+import { env } from './env';
 
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/tax-gpt';
+const MONGODB_URI = env.MONGODB_URI;
 
 /**
  * Connect to MongoDB
@@ -17,7 +18,7 @@ export async function connectDatabase(): Promise<void> {
     console.log(`[Database] URI: ${MONGODB_URI}`);
   } catch (error) {
     console.error('[Database] Connection failed:', error);
-    console.error('[Database] Make sure MongoDB is running on localhost:27017');
+    console.error(`[Database] Make sure MongoDB is running at ${MONGODB_URI}`);
     // Don't exit process, allow server to run without DB for now
     console.warn('[Database] Server will continue without database features');
   }

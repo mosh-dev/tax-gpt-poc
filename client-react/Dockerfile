@@ -5,14 +5,20 @@ FROM node:22-alpine AS builder
 
 WORKDIR /app
 
+# Build argument for API URL (Vite needs this at build time)
+ARG AGENT_SERVER_URL
+ENV AGENT_SERVER_URL=$AGENT_SERVER_URL
+
 # Copy package files
 COPY package.json ./
+
+# Install dependencies
+RUN npm install
 
 # Copy source code and config files
 COPY . .
 
-# Build the React app
-RUN npm install
+# Build the React app (Vite will inject AGENT_SERVER_URL)
 RUN npm run build
 
 # Stage 2: Production - Nginx

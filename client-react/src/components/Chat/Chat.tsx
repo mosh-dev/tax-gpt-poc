@@ -4,7 +4,7 @@ import { Send, Paperclip, X } from 'lucide-react';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import type { Message, StreamEvent } from '../../types';
-import { apiService } from '../../services/api';
+import { apiService, API_BASE_URL } from '../../services/api';
 import { useConversations } from '../../contexts/ConversationContext';
 import TaxDataModal from './TaxDataModal';
 
@@ -199,7 +199,7 @@ export default function Chat({ threadId }: ChatProps) {
 
       case 'generate-tax-pdf':
         if (event.result?.success && event.result?.downloadUrl) {
-          const downloadUrl = `http://localhost:3000${event.result.downloadUrl}`;
+          const downloadUrl = `${API_BASE_URL}${event.result.downloadUrl}`;
           assistantMessage.content += `\n\n${event.result.message}\n\n📄 [Download PDF](${downloadUrl})`;
         } else {
           assistantMessage.content += `\n\nFailed to generate PDF: ${event.result?.error || 'Unknown error'}`;
