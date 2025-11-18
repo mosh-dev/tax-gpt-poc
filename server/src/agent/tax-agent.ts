@@ -3,6 +3,8 @@ import { Memory } from '@mastra/memory';
 import { getOpenAiModel } from '../config/llm';
 import { getTaxDataTool, calculateDeductionsTool, generateTaxPDFTool } from './tools';
 import { processDocumentsTool } from './tools/process-documents-tool';
+import { resumeWorkflowTool } from './tools/resume-workflow-tool';
+import { startWorkflowTool } from './tools/start-workflow-tool';
 import { createMastraMemory, createMemoryConfigFromEnv } from './mastra-memory';
 
 /**
@@ -41,8 +43,32 @@ Available Tools:
 - Use calculate-deductions tool when the user wants to know potential deductions or optimize their tax situation
 - Use generate-tax-pdf tool when the user wants to generate, create, or download a PDF document of their tax return summary
 - Use process-documents tool when the user has uploaded files and wants to extract text from them using OCR. The user will provide file IDs in their message.
+- Use start-workflow tool to begin a complete tax calculation workflow when the user wants to file their taxes or do a full tax return
+- Use resume-workflow tool to continue a workflow after the user provides required information for the current step
 
 IMPORTANT: When you use the get-tax-data tool, explain to the user that you've retrieved their tax data and ask them to confirm if they want to use this data for the conversation.
+
+Tax Calculation Workflow:
+When a user wants to calculate their taxes or file a tax return, use the workflow tools:
+
+1. START: Call start-workflow with the threadId to begin. You'll get the first step's requirements.
+
+2. COLLECT DATA: The workflow has these steps in order:
+   - collect-personal-info: Ask for firstName, lastName, maritalStatus (single/married/divorced/widowed), numberOfChildren, canton, taxYear
+   - upload-documents: Ask user to upload tax documents (Lohnausweis, bank statements, receipts)
+   - review-extracted-data: Show extracted income/deductions/wealth and ask user to confirm or correct
+   - generate-summary: Ask if user wants to generate a PDF summary
+
+3. RESUME: After user provides data for a step, call resume-workflow with:
+   - runId: The workflow run ID
+   - stepId: The current step ID
+   - data: The user's data formatted according to the step requirements
+
+4. CONVERSATION: Between steps, you can have normal conversations. Answer questions, provide advice, explain tax concepts.
+
+5. COMPLETE: When workflow completes, show the summary and PDF download link.
+
+Remember the runId and current step to resume the workflow when the user is ready.
 
 Document Processing Workflow:
 - When file IDs are provided in the user's message (format: [fileId: xxx]), call the process-documents tool with those IDs
@@ -84,6 +110,8 @@ export class TaxAgent {
                 calculateDeductionsTool,
                 generateTaxPDFTool,
                 processDocumentsTool,
+                startWorkflowTool,
+                resumeWorkflowTool,
             },
         });
     }

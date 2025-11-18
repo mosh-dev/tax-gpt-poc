@@ -9,6 +9,26 @@ import { z } from 'zod';
 import { ocrService } from '../../services/ocr';
 import { getFileMetadata, markFileAsProcessed } from '../../routes/files';
 
+/**
+ * Sanitize extracted text to prevent JSON parsing errors
+ * Removes or replaces problematic characters
+ */
+function sanitizeExtractedText(text: string): string {
+  if (!text) return '';
+
+  return text
+    // Replace control characters except newlines and tabs
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+    // Normalize different newline formats to \n
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
+    // Remove null bytes
+    .replace(/\0/g, '')
+    // Trim excessive whitespace while preserving paragraph structure
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
 export const processDocumentsTool = createTool({
   id: 'process-documents',
   description: 'Process uploaded documents with OCR to extract text. Use this when the user has uploaded files and wants to analyze them.',
@@ -45,9 +65,12 @@ export const processDocumentsTool = createTool({
           });
 
           if (ocrResult.status === 'completed') {
+            // Sanitize extracted text to prevent JSON parsing errors
+            const sanitizedText = sanitizeExtractedText(ocrResult.text);
+
             // Mark as processed and save OCR result to database
             await markFileAsProcessed(fileId, {
-              text: ocrResult.text,
+              text: sanitizedText,
               language: ocrResult.language,
               confidence: ocrResult.confidence,
               wordCount: ocrResult.wordCount,
@@ -57,7 +80,7 @@ export const processDocumentsTool = createTool({
               fileId,
               fileName: metadata.originalName,
               success: true,
-              extractedText: ocrResult.text,
+              extractedText: sanitizedText,
               wordCount: ocrResult.wordCount,
               language: ocrResult.language,
               processingTime: ocrResult.metadata.processingTime,

@@ -16,31 +16,45 @@ export class StreamChatUseCase {
     private aiAgentService: IAIAgentService
   ) {}
 
-  async *execute(request: StreamChatRequestDTO): AsyncIterable<StreamEventDTO> {
-    // 1. Get or create conversation
-    let conversationId: ConversationId;
+  /**
+   * Generate a conversation title from the first message (first 3 words)
+   */
+  private generateTitleFromMessage(message: string): string {
+    // Clean up message - remove workflow context markers
+    const cleanMessage = message
+      .replace(/\[Context:.*?\]/g, '')
+      .replace(/\[Workflow Context\][\s\S]*?(?=\n\n|$)/g, '')
+      .replace(/\[fileId:.*?\]/g, '')
+      .replace(/\*\*/g, '')
+      .trim();
 
-    if (request.conversationId) {
-      conversationId = ConversationId.create(request.conversationId);
-      const existing = await this.conversationRepository.findById(conversationId);
-
-      if (!existing) {
-        // Create new conversation if ID provided but doesn't exist
-        const newConversation = new Conversation(
-          conversationId,
-          'New Tax Conversation'
-        );
-        await this.conversationRepository.create(newConversation);
-      }
-    } else {
-      // Create new conversation
-      conversationId = ConversationId.generate();
-      const newConversation = new Conversation(
-        conversationId,
-        'New Tax Conversation'
-      );
-      await this.conversationRepository.create(newConversation);
+    // Get first 3 words
+    const words = cleanMessage.split(/\s+/).filter(w => w.length > 0);
+    if (words.length > 0) {
+      const title = words.slice(0, 3).join(' ');
+      // Capitalize first letter
+      return title.charAt(0).toUpperCase() + title.slice(1);
     }
+
+    return 'Tax Conversation';
+  }
+
+  async *execute(request: StreamChatRequestDTO): AsyncIterable<StreamEventDTO> {
+    // 1. Get or create conversation (atomic operation to prevent race conditions)
+    const conversationId = request.conversationId
+      ? ConversationId.create(request.conversationId)
+      : ConversationId.generate();
+
+    // Generate title from first message (first 3 words)
+    const title = this.generateTitleFromMessage(request.message);
+
+    const conversation = new Conversation(
+      conversationId,
+      title
+    );
+
+    // Use findOrCreate for atomic operation
+    await this.conversationRepository.findOrCreate(conversation);
 
     // 2. Save user message
     const userMessage = new Message(

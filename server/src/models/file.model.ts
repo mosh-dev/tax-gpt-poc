@@ -89,7 +89,7 @@ const FileSchema = new Schema<IFile>(
     },
     expiresAt: {
       type: Date,
-      index: true,
+      // TTL index is defined below with expireAfterSeconds
     },
   },
   {

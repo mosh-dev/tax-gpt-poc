@@ -41,4 +41,9 @@ export interface IConversationRepository {
    * Check if conversation exists
    */
   exists(id: ConversationId): Promise<boolean>;
+
+  /**
+   * Find or create conversation (atomic operation)
+   */
+  findOrCreate(conversation: Conversation): Promise<Conversation>;
 }

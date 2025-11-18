@@ -3,7 +3,7 @@
  * Handles all communication with the backend server
  */
 
-import type { Conversation, Message, FileMetadata, StreamEvent } from '../types';
+import type { Conversation, Message, FileMetadata, StreamEvent, WorkflowStatus } from '../types';
 
 // Get API base URL from environment variable
 // Empty string is valid (for Docker with nginx proxy using relative URLs)
@@ -56,6 +56,25 @@ class ApiService {
     });
     if (!response.ok) {
       throw new Error('Failed to delete conversation');
+    }
+  }
+
+  /**
+   * Save messages to a conversation (for workflow steps)
+   */
+  async saveMessages(threadId: string, messages: Array<{ role: string; content: string }>): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/api/chat/messages`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        threadId,
+        messages,
+      }),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to save messages');
     }
   }
 
@@ -187,6 +206,89 @@ class ApiService {
     if (!response.ok) {
       throw new Error('Failed to delete file');
     }
+  }
+
+  // === Workflow API Methods ===
+
+  /**
+   * Start a tax calculation workflow
+   */
+  async startTaxCalculationWorkflow(threadId: string, message?: string): Promise<WorkflowStatus> {
+    const response = await fetch(`${API_BASE_URL}/api/workflows/tax-calculation/start`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ threadId, message }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to start workflow');
+    }
+
+    const data = await response.json();
+    return data.workflow;
+  }
+
+  /**
+   * Resume a suspended workflow with user data
+   */
+  async resumeWorkflow(runId: string, stepId: string, data: any): Promise<WorkflowStatus> {
+    const response = await fetch(`${API_BASE_URL}/api/workflows/${runId}/resume`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ stepId, data }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to resume workflow');
+    }
+
+    const result = await response.json();
+    return result.workflow;
+  }
+
+  /**
+   * Get workflow status
+   */
+  async getWorkflowStatus(runId: string): Promise<WorkflowStatus> {
+    const response = await fetch(`${API_BASE_URL}/api/workflows/${runId}/status`);
+
+    if (!response.ok) {
+      throw new Error('Failed to get workflow status');
+    }
+
+    const data = await response.json();
+    return data.workflow;
+  }
+
+  /**
+   * Cancel a workflow
+   */
+  async cancelWorkflow(runId: string): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/api/workflows/${runId}`, {
+      method: 'DELETE',
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to cancel workflow');
+    }
+  }
+
+  /**
+   * Get active workflows for a thread
+   */
+  async getActiveWorkflows(threadId: string): Promise<WorkflowStatus[]> {
+    const response = await fetch(`${API_BASE_URL}/api/workflows/thread/${threadId}`);
+
+    if (!response.ok) {
+      throw new Error('Failed to get active workflows');
+    }
+
+    const data = await response.json();
+    return data.workflows;
   }
 }
 

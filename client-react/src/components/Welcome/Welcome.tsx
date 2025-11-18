@@ -15,14 +15,17 @@ const starterPrompts = [
   {
     icon: '✨',
     title: 'Explain Tax calculation in simple terms',
+    isWorkflow: false,
   },
   {
     icon: '📊',
     title: 'Calculate my Tax with all the document required',
+    isWorkflow: true, // This triggers the workflow
   },
   {
     icon: '💡',
     title: 'Advise me - How can I reduce my taxes effectively?',
+    isWorkflow: false,
   },
 ];
 
@@ -65,8 +68,22 @@ export default function Welcome({ }: WelcomeProps) {
     }
   };
 
-  const handlePromptClick = (prompt: string) => {
-    handleStartNewChat(prompt);
+  const handlePromptClick = (prompt: typeof starterPrompts[0]) => {
+    if (prompt.isWorkflow) {
+      // Start workflow - navigate with workflow flag
+      const newThreadId = uuidv4();
+      navigate(`/?threadId=${newThreadId}`, {
+        replace: true,
+        state: {
+          startWorkflow: true,
+          workflowType: 'tax-calculation',
+        }
+      });
+      loadConversations();
+    } else {
+      // Regular chat
+      handleStartNewChat(prompt.title);
+    }
   };
 
   const handleSendMessage = (message: string, files: File[]) => {
@@ -91,7 +108,7 @@ export default function Welcome({ }: WelcomeProps) {
           {starterPrompts.map((prompt, index) => (
             <button
               key={index}
-              onClick={() => handlePromptClick(prompt.title)}
+              onClick={() => handlePromptClick(prompt)}
               disabled={isSending}
               className="group relative bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-primary-500 hover:shadow-lg transition-all duration-200 text-left disabled:opacity-50 disabled:cursor-not-allowed"
             >
@@ -102,6 +119,11 @@ export default function Welcome({ }: WelcomeProps) {
                 <p className="text-sm text-gray-700 font-medium leading-relaxed">
                   {prompt.title}
                 </p>
+                {prompt.isWorkflow && (
+                  <span className="text-xs bg-primary-100 text-primary-700 px-2 py-0.5 rounded">
+                    Interactive
+                  </span>
+                )}
               </div>
             </button>
           ))}

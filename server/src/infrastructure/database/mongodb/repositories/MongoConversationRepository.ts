@@ -67,4 +67,29 @@ export class MongoConversationRepository implements IConversationRepository {
     const count = await ConversationModel.countDocuments({ conversationId: id.value });
     return count > 0;
   }
+
+  async findOrCreate(conversation: Conversation): Promise<Conversation> {
+    const data = ConversationMapper.toPersistence(conversation);
+
+    // Use findOneAndUpdate with upsert for atomic operation
+    const doc = await ConversationModel.findOneAndUpdate(
+      { conversationId: conversation.id.value },
+      {
+        $setOnInsert: {
+          conversationId: data.conversationId,
+          title: data.title,
+          taxYear: data.taxYear,
+          userId: data.userId,
+          metadata: data.metadata || {},
+        },
+      },
+      {
+        upsert: true,
+        new: true,
+        setDefaultsOnInsert: true,
+      }
+    ).lean();
+
+    return ConversationMapper.toDomain(doc!);
+  }
 }
