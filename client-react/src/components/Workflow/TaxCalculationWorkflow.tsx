@@ -174,7 +174,7 @@ export default function TaxCalculationWorkflow({
 // === Progress Indicator ===
 
 function WorkflowProgress({ currentStep }: { currentStep?: string }) {
-  const steps = [
+  const steps: string[] = [
     WORKFLOW_STEPS.COLLECT_PERSONAL_INFO,
     WORKFLOW_STEPS.UPLOAD_DOCUMENTS,
     WORKFLOW_STEPS.REVIEW_EXTRACTED_DATA,

@@ -1,14 +1,14 @@
-import { useState, useEffect, useRef } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Send, Paperclip, X } from 'lucide-react';
-import { marked } from 'marked';
+import {useEffect, useRef, useState} from 'react';
+import {useLocation, useNavigate} from 'react-router-dom';
+import {Paperclip, Send, X} from 'lucide-react';
+import {marked} from 'marked';
 import DOMPurify from 'dompurify';
-import type { Message, StreamEvent, WorkflowStatus, TaxDocument } from '../../types';
-import { apiService, API_BASE_URL } from '../../services/api';
-import { useConversations } from '../../contexts/ConversationContext';
+import type {Message, StreamEvent, TaxDocument, WorkflowStatus} from '../../types';
+import {apiService} from '../../services/api';
+import {useConversations} from '../../contexts/ConversationContext';
 import TaxDataModal from './TaxDataModal';
 import WorkflowStepMessage from './WorkflowStepMessage';
-import { WORKFLOW_IDS, WORKFLOW_STEPS, TOOL_NAMES, STEP_TITLES, WORKFLOW_STATUS } from '../../constants';
+import {STEP_TITLES, TOOL_NAMES, WORKFLOW_IDS, WORKFLOW_STATUS, WORKFLOW_STEPS} from '../../constants';
 
 interface LocationState {
   initialMessage?: string;
@@ -340,17 +340,15 @@ export default function Chat({ threadId }: ChatProps) {
   // Clean up message content for display (remove internal instructions)
   const cleanMessageContent = (content: string): string => {
     // Remove workflow resume instructions meant for LLM
-    const cleaned = content
-      // Remove the IMPORTANT instruction block for resume-workflow (handles nested JSON)
-      .replace(/\n\n\*\*IMPORTANT: Call resume-workflow with this EXACT data:\*\*\n- stepId: "[^"]+"\n- data: .+\n?/g, '')
-      .replace(/\nDo NOT modify the stepId or data structure\. Pass them exactly as shown above\.\n?/g, '')
-      // Remove [Workflow Context] section
-      .replace(/\n\[Workflow Context\]\n- Run ID: [^\n]+\n- Step ID: [^\n]+\n?/g, '')
-      // Remove [Context: threadId=xxx] tags
-      .replace(/\s*\[Context: threadId=[^\]]+\]/g, '')
-      .trim();
-
-    return cleaned;
+      return content
+        // Remove the IMPORTANT instruction block for resume-workflow (handles nested JSON)
+        .replace(/\n\n\*\*IMPORTANT: Call resume-workflow with this EXACT data:\*\*\n- stepId: "[^"]+"\n- data: .+\n?/g, '')
+        .replace(/\nDo NOT modify the stepId or data structure\. Pass them exactly as shown above\.\n?/g, '')
+        // Remove [Workflow Context] section
+        .replace(/\n\[Workflow Context]\n- Run ID: [^\n]+\n- Step ID: [^\n]+\n?/g, '')
+        // Remove [Context: threadId=xxx] tags
+        .replace(/\s*\[Context: threadId=[^\]]+]/g, '')
+        .trim();
   };
 
   const parseMarkdown = (content: string): string => {
