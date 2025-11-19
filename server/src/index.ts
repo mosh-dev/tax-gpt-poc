@@ -8,6 +8,7 @@ import cors from 'cors';
 import { connectDatabase } from './config/database';
 import { getStoragePath } from './config/storage';
 import { env } from './config/env';
+import { initializeLLMClient } from './config/llm';
 import { initializeTaxAgent } from './agent';
 import { initializeContainer } from './di';
 import { createConversationRoutes, createChatRoutes, createFileRoutes, workflowRoutes, authRoutes, agentConfigRoutes, employeeRoutes } from './presentation/http/routes';
@@ -49,6 +50,9 @@ async function setupApplication() {
 
   // Run seed scripts
   await runAllSeeds();
+
+  // Initialize LLM client with API key from database
+  await initializeLLMClient();
 
   // Initialize DI container
   const container = initializeContainer(env.BASE_URL);

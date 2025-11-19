@@ -9,3 +9,4 @@ export { File, IFile, FileData } from './file.model';
 export { User, IUser, UserData } from './user.model';
 export { AgentConfig, IAgentConfig, AgentConfigData } from './agent-config.model';
 export { Employee, IEmployee, EmployeeData } from './employee.model';
+export { Secret, ISecret, SecretData } from './secret.model';

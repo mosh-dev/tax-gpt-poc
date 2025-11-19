@@ -1,25 +1,57 @@
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { env } from './env';
+import { getLLMApiKey } from '../services/secrets.service';
 
 /**
- * LLM client configured as OpenAI-compatible provider
- * Connects to LMStudio, OpenAI, or any OpenAI-compatible endpoint
+ * LLM client instance (initialized after database connection)
  */
-export const llmClient = createOpenAICompatible({
-  name: 'llm-provider',
-  baseURL: env.LLM_BASE_URL,
-  headers: {
-    'Content-Type': 'application/json',
-    ...(env.LLM_API_KEY && { 'Authorization': `Bearer ${env.LLM_API_KEY}` }),
-  },
-});
+let llmClient: ReturnType<typeof createOpenAICompatible> | null = null;
+
+/**
+ * Initialize LLM client with API key from database
+ * Should be called after database connection is established
+ */
+export async function initializeLLMClient(): Promise<void> {
+  console.log('[LLM] Fetching API key from database...');
+
+  // Fetch API key from database only (no env fallback)
+  const apiKey = await getLLMApiKey();
+
+  if (!apiKey) {
+    throw new Error('LLM API key not found in database. Please ensure the "llmkey" secret is set in the secrets collection.');
+  }
+
+  console.log('[LLM] API key retrieved successfully from database');
+
+  // Create LLM client with database API key
+  llmClient = createOpenAICompatible({
+    name: 'llm-provider',
+    baseURL: env.LLM_BASE_URL,
+    headers: {
+      'Content-Type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+    },
+  });
+
+  console.log('[LLM] Client initialized successfully');
+  console.log(`[LLM] Base URL: ${env.LLM_BASE_URL}`);
+  console.log(`[LLM] Model: ${env.LLM_MODEL}`);
+}
+
+/**
+ * Get the LLM client instance
+ * Throws error if client not initialized
+ */
+export function getLLMClient(): ReturnType<typeof createOpenAICompatible> {
+  if (!llmClient) {
+    throw new Error('LLM client not initialized. Call initializeLLMClient() first.');
+  }
+  return llmClient;
+}
 
 /**
  * Get the configured LLM model
  */
 export const getOpenAiModel = () => {
-  return llmClient(env.LLM_MODEL);
+  return getLLMClient()(env.LLM_MODEL);
 };
-
-// Keep backward compatibility alias
-export const lmStudioClient = llmClient;

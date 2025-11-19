@@ -43,7 +43,6 @@ export const env = {
   // LLM Configuration (LMStudio, OpenAI, or compatible)
   LLM_BASE_URL: getRequiredEnv('LLM_BASE_URL'),
   LLM_MODEL: getRequiredEnv('LLM_MODEL'),
-  LLM_API_KEY: getOptionalEnv('LLM_API_KEY'),
 
   // MongoDB Configuration
   MONGODB_URI: getRequiredEnv('MONGODB_URI'),
