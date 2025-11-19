@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, MessageSquare, Trash2, HelpCircle, FileText, LogOut, User, Settings } from 'lucide-react';
+import { Search, MessageSquare, Trash2, HelpCircle, FileText, LogOut, User, Settings, Users } from 'lucide-react';
 import type { Conversation } from '../../types';
 
 interface SidebarProps {
@@ -14,6 +14,7 @@ interface SidebarProps {
   userName?: string;
   onLogout?: () => void;
   onOpenConfig?: () => void;
+  onOpenEmployeeData?: () => void;
 }
 
 export default function Sidebar({
@@ -27,7 +28,8 @@ export default function Sidebar({
   loading,
   userName,
   onLogout,
-  onOpenConfig
+  onOpenConfig,
+  onOpenEmployeeData
 }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -151,6 +153,15 @@ export default function Sidebar({
               >
                 <Settings className="w-4 h-4" />
                 Agent Config
+              </button>
+            )}
+            {onOpenEmployeeData && (
+              <button
+                onClick={onOpenEmployeeData}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 text-sm"
+              >
+                <Users className="w-4 h-4" />
+                Mock Data
               </button>
             )}
             <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 text-sm">

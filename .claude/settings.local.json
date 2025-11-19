@@ -22,7 +22,8 @@
       "Bash(npm create:*)",
       "Bash(node:*)",
       "Bash(npm run type-check:*)",
-      "Bash(npm view:*)"
+      "Bash(npm view:*)",
+      "Bash(del \"C:\\Users\\mtush\\WebstormProjects\\tax-gpt\\server\\src\\services\\mock-data.ts\")"
     ],
     "deny": [],
     "ask": []

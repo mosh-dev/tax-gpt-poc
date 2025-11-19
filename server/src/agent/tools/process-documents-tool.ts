@@ -6,27 +6,41 @@
 
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
+import stringify from 'safe-stable-stringify';
 import { ocrService } from '../../services/ocr';
 import { getFileMetadata, markFileAsProcessed } from '../../routes/files';
 
 /**
- * Sanitize extracted text to prevent JSON parsing errors
- * Removes or replaces problematic characters
+ * Safely serialize any value to ensure it's JSON-safe
+ * Uses safe-stable-stringify to handle all edge cases
  */
-function sanitizeExtractedText(text: string): string {
-  if (!text) return '';
+function safeSerialize(value: any): any {
+  if (typeof value === 'string') {
+    // Parse and re-stringify to clean up any problematic characters
+    try {
+      const serialized = stringify(value);
+      // Remove the surrounding quotes added by stringify
+      return serialized ? JSON.parse(serialized) : '';
+    } catch {
+      // Fallback: basic cleanup
+      return value
+        .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+        .replace(/\r\n/g, '\n')
+        .replace(/\r/g, '\n')
+        .trim();
+    }
+  }
+  return value;
+}
 
-  return text
-    // Replace control characters except newlines and tabs
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
-    // Normalize different newline formats to \n
-    .replace(/\r\n/g, '\n')
-    .replace(/\r/g, '\n')
-    // Remove null bytes
-    .replace(/\0/g, '')
-    // Trim excessive whitespace while preserving paragraph structure
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
+/**
+ * Create a safe result object that's guaranteed to be JSON-serializable
+ */
+function createSafeResult(result: any): any {
+  // Use safe-stable-stringify to serialize, then parse back
+  // This ensures all values are JSON-safe
+  const serialized = stringify(result);
+  return serialized ? JSON.parse(serialized) : result;
 }
 
 export const processDocumentsTool = createTool({
@@ -65,12 +79,12 @@ export const processDocumentsTool = createTool({
           });
 
           if (ocrResult.status === 'completed') {
-            // Sanitize extracted text to prevent JSON parsing errors
-            const sanitizedText = sanitizeExtractedText(ocrResult.text);
+            // Safely serialize extracted text to prevent JSON parsing errors
+            const safeText = safeSerialize(ocrResult.text);
 
             // Mark as processed and save OCR result to database
             await markFileAsProcessed(fileId, {
-              text: sanitizedText,
+              text: safeText,
               language: ocrResult.language,
               confidence: ocrResult.confidence,
               wordCount: ocrResult.wordCount,
@@ -80,7 +94,7 @@ export const processDocumentsTool = createTool({
               fileId,
               fileName: metadata.originalName,
               success: true,
-              extractedText: sanitizedText,
+              extractedText: safeText,
               wordCount: ocrResult.wordCount,
               language: ocrResult.language,
               processingTime: ocrResult.metadata.processingTime,
@@ -131,19 +145,20 @@ export const processDocumentsTool = createTool({
 
       console.log(`[ProcessDocumentsTool] Summary: ${successful}/${fileIds.length} successful, ${totalWords} total words`);
 
-      return {
+      // Wrap entire result in createSafeResult to ensure JSON-safe output
+      return createSafeResult({
         success: true,
         message: `Processed ${successful}/${fileIds.length} documents successfully. Extracted ${totalWords} words total.`,
         ...summary
-      };
+      });
 
     } catch (error) {
       console.error('[ProcessDocumentsTool] Error:', error);
-      return {
+      return createSafeResult({
         success: false,
         message: 'Failed to process documents',
         error: error instanceof Error ? error.message : 'Unknown error'
-      };
+      });
     }
   },
 });

@@ -6,6 +6,7 @@ import Welcome from './components/Welcome/Welcome';
 import ErrorBoundary from './components/ErrorBoundary';
 import Login from './components/Login/Login';
 import AgentConfig from './components/AgentConfig/AgentConfig';
+import EmployeeData from './components/EmployeeData/EmployeeData';
 import { useConversations } from './contexts/ConversationContext';
 import { authService } from './services/auth';
 import { AUTH_ERROR_EVENT } from './services/api';
@@ -20,6 +21,7 @@ function App() {
 
   const threadId = searchParams.get('threadId');
   const isConfigPage = location.pathname === '/agent-config';
+  const isEmployeeDataPage = location.pathname === '/employee-data';
 
   // Update context when URL changes
   useEffect(() => {
@@ -77,7 +79,7 @@ function App() {
   return (
     <ErrorBoundary>
       <div className="flex h-screen bg-gray-50 overflow-hidden">
-        {!isConfigPage && (
+        {!isConfigPage && !isEmployeeDataPage && (
           <Sidebar
             conversations={conversations}
             currentConversationId={threadId}
@@ -90,12 +92,13 @@ function App() {
             userName={authService.getUser()?.name}
             onLogout={handleLogout}
             onOpenConfig={() => navigate('/agent-config')}
+            onOpenEmployeeData={() => navigate('/employee-data')}
           />
         )}
 
         <main className="flex-1 flex flex-col overflow-hidden">
           {/* Header with Hamburger Menu and Logo - always present for consistent layout */}
-          {!isConfigPage && (
+          {!isConfigPage && !isEmployeeDataPage && (
             <div className={`flex items-center gap-4 px-6 py-4 relative z-50 ${sidebarOpen ? 'invisible' : ''}`}>
               <button
                 onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -112,6 +115,7 @@ function App() {
 
           <Routes>
             <Route path="/agent-config" element={<AgentConfig />} />
+            <Route path="/employee-data" element={<EmployeeData />} />
             <Route path="*" element={
               <div className="max-w-[1200px] w-full mx-auto flex flex-col flex-1 overflow-hidden">
                 {threadId ? (

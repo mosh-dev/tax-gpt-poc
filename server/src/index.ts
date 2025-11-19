@@ -10,9 +10,10 @@ import { getStoragePath } from './config/storage';
 import { env } from './config/env';
 import { initializeTaxAgent } from './agent';
 import { initializeContainer } from './di';
-import { createConversationRoutes, createChatRoutes, createFileRoutes, workflowRoutes, authRoutes, agentConfigRoutes } from './presentation/http/routes';
-import { MastraAIAgentService, TesseractOCRService } from './infrastructure/services';
+import { createConversationRoutes, createChatRoutes, createFileRoutes, workflowRoutes, authRoutes, agentConfigRoutes, employeeRoutes } from './presentation/http/routes';
+import { MastraAIAgentService, TesseractOCRService } from './infrastructure';
 import { authMiddleware } from './middleware/auth.middleware';
+import { runAllSeeds } from './seeds';
 
 const app: Express = express();
 
@@ -45,6 +46,9 @@ app.get('/api/health', (req: Request, res: Response) => {
 async function setupApplication() {
   // Connect to MongoDB
   await connectDatabase();
+
+  // Run seed scripts
+  await runAllSeeds();
 
   // Initialize DI container
   const container = initializeContainer(env.BASE_URL);
@@ -84,6 +88,7 @@ async function setupApplication() {
   app.use('/api/files', authMiddleware, fileRoutes);
   app.use('/api/workflows', authMiddleware, workflowRoutes);
   app.use('/api/agent-config', authMiddleware, agentConfigRoutes);
+  app.use('/api/employees', authMiddleware, employeeRoutes);
 
   console.log('[Setup] Routes configured');
 

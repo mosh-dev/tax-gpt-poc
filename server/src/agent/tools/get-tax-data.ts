@@ -1,41 +1,46 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
-import { getMockTaxData } from '../../services/mock-data';
+import { Employee } from '../../models';
 
 /**
  * Tool to retrieve Swiss tax data for different scenarios
- * This simulates fetching user's tax information from a database or API
+ * Fetches employee tax information from the database
  */
 export const getTaxDataTool = createTool({
   id: 'get-tax-data',
-  description: 'Retrieves Swiss tax data for Canton Zurich based on a scenario (single, married, or freelancer). Use this tool when the user asks for their tax data, wants to load their tax information, or needs to see their current tax situation.',
+  description: 'Retrieves Swiss tax data for Canton Zurich based on a scenario. Available scenarios include: single (single employee), married (married couple), freelancer (self-employed), retiree (retired person), and young-professional (entry-level employee). Use this tool when the user asks for their tax data, wants to load their tax information, or needs to see their current tax situation.',
   inputSchema: z.object({
-    scenario: z.enum(['single', 'married', 'freelancer']).describe('The tax scenario to retrieve: single (single person), married (married couple), or freelancer (self-employed)'),
+    scenario: z.string().describe('The tax scenario to retrieve (e.g., single, married, freelancer, retiree, young-professional)'),
   }),
   outputSchema: z.object({
     success: z.boolean(),
     data: z.any().optional(),
     scenario: z.string(),
+    availableScenarios: z.array(z.string()).optional(),
     error: z.string().optional(),
   }),
   execute: async ({ scenario }) => {
-      console.log({ scenario });
+    console.log({ scenario });
     try {
+      // Get employee data from database for the requested scenario
+      const employee = await Employee.findOne({ scenarioId: scenario, isActive: true });
 
-      // Get mock data for the requested scenario
-      const taxData = getMockTaxData(scenario);
+      if (!employee) {
+        // Get list of available scenarios
+        const available = await Employee.find({ isActive: true }).select('scenarioId');
+        const availableScenarios = available.map(e => e.scenarioId);
 
-      if (!taxData) {
         return {
           success: false,
           scenario,
-          error: `Tax data not found for scenario: ${scenario}`,
+          availableScenarios,
+          error: `Tax data not found for scenario: ${scenario}. Available scenarios: ${availableScenarios.join(', ')}`,
         };
       }
 
       return {
         success: true,
-        data: taxData,
+        data: employee.taxData,
         scenario,
       };
     } catch (error: any) {
