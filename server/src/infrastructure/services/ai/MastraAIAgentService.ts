@@ -4,15 +4,9 @@
  */
 
 import { IAIAgentService, StreamEvent, ChatMessage } from '../../../core/application/services';
-import { TaxAgent } from '../../../agent';
+import { getTaxAgent } from '../../../agent';
 
 export class MastraAIAgentService implements IAIAgentService {
-  private taxAgent: TaxAgent;
-
-  constructor() {
-    this.taxAgent = new TaxAgent();
-  }
-
   async *streamChat(
     message: string,
     conversationHistory: ChatMessage[],
@@ -24,8 +18,11 @@ export class MastraAIAgentService implements IAIAgentService {
       throw new Error('threadId is required for conversation management');
     }
 
+    // Get the initialized tax agent (with DB instructions)
+    const taxAgent = getTaxAgent();
+
     // Stream from tax agent (threadId is mandatory)
-    for await (const event of this.taxAgent.streamChatWithTools(
+    for await (const event of taxAgent.streamChatWithTools(
       message,
       threadId,
       resourceId

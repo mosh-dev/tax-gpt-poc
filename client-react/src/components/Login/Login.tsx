@@ -3,7 +3,7 @@
  * Simple login form with username and password
  */
 
-import { useState, FormEvent } from 'react';
+import { useState, type FormEvent } from 'react';
 import { authService } from '../../services/auth';
 
 interface LoginProps {
@@ -44,7 +44,7 @@ export default function Login({ onLoginSuccess }: LoginProps) {
         </div>
 
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm space-y-4">
+          <div className="rounded-md space-y-4">
             <div>
               <label htmlFor="userName" className="block text-sm font-medium text-gray-700">
                 Username

@@ -131,31 +131,7 @@ export default function Chat({ threadId }: ChatProps) {
 
       // Check last message for active workflow state from tool calls
       const lastMessage = data.messages[data.messages.length - 1];
-      if (lastMessage?.toolCalls && lastMessage.toolCalls.length > 0) {
-        // Find the last workflow tool call
-        for (let i = lastMessage.toolCalls.length - 1; i >= 0; i--) {
-          const toolCall = lastMessage.toolCalls[i];
-          if ((toolCall.toolName === 'startWorkflowTool' || toolCall.toolName === 'resumeWorkflowTool') && toolCall.result) {
-            const result = toolCall.result;
-            // Check if workflow is suspended (not completed)
-            if (result.success && !result.completed && result.runId) {
-              setActiveWorkflow({
-                runId: result.runId,
-                threadId: threadId,
-                workflowId: 'tax-calculation-workflow',
-                status: 'suspended',
-                currentStep: result.nextStep || result.currentStep,
-                suspendPayload: result.suspendPayload,
-                createdAt: new Date().toISOString(),
-                updatedAt: new Date().toISOString(),
-              });
-              break;
-            }
-          }
-        }
-      } else {
-        setActiveWorkflow(null);
-      }
+      updateWorkflowState(lastMessage);
     } catch (err) {
       // Conversation not found (404) - this is expected for new conversations
       // The conversation will be created when the first message is sent
@@ -164,6 +140,34 @@ export default function Chat({ threadId }: ChatProps) {
       setActiveWorkflow(null);
     }
   };
+
+  const updateWorkflowState = (lastMessage : Message) => {
+      if (lastMessage?.toolCalls && lastMessage.toolCalls.length > 0) {
+          // Find the last workflow tool call
+          for (let i = lastMessage.toolCalls.length - 1; i >= 0; i--) {
+              const toolCall = lastMessage.toolCalls[i];
+              if ((toolCall.toolName === 'startWorkflowTool' || toolCall.toolName === 'resumeWorkflowTool') && toolCall.result) {
+                  const result = toolCall.result;
+                  // Check if workflow is suspended (not completed)
+                  if (result.success && !result.completed && result.runId) {
+                      setActiveWorkflow({
+                          runId: result.runId,
+                          threadId: threadId,
+                          workflowId: 'tax-calculation-workflow',
+                          status: 'suspended',
+                          currentStep: result.nextStep || result.currentStep,
+                          suspendPayload: result.suspendPayload,
+                          createdAt: new Date().toISOString(),
+                          updatedAt: new Date().toISOString(),
+                      });
+                      break;
+                  }
+              }
+          }
+      } else {
+          setActiveWorkflow(null);
+      }
+  }
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -251,7 +255,7 @@ export default function Chat({ threadId }: ChatProps) {
         }
         break;
 
-      case 'generate-tax-pdf':
+      case 'generateTaxPDFTool':
         if (event.result?.success && event.result?.downloadUrl) {
           const downloadUrl = `${API_BASE_URL}${event.result.downloadUrl}`;
           assistantMessage.content += `\n\n${event.result.message}\n\n📄 [Download PDF](${downloadUrl})`;
@@ -260,7 +264,7 @@ export default function Chat({ threadId }: ChatProps) {
         }
         break;
 
-      case 'calculate-deductions':
+      case 'calculateDeductionsTool':
         if (event.result) {
           const result = event.result;
           let summary = `\n\n📊 **Deduction Calculation Results:**\n`;
@@ -443,7 +447,6 @@ export default function Chat({ threadId }: ChatProps) {
 
           case 'tool-call':
             console.log('Tool called:', event.toolName);
-            // Check if it's a workflow tool result
             break;
 
           case 'tool-result':

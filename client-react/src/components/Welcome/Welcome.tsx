@@ -15,17 +15,17 @@ const starterPrompts = [
   {
     icon: '✨',
     title: 'Explain Tax calculation in simple terms',
-    isWorkflow: false,
+    badge: null,
   },
   {
     icon: '📊',
-    title: 'Calculate my Tax with all the document required',
-    isWorkflow: true, // This triggers the workflow
+    title: 'I want to calculate my taxes for this year with all required documents',
+    badge: 'Interactive',
   },
   {
     icon: '💡',
     title: 'Advise me - How can I reduce my taxes effectively?',
-    isWorkflow: false,
+    badge: null,
   },
 ];
 
@@ -69,21 +69,8 @@ export default function Welcome({ }: WelcomeProps) {
   };
 
   const handlePromptClick = (prompt: typeof starterPrompts[0]) => {
-    if (prompt.isWorkflow) {
-      // Start workflow - navigate with workflow flag
-      const newThreadId = uuidv4();
-      navigate(`/?threadId=${newThreadId}`, {
-        replace: true,
-        state: {
-          startWorkflow: true,
-          workflowType: 'tax-calculation',
-        }
-      });
-      loadConversations();
-    } else {
-      // Regular chat
-      handleStartNewChat(prompt.title);
-    }
+    // All prompts go through normal chat - agent will ask about interactive mode
+    handleStartNewChat(prompt.title);
   };
 
   const handleSendMessage = (message: string, files: File[]) => {
@@ -119,9 +106,9 @@ export default function Welcome({ }: WelcomeProps) {
                 <p className="text-sm text-gray-700 font-medium leading-relaxed">
                   {prompt.title}
                 </p>
-                {prompt.isWorkflow && (
+                {prompt.badge && (
                   <span className="text-xs bg-primary-100 text-primary-700 px-2 py-0.5 rounded">
-                    Interactive
+                    {prompt.badge}
                   </span>
                 )}
               </div>

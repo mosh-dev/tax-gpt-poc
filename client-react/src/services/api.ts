@@ -3,7 +3,7 @@
  * Handles all communication with the backend server
  */
 
-import type { Conversation, Message, FileMetadata, StreamEvent, WorkflowStatus } from '../types';
+import type { Conversation, Message, FileMetadata, StreamEvent, WorkflowStatus, EmployeeScenario, Employee } from '../types';
 import { authService } from './auth';
 
 // Get API base URL from environment variable
@@ -342,6 +342,81 @@ class ApiService {
 
     const data = await response.json();
     return data.workflows;
+  }
+
+  // === Agent Config API Methods ===
+
+  /**
+   * Get agent configuration
+   */
+  async getAgentConfig(): Promise<{ id: string; instructions: string; updatedAt: string }> {
+    const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/agent-config`);
+    await handleAuthResponse(response);
+    if (!response.ok) {
+      throw new Error('Failed to fetch agent configuration');
+    }
+    const data = await response.json();
+    return data.config;
+  }
+
+  /**
+   * Update agent configuration
+   */
+  async updateAgentConfig(instructions: string): Promise<{ id: string; instructions: string; updatedAt: string }> {
+    const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/agent-config`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ instructions }),
+    });
+    await handleAuthResponse(response);
+    if (!response.ok) {
+      throw new Error('Failed to update agent configuration');
+    }
+    const data = await response.json();
+    return data.config;
+  }
+
+  // === Employee/Mock Data API Methods ===
+
+  /**
+   * Get all employee scenarios (summary view)
+   */
+  async getEmployeeScenarios(): Promise<EmployeeScenario[]> {
+    const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/employees/scenarios`);
+    await handleAuthResponse(response);
+    if (!response.ok) {
+      throw new Error('Failed to fetch employee scenarios');
+    }
+    const data = await response.json();
+    return data.scenarios || [];
+  }
+
+  /**
+   * Get all employees with full tax data
+   */
+  async getEmployees(): Promise<Employee[]> {
+    const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/employees`);
+    await handleAuthResponse(response);
+    if (!response.ok) {
+      throw new Error('Failed to fetch employees');
+    }
+    const data = await response.json();
+    return data.employees || [];
+  }
+
+  /**
+   * Get a specific employee by scenario ID
+   */
+  async getEmployee(scenarioId: string): Promise<Employee> {
+    const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/employees/${scenarioId}`);
+    await handleAuthResponse(response);
+    if (!response.ok) {
+      throw new Error('Failed to fetch employee');
+    }
+    const data = await response.json();
+    return data.employee;
   }
 }
 

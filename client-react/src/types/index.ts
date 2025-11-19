@@ -154,3 +154,57 @@ export interface TaxCalculationResult {
   taxRate: number;
   recommendations: string[];
 }
+
+// Employee/Mock Data types
+export interface EmployeeScenario {
+  scenarioId: string;
+  scenarioName: string;
+  scenarioDescription: string;
+  personName: string;
+  totalIncome: number;
+  taxYear: number;
+}
+
+export interface SwissTaxData {
+  personalInfo: {
+    firstName: string;
+    lastName: string;
+    dateOfBirth: string;
+    address: string;
+    municipality: string;
+    maritalStatus: 'single' | 'married' | 'divorced' | 'widowed';
+  };
+  income: {
+    employment?: number;
+    selfEmployment?: number;
+    investments?: number;
+    rental?: number;
+    other?: number;
+  };
+  deductions: {
+    professionalExpenses?: number;
+    healthcareExpenses?: number;
+    pillar3a?: number;
+    childcare?: number;
+    education?: number;
+    commuting?: number;
+    donations?: number;
+  };
+  wealth: {
+    bankAccounts?: number;
+    securities?: number;
+    realEstate?: number;
+    other?: number;
+  };
+  taxYear: number;
+}
+
+export interface Employee {
+  id: string;
+  scenarioId: string;
+  scenarioName: string;
+  scenarioDescription: string;
+  taxData: SwissTaxData;
+  createdAt: string;
+  updatedAt: string;
+}
