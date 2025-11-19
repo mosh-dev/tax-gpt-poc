@@ -20,7 +20,6 @@ export class TaxAgent {
 
         // Initialize Memory internally
         try {
-            console.log('[TaxAgent] Initializing Mastra Memory...');
             const memoryConfig = createMemoryConfigFromEnv();
             this.memory = createMastraMemory(memoryConfig);
             console.log('[TaxAgent] Mastra Memory initialized successfully');

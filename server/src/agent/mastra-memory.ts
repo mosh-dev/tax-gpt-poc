@@ -1,11 +1,14 @@
 /**
  * Mastra Memory Configuration
- * Configures MongoDB storage and optional vector embeddings for agent memory
+ * - MongoDB: Chat history storage (local or remote)
+ * - LibSQL: Vector embeddings for semantic recall (local SQLite file)
  */
 
 import { Memory } from '@mastra/memory';
-import { MongoDBStore, MongoDBVector } from '@mastra/mongodb';
+import { MongoDBStore } from '@mastra/mongodb';
+import { LibSQLVector } from '@mastra/libsql';
 import { fastembed } from '@mastra/fastembed';
+import { STORAGE_PATHS } from '../config/storage';
 
 /**
  * Memory configuration options
@@ -15,37 +18,33 @@ export interface MemoryConfig {
   mongoUri: string;
   /** Database name */
   dbName: string;
-  /** MongoDB Atlas URI for vector storage (optional, requires Atlas) */
-  mongoAtlasUri?: string;
-  /** Enable vector embeddings (requires Atlas) */
+  /** Enable vector embeddings with LibSQL */
   enableVectorStorage: boolean;
 }
 
 /**
- * Create Mastra Memory instance with MongoDB storage
- * Supports both local MongoDB (storage only) and MongoDB Atlas (storage + vectors)
+ * Create Mastra Memory instance with MongoDB storage and LibSQL vector search
+ * MongoDB for chat history, LibSQL for vector embeddings (local file)
  */
 export function createMastraMemory(config: MemoryConfig): Memory {
   console.log('[Mastra Memory] Initializing memory system...');
-  console.log(`[Mastra Memory] MongoDB URI: ${config.mongoUri}`);
-  console.log(`[Mastra Memory] Database: ${config.dbName}`);
-  console.log(`[Mastra Memory] Vector storage: ${config.enableVectorStorage ? 'enabled' : 'disabled'}`);
+  console.log(`[Mastra Memory] Vector storage: ${config.enableVectorStorage ? 'enabled (LibSQL)' : 'disabled'}`);
 
-  // Base MongoDB store (works with local MongoDB)
+  // Base MongoDB store for chat history (works with local MongoDB)
   const storage = new MongoDBStore({
     id: 'tax-gpt-storage',
     url: config.mongoUri,
     dbName: config.dbName,
   });
 
-  // Vector storage and embeddings (requires MongoDB Atlas)
-  if (config.enableVectorStorage && config.mongoAtlasUri) {
-    console.log('[Mastra Memory] Setting up vector storage with MongoDB Atlas');
+  // Vector storage with LibSQL (local SQLite file)
+  if (config.enableVectorStorage) {
+    const vectorDbPath = 'file:' + STORAGE_PATHS.vectors;
+    console.log(`[Mastra Memory] Setting up LibSQL vector storage at: ${vectorDbPath}`);
 
-    const vector = new MongoDBVector({
+    const vector = new LibSQLVector({
       id: 'tax-gpt-vector',
-      uri: config.mongoAtlasUri,
-      dbName: config.dbName,
+      connectionUrl: vectorDbPath,
     });
 
     return new Memory({
@@ -62,12 +61,15 @@ export function createMastraMemory(config: MemoryConfig): Memory {
     });
   }
 
-  // Basic memory without vector storage (works with local MongoDB)
+  // Basic memory without vector storage
   console.log('[Mastra Memory] Using basic memory (no vector storage)');
-  console.log('[Mastra Memory] To enable semantic recall, configure MONGODB_ATLAS_URI in .env');
+  console.log('[Mastra Memory] Semantic recall is disabled');
 
   return new Memory({
     storage: storage,
+    options: {
+      lastMessages: 10, // Keep last 10 messages in context
+    },
   });
 }
 
@@ -80,13 +82,13 @@ export function createMemoryConfigFromEnv(): MemoryConfig {
 
   const mongoUri = env.MONGODB_URI;
   const dbName = env.MONGODB_DB_NAME;
-  const mongoAtlasUri = env.MONGODB_ATLAS_URI;
-  const enableVectorStorage = !!mongoAtlasUri;
+
+  // Enable vector storage by default with LibSQL
+  const vectorDisabled = env.DISABLE_VECTOR_STORAGE === 'true';
 
   return {
     mongoUri,
     dbName,
-    mongoAtlasUri,
-    enableVectorStorage,
+    enableVectorStorage : !vectorDisabled,
   };
 }

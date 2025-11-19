@@ -14,8 +14,6 @@ const MONGODB_URI = env.MONGODB_URI;
 export async function connectDatabase(): Promise<void> {
   try {
     await mongoose.connect(MONGODB_URI);
-    console.log('[Database] Connected to MongoDB');
-    console.log(`[Database] URI: ${MONGODB_URI}`);
   } catch (error) {
     console.error('[Database] Connection failed:', error);
     console.error(`[Database] Make sure MongoDB is running at ${MONGODB_URI}`);

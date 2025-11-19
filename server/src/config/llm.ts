@@ -12,16 +12,12 @@ let llmClient: ReturnType<typeof createOpenAICompatible> | null = null;
  * Should be called after database connection is established
  */
 export async function initializeLLMClient(): Promise<void> {
-  console.log('[LLM] Fetching API key from database...');
-
   // Fetch API key from database only (no env fallback)
   const apiKey = await getLLMApiKey();
 
   if (!apiKey) {
     throw new Error('LLM API key not found in database. Please ensure the "llmkey" secret is set in the secrets collection.');
   }
-
-  console.log('[LLM] API key retrieved successfully from database');
 
   // Create LLM client with database API key
   llmClient = createOpenAICompatible({
@@ -33,7 +29,6 @@ export async function initializeLLMClient(): Promise<void> {
     },
   });
 
-  console.log('[LLM] Client initialized successfully');
   console.log(`[LLM] Base URL: ${env.LLM_BASE_URL}`);
   console.log(`[LLM] Model: ${env.LLM_MODEL}`);
 }

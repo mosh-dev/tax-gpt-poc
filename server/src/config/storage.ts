@@ -12,7 +12,8 @@ export const STORAGE_ROOT = path.join(__dirname, '../../storage');
 export const STORAGE_PATHS = {
   files: path.join(STORAGE_ROOT, 'files'),  // All files (files and generated PDFs)
   temp: path.join(STORAGE_ROOT, 'temp'),
-  tesseract: path.join(STORAGE_ROOT, 'tesseract-lang')
+  tesseract: path.join(STORAGE_ROOT, 'tesseract-lang'),
+  vectors: path.join(STORAGE_ROOT, 'vectors.db')  // LibSQL vector database for semantic recall
 } as const;
 
 /**
@@ -28,7 +29,8 @@ export function getStoragePath(type: keyof typeof STORAGE_PATHS): string {
  * storage/                      (Mount this as Docker volume)
  * ├── files/                    All files (uploads, generated PDFs, documents)
  * ├── temp/                     Temporary files (OCR processing, etc.)
- * └── tesseract-lang/           Tesseract language training data
- *     ├── eng.traineddata       English OCR model
- *     └── deu.traineddata       German OCR model
+ * ├── tesseract-lang/           Tesseract language training data
+ * │   ├── eng.traineddata       English OCR model
+ * │   └── deu.traineddata       German OCR model
+ * └── vectors.db                LibSQL vector database for semantic recall
  */

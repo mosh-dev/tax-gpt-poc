@@ -13,8 +13,6 @@ export async function runAllSeeds(): Promise<void> {
   const { seedEmployees } = await import('./employee-seed');
   const { seedAgentConfig } = await import('./agent-config-seed');
 
-  console.log('[Seed] Running all seed scripts...');
-
   await seedAgentConfig();
   await seedEmployees();
 
