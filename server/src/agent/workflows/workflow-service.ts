@@ -120,11 +120,14 @@ export class WorkflowService {
 
     const runData = workflowRuns.get(runId);
     if (!runData) {
-      throw new Error(`Workflow run not found: ${runId}`);
+      throw new Error(`Workflow run not found: ${runId}. The server may have restarted or the workflow session expired.`);
     }
 
     try {
       const { run, threadId, workflowId } = runData;
+
+      // Log resume data for debugging
+      console.log(`[WorkflowService] Resume data:`, JSON.stringify(resumeData, null, 2));
 
       // Resume the workflow
       const result = await run.resume({

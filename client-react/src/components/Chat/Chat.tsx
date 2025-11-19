@@ -36,6 +36,7 @@ export default function Chat({ threadId }: ChatProps) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [currentMessage, setCurrentMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false); // Track if assistant is actively streaming
   const [error, setError] = useState<string | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -48,7 +49,6 @@ export default function Chat({ threadId }: ChatProps) {
   // Workflow state - integrated into chat
   const [activeWorkflow, setActiveWorkflow] = useState<WorkflowStatus | null>(null);
   const [isWorkflowSubmitting, setIsWorkflowSubmitting] = useState(false);
-  const pendingWorkflowRef = useRef<WorkflowStatus | null>(null); // Store workflow until streaming is done
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -173,6 +173,120 @@ export default function Chat({ threadId }: ChatProps) {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   };
 
+  /**
+   * Unified SSE streaming handler - consolidates all chat streaming logic
+   */
+  const streamChatMessage = async (
+    content: string,
+    threadIdToUse: string,
+    fileIds?: string[],
+    onConnected?: (threadId?: string) => void
+  ) => {
+    const assistantMessage: Message = {
+      conversationId: threadIdToUse,
+      role: 'assistant',
+      content: '',
+      createdAt: new Date().toISOString(),
+    };
+
+    try {
+      let firstChunk = false;
+      let streamCompleted = false;
+      let hasError = false;
+
+      setIsStreaming(true); // Disable input while streaming
+
+      for await (const event of apiService.streamChat(content, threadIdToUse, fileIds)) {
+        switch (event.type) {
+          case 'connected':
+            console.log('[Chat] Connected with threadId:', event.threadId);
+            onConnected?.(event.threadId);
+            break;
+
+          case 'chunk':
+            if (event.content) {
+              assistantMessage.content += event.content;
+              if (!firstChunk && assistantMessage.content.trim().length > 0) {
+                setMessages(prev => [...prev, { ...assistantMessage }]);
+                setIsLoading(false);
+                firstChunk = true;
+              } else if (firstChunk) {
+                setMessages(prev => [...prev.slice(0, -1), { ...assistantMessage }]);
+              }
+            }
+            break;
+
+          case 'tool-call':
+            console.log('Tool called:', event.toolName);
+            break;
+
+          case 'tool-result':
+            handleToolResult(event, assistantMessage);
+
+            // Handle workflow state updates
+            if (event.toolName === 'startWorkflowTool' || event.toolName === 'resumeWorkflowTool') {
+              const result = event.result;
+
+              // Handle successful workflow progression
+              if (result?.success && !result?.completed && result?.runId) {
+                const workflowStatus = {
+                  runId: result.runId,
+                  threadId: threadIdToUse,
+                  workflowId: 'tax-calculation-workflow',
+                  status: 'suspended' as const,
+                  currentStep: result.nextStep || result.currentStep,
+                  suspendPayload: result.suspendPayload,
+                  createdAt: new Date().toISOString(),
+                  updatedAt: new Date().toISOString(),
+                };
+                setActiveWorkflow(workflowStatus);
+                console.log('[Workflow] Updated:', workflowStatus.currentStep);
+              }
+              // Handle workflow completion
+              else if (result?.success && result?.completed) {
+                setActiveWorkflow(null);
+                console.log('[Workflow] Completed');
+              }
+              // Handle workflow errors - clear workflow state
+              else if (result?.success === false) {
+                setActiveWorkflow(null);
+                console.log('[Workflow] Error:', result.error || result.message);
+                // Error message will be shown by the assistant
+              }
+            }
+
+            if (!firstChunk) {
+              setMessages(prev => [...prev, { ...assistantMessage }]);
+              setIsLoading(false);
+              firstChunk = true;
+            } else {
+              setMessages(prev => [...prev.slice(0, -1), { ...assistantMessage }]);
+            }
+            break;
+
+          case 'done':
+            console.log('Stream completed');
+            streamCompleted = true;
+            break;
+
+          case 'error':
+            hasError = true;
+            setError(event.error || 'Stream error occurred');
+            break;
+        }
+      }
+
+      if (!firstChunk && streamCompleted && !hasError) {
+        setError('No response received from assistant');
+      }
+    } catch (err: any) {
+      setError(err.message || 'Failed to send message');
+    } finally {
+      setIsLoading(false);
+      setIsStreaming(false); // Re-enable input after streaming completes
+    }
+  };
+
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (!e.target.files || e.target.files.length === 0) return;
 
@@ -290,10 +404,7 @@ export default function Chat({ threadId }: ChatProps) {
   // Start workflow integrated into chat - send request through LLM
   const startWorkflowInChat = async (threadIdToUse: string) => {
     setIsLoading(true);
-    loadConversations();
 
-    // Send a message asking to start the workflow - LLM will use start-workflow tool
-    // Display message is clean, API message includes context for LLM
     const displayContent = `I want to calculate my taxes for this year. Please start the tax calculation workflow.`;
     const apiContent = `${displayContent} [Context: threadId=${threadIdToUse}]`;
 
@@ -306,90 +417,9 @@ export default function Chat({ threadId }: ChatProps) {
 
     setMessages([userMessage]);
 
-    const assistantMessage: Message = {
-      conversationId: threadIdToUse,
-      role: 'assistant',
-      content: '',
-      createdAt: new Date().toISOString(),
-    };
-
-    try {
-      let firstChunk = false;
-      let streamCompleted = false;
-      let hasError = false;
-
-      for await (const event of apiService.streamChat(apiContent, threadIdToUse)) {
-        switch (event.type) {
-          case 'connected':
-            loadConversations();
-            break;
-
-          case 'chunk':
-            if (event.content) {
-              assistantMessage.content += event.content;
-              if (!firstChunk && assistantMessage.content.trim().length > 0) {
-                setMessages(prev => [...prev, { ...assistantMessage }]);
-                setIsLoading(false);
-                firstChunk = true;
-              } else if (firstChunk) {
-                setMessages(prev => [...prev.slice(0, -1), { ...assistantMessage }]);
-              }
-            }
-            break;
-
-          case 'tool-result':
-            handleToolResult(event, assistantMessage);
-            // Check for workflow status from start-workflow tool
-            // Tool name is the key from agent config (startWorkflowTool), not the tool id
-            if (event.toolName === 'startWorkflowTool') {
-              const result = event.result;
-              if (result?.success && result?.runId) {
-                // Store workflow in ref - will show UI after streaming is done
-                pendingWorkflowRef.current = {
-                  runId: result.runId,
-                  threadId: threadIdToUse,
-                  workflowId: 'tax-calculation-workflow',
-                  status: 'suspended',
-                  currentStep: result.currentStep,
-                  suspendPayload: result.suspendPayload,
-                  createdAt: new Date().toISOString(),
-                  updatedAt: new Date().toISOString(),
-                };
-              }
-            }
-            if (!firstChunk) {
-              setMessages(prev => [...prev, { ...assistantMessage }]);
-              setIsLoading(false);
-              firstChunk = true;
-            } else {
-              setMessages(prev => [...prev.slice(0, -1), { ...assistantMessage }]);
-            }
-            break;
-
-          case 'done':
-            streamCompleted = true;
-            // Show workflow UI after streaming is complete
-            if (pendingWorkflowRef.current) {
-              setActiveWorkflow(pendingWorkflowRef.current);
-              pendingWorkflowRef.current = null;
-            }
-            break;
-
-          case 'error':
-            hasError = true;
-            setError(event.error || 'Stream error occurred');
-            break;
-        }
-      }
-
-      if (!firstChunk && streamCompleted && !hasError) {
-        setError('No response received from assistant');
-      }
-    } catch (err: any) {
-      setError(`Failed to start workflow: ${err.message}`);
-    } finally {
-      setIsLoading(false);
-    }
+    await streamChatMessage(apiContent, threadIdToUse, undefined, () => {
+      loadConversations();
+    });
   };
 
   // Handle workflow step submission - send through chat so LLM can process
@@ -398,14 +428,11 @@ export default function Chat({ threadId }: ChatProps) {
 
     setIsWorkflowSubmitting(true);
 
-    // Format the data as a message for the LLM
-    // Include workflow context so LLM can call resume-workflow tool
     const userContent = formatWorkflowMessage(activeWorkflow.runId, stepId, data);
 
     // Clear the active workflow UI - LLM will handle from here
     setActiveWorkflow(null);
 
-    // Send through normal chat stream
     const userMessage: Message = {
       conversationId: threadId,
       role: 'user',
@@ -417,91 +444,7 @@ export default function Chat({ threadId }: ChatProps) {
     setIsWorkflowSubmitting(false);
     setIsLoading(true);
 
-    // Stream response from LLM
-    const assistantMessage: Message = {
-      conversationId: threadId,
-      role: 'assistant',
-      content: '',
-      createdAt: new Date().toISOString(),
-    };
-
-    try {
-      let firstChunk = false;
-      let streamCompleted = false;
-      let hasError = false;
-
-      for await (const event of apiService.streamChat(userContent, threadId)) {
-        switch (event.type) {
-          case 'chunk':
-            if (event.content) {
-              assistantMessage.content += event.content;
-              if (!firstChunk && assistantMessage.content.trim().length > 0) {
-                setMessages(prev => [...prev, { ...assistantMessage }]);
-                setIsLoading(false);
-                firstChunk = true;
-              } else if (firstChunk) {
-                setMessages(prev => [...prev.slice(0, -1), { ...assistantMessage }]);
-              }
-            }
-            break;
-
-          case 'tool-call':
-            console.log('Tool called:', event.toolName);
-            break;
-
-          case 'tool-result':
-            handleToolResult(event, assistantMessage);
-            // Check for workflow status updates
-            // Tool names are keys from agent config, not tool ids
-            if (event.toolName === 'resumeWorkflowTool' || event.toolName === 'startWorkflowTool') {
-              const result = event.result;
-              if (result?.success && !result?.completed && result?.runId) {
-                // Store workflow in ref - will show UI after streaming is done
-                pendingWorkflowRef.current = {
-                  runId: result.runId,
-                  threadId: threadId,
-                  workflowId: 'tax-calculation-workflow',
-                  status: 'suspended',
-                  currentStep: result.nextStep || result.currentStep,
-                  suspendPayload: result.suspendPayload,
-                  createdAt: new Date().toISOString(),
-                  updatedAt: new Date().toISOString(),
-                };
-              }
-            }
-            if (!firstChunk) {
-              setMessages(prev => [...prev, { ...assistantMessage }]);
-              setIsLoading(false);
-              firstChunk = true;
-            } else {
-              setMessages(prev => [...prev.slice(0, -1), { ...assistantMessage }]);
-            }
-            break;
-
-          case 'done':
-            streamCompleted = true;
-            // Show workflow UI after streaming is complete
-            if (pendingWorkflowRef.current) {
-              setActiveWorkflow(pendingWorkflowRef.current);
-              pendingWorkflowRef.current = null;
-            }
-            break;
-
-          case 'error':
-            hasError = true;
-            setError(event.error || 'Stream error occurred');
-            break;
-        }
-      }
-
-      if (!firstChunk && streamCompleted && !hasError) {
-        setError('No response received from assistant');
-      }
-    } catch (err: any) {
-      setError(err.message || 'Failed to send message');
-    } finally {
-      setIsLoading(false);
-    }
+    await streamChatMessage(userContent, threadId);
   };
 
   // Format workflow step data as a message for the LLM
@@ -601,83 +544,21 @@ export default function Chat({ threadId }: ChatProps) {
     setIsLoading(true);
     setError(null);
 
-    const assistantMessage: Message = {
-      conversationId: threadId,
-      role: 'assistant',
-      content: '',
-      createdAt: new Date().toISOString(),
-    };
-
-    try {
-      let firstChunk = false;
-      let streamCompleted = false;
-      let hasError = false;
-
-      for await (const event of apiService.streamChat(messageContent, threadId, fileIds)) {
-        switch (event.type) {
-          case 'connected':
-            console.log('[Chat] Connected with threadId:', event.threadId);
-            // Refresh sidebar to show new conversation
-            loadConversations();
-            break;
-
-          case 'chunk':
-            if (event.content) {
-              assistantMessage.content += event.content;
-              // Only show message bubble when we have actual non-empty content
-              if (!firstChunk && assistantMessage.content.trim().length > 0) {
-                // Add assistant message only when first real content arrives
-                setMessages(prev => [...prev, { ...assistantMessage }]);
-                setIsLoading(false);
-                firstChunk = true;
-              } else if (firstChunk) {
-                setMessages(prev => [...prev.slice(0, -1), { ...assistantMessage }]);
-              }
-            }
-            break;
-
-          case 'tool-call':
-            console.log('Tool called:', event.toolName);
-            break;
-
-          case 'tool-result':
-            handleToolResult(event, assistantMessage);
-            if (!firstChunk) {
-              setMessages(prev => [...prev, { ...assistantMessage }]);
-              setIsLoading(false);
-              firstChunk = true;
-            } else {
-              setMessages(prev => [...prev.slice(0, -1), { ...assistantMessage }]);
-            }
-            break;
-
-          case 'done':
-            console.log('Stream completed');
-            streamCompleted = true;
-            break;
-
-          case 'error':
-            hasError = true;
-            setError(event.error || 'Stream error occurred');
-            break;
-        }
-      }
-
-      // Only show "no response" error if stream completed normally but with no content
-      if (!firstChunk && streamCompleted && !hasError) {
-        setError('No response received from assistant');
-      }
-    } catch (err: any) {
-      setError(err.message || 'Failed to send message');
-    } finally {
-      setIsLoading(false);
-    }
+    await streamChatMessage(messageContent, threadId, fileIds, () => {
+      loadConversations();
+    });
   };
 
   const sendMessage = async () => {
     // Always require a message (files alone are not enough)
     if (!currentMessage.trim() || isLoading || isUploading) {
       return;
+    }
+
+    // Clear active workflow if user sends custom message instead of using workflow form
+    if (activeWorkflow) {
+      setActiveWorkflow(null);
+      console.log('[Workflow] Cleared - user sent custom message');
     }
 
     // Upload files first
@@ -724,84 +605,14 @@ export default function Chat({ threadId }: ChatProps) {
     setIsLoading(true);
     setError(null);
 
-    const assistantMessage: Message = {
-      conversationId: threadId || '',
-      role: 'assistant',
-      content: '',
-      createdAt: new Date().toISOString(),
-    };
-
-    try {
-      let firstChunk = false;
-      let receivedThreadId: string | null = null;
-      let streamCompleted = false;
-      let hasError = false;
-
-      for await (const event of apiService.streamChat(messageContent, threadId, fileIds)) {
-        switch (event.type) {
-          case 'connected':
-            // Capture threadId from server (for new conversations)
-            if (event.threadId && !threadId) {
-              receivedThreadId = event.threadId;
-              console.log('[Chat] Received new threadId from server:', receivedThreadId);
-              // Navigate to URL with threadId
-              navigate(`/?threadId=${receivedThreadId}`, { replace: true });
-              // Refresh sidebar to show new conversation
-              loadConversations();
-            }
-            break;
-
-          case 'chunk':
-            if (event.content) {
-              assistantMessage.content += event.content;
-              // Only show message bubble when we have actual non-empty content
-              if (!firstChunk && assistantMessage.content.trim().length > 0) {
-                // Add assistant message only when first real content arrives
-                setMessages(prev => [...prev, { ...assistantMessage }]);
-                setIsLoading(false);
-                firstChunk = true;
-              } else if (firstChunk) {
-                setMessages(prev => [...prev.slice(0, -1), { ...assistantMessage }]);
-              }
-            }
-            break;
-
-          case 'tool-call':
-            console.log('Tool called:', event.toolName);
-            break;
-
-          case 'tool-result':
-            handleToolResult(event, assistantMessage);
-            if (!firstChunk) {
-              setMessages(prev => [...prev, { ...assistantMessage }]);
-              setIsLoading(false);
-              firstChunk = true;
-            } else {
-              setMessages(prev => [...prev.slice(0, -1), { ...assistantMessage }]);
-            }
-            break;
-
-          case 'done':
-            console.log('Stream completed');
-            streamCompleted = true;
-            break;
-
-          case 'error':
-            hasError = true;
-            setError(event.error || 'Stream error occurred');
-            break;
-        }
+    await streamChatMessage(messageContent, threadId, fileIds, (receivedThreadId) => {
+      // Capture threadId from server (for new conversations)
+      if (receivedThreadId && !threadId) {
+        console.log('[Chat] Received new threadId from server:', receivedThreadId);
+        navigate(`/?threadId=${receivedThreadId}`, { replace: true });
+        loadConversations();
       }
-
-      // Only show "no response" error if stream completed normally but with no content
-      if (!firstChunk && streamCompleted && !hasError) {
-        setError('No response received from assistant');
-      }
-    } catch (err: any) {
-      setError(err.message || 'Failed to send message');
-    } finally {
-      setIsLoading(false);
-    }
+    });
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -898,6 +709,10 @@ export default function Chat({ threadId }: ChatProps) {
                 workflow={activeWorkflow}
                 onSubmit={handleWorkflowStepSubmit}
                 onUploadFiles={handleWorkflowUploadFiles}
+                onCancel={() => {
+                  setActiveWorkflow(null);
+                  console.log('[Workflow] Skipped by user');
+                }}
                 isSubmitting={isWorkflowSubmitting}
               />
             </div>
@@ -946,7 +761,7 @@ export default function Chat({ threadId }: ChatProps) {
             onChange={(e) => setCurrentMessage(e.target.value)}
             onKeyDown={handleKeyPress}
             placeholder="Type message"
-            disabled={isLoading}
+            disabled={isStreaming}
             rows={1}
             className="w-full bg-white px-4 py-3 pr-32 border border-gray-300 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50 resize-none"
           />
@@ -955,7 +770,7 @@ export default function Chat({ threadId }: ChatProps) {
           <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 pb-1">
             <button
               onClick={() => fileInputRef.current?.click()}
-              disabled={isLoading || isUploading}
+              disabled={isStreaming || isUploading}
               className="p-2 text-gray-500 hover:bg-gray-100 rounded-full disabled:opacity-50 transition-colors flex items-center justify-center"
               title="Attach file"
             >
@@ -964,7 +779,7 @@ export default function Chat({ threadId }: ChatProps) {
 
             <button
               onClick={sendMessage}
-              disabled={!currentMessage.trim() || isLoading || isUploading}
+              disabled={!currentMessage.trim() || isStreaming || isUploading}
               className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
               title={selectedFiles.length > 0 && !currentMessage.trim() ? "Please add a message to send with your files" : "Send"}
             >

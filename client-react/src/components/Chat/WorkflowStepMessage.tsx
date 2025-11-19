@@ -11,6 +11,7 @@ interface WorkflowStepMessageProps {
   workflow: WorkflowStatus;
   onSubmit: (stepId: string, data: any) => void;
   onUploadFiles: (files: File[]) => Promise<TaxDocument[]>;
+  onCancel?: () => void;
   isSubmitting: boolean;
 }
 
@@ -18,6 +19,7 @@ export default function WorkflowStepMessage({
   workflow,
   onSubmit,
   onUploadFiles,
+  onCancel,
   isSubmitting
 }: WorkflowStepMessageProps) {
   const { currentStep, suspendPayload } = workflow;
@@ -30,6 +32,7 @@ export default function WorkflowStepMessage({
         <PersonalInfoForm
           payload={suspendPayload}
           onSubmit={(data) => onSubmit(currentStep, data)}
+          onCancel={onCancel}
           isSubmitting={isSubmitting}
         />
       );
@@ -40,6 +43,7 @@ export default function WorkflowStepMessage({
           payload={suspendPayload}
           onSubmit={(data) => onSubmit(currentStep, data)}
           onUploadFiles={onUploadFiles}
+          onCancel={onCancel}
           isSubmitting={isSubmitting}
         />
       );
@@ -48,6 +52,7 @@ export default function WorkflowStepMessage({
       return (
         <ReviewDataForm
           payload={suspendPayload}
+          onCancel={onCancel}
           onSubmit={(data) => onSubmit(currentStep, data)}
           isSubmitting={isSubmitting}
         />
@@ -75,10 +80,12 @@ export default function WorkflowStepMessage({
 function PersonalInfoForm({
   payload,
   onSubmit,
+  onCancel,
   isSubmitting
 }: {
   payload: any;
   onSubmit: (data: PersonalInfo) => void;
+  onCancel?: () => void;
   isSubmitting: boolean;
 }) {
   const [formData, setFormData] = useState<PersonalInfo>({
@@ -174,23 +181,35 @@ function PersonalInfoForm({
           </div>
         </div>
 
-        <button
-          type="submit"
-          disabled={isSubmitting || !formData.firstName || !formData.lastName}
-          className="w-full bg-primary-600 text-white py-2 px-4 rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-        >
-          {isSubmitting ? (
-            <>
-              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              Submitting...
-            </>
-          ) : (
-            <>
-              <Check className="w-4 h-4" />
-              Continue
-            </>
+        <div className="flex gap-3">
+          {onCancel && (
+            <button
+              type="button"
+              onClick={onCancel}
+              disabled={isSubmitting}
+              className="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              Skip Workflow
+            </button>
           )}
-        </button>
+          <button
+            type="submit"
+            disabled={isSubmitting || !formData.firstName || !formData.lastName}
+            className={`${onCancel ? 'flex-1' : 'w-full'} bg-primary-600 text-white py-2 px-4 rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2`}
+          >
+            {isSubmitting ? (
+              <>
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                Submitting...
+              </>
+            ) : (
+              <>
+                <Check className="w-4 h-4" />
+                Continue
+              </>
+            )}
+          </button>
+        </div>
       </form>
     </div>
   );
@@ -201,11 +220,13 @@ function DocumentUploadForm({
   payload,
   onSubmit,
   onUploadFiles,
+  onCancel,
   isSubmitting
 }: {
   payload: any;
   onSubmit: (data: { documents: TaxDocument[] }) => void;
   onUploadFiles: (files: File[]) => Promise<TaxDocument[]>;
+  onCancel?: () => void;
   isSubmitting: boolean;
 }) {
   const [uploadedDocs, setUploadedDocs] = useState<TaxDocument[]>([]);
@@ -295,23 +316,34 @@ function DocumentUploadForm({
         </div>
       )}
 
-      <button
-        onClick={handleSubmit}
-        disabled={isSubmitting || uploading || uploadedDocs.length === 0}
-        className="w-full bg-primary-600 text-white py-2 px-4 rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-      >
-        {isSubmitting ? (
-          <>
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-            Processing...
-          </>
-        ) : (
-          <>
-            <Check className="w-4 h-4" />
-            Continue with {uploadedDocs.length} document{uploadedDocs.length !== 1 ? 's' : ''}
-          </>
+      <div className="flex gap-3">
+        {onCancel && (
+          <button
+            onClick={onCancel}
+            disabled={isSubmitting || uploading}
+            className="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Skip Workflow
+          </button>
         )}
-      </button>
+        <button
+          onClick={handleSubmit}
+          disabled={isSubmitting || uploading || uploadedDocs.length === 0}
+          className={`${onCancel ? 'flex-1' : 'w-full'} bg-primary-600 text-white py-2 px-4 rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2`}
+        >
+          {isSubmitting ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              Processing...
+            </>
+          ) : (
+            <>
+              <Check className="w-4 h-4" />
+              Continue with {uploadedDocs.length} document{uploadedDocs.length !== 1 ? 's' : ''}
+            </>
+          )}
+        </button>
+      </div>
     </div>
   );
 }
@@ -320,10 +352,12 @@ function DocumentUploadForm({
 function ReviewDataForm({
   payload,
   onSubmit,
+  onCancel,
   isSubmitting
 }: {
   payload: any;
   onSubmit: (data: ExtractedTaxData) => void;
+  onCancel?: () => void;
   isSubmitting: boolean;
 }) {
   const [formData, setFormData] = useState<ExtractedTaxData>(
@@ -407,23 +441,35 @@ function ReviewDataForm({
         </div>
       </div>
 
-      <button
-        onClick={handleSubmit}
-        disabled={isSubmitting}
-        className="w-full bg-primary-600 text-white py-2 px-4 rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
-      >
-        {isSubmitting ? (
-          <>
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-            Calculating...
-          </>
-        ) : (
-          <>
-            <Check className="w-4 h-4" />
-            Confirm & Calculate
-          </>
+      <div className="flex gap-3">
+        {onCancel && (
+          <button
+            type="button"
+            onClick={onCancel}
+            disabled={isSubmitting}
+            className="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          >
+            Skip Workflow
+          </button>
         )}
-      </button>
+        <button
+          onClick={handleSubmit}
+          disabled={isSubmitting}
+          className={`${onCancel ? 'flex-1' : 'w-full'} bg-primary-600 text-white py-2 px-4 rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2`}
+        >
+          {isSubmitting ? (
+            <>
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+              Calculating...
+            </>
+          ) : (
+            <>
+              <Check className="w-4 h-4" />
+              Confirm & Calculate
+            </>
+          )}
+        </button>
+      </div>
     </div>
   );
 }

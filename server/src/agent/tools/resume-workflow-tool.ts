@@ -73,10 +73,33 @@ Always check what step the workflow is currently on before resuming.`,
 
     } catch (error) {
       console.error('[ResumeWorkflowTool] Error:', error);
+
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+
+      // Check if it's a step mismatch error
+      if (errorMessage.includes('was not suspended') || errorMessage.includes('Available suspended steps')) {
+        return {
+          success: false,
+          message: 'Workflow state mismatch detected. The workflow may have progressed differently than expected. Please try starting a new workflow.',
+          error: errorMessage,
+          suggestion: 'restart_workflow',
+        };
+      }
+
+      // Check if workflow session expired
+      if (errorMessage.includes('Workflow run not found') || errorMessage.includes('session expired')) {
+        return {
+          success: false,
+          message: 'Workflow session has expired (server may have restarted). Please start a new workflow.',
+          error: errorMessage,
+          suggestion: 'restart_workflow',
+        };
+      }
+
       return {
         success: false,
         message: 'Failed to resume workflow',
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: errorMessage,
       };
     }
   },
