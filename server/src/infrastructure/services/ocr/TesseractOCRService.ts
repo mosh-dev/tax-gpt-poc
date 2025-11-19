@@ -3,14 +3,14 @@
  * Implements IOCRService using the existing OCRService
  */
 
-import { IOCRService, OCROptions, OCRResult } from '../../../core/application';
-import { OCRService } from '../../../services/ocr';
+import {IOCRService, OCROptions, OCRResult} from '../../../core/application';
+import {ocrService} from '../../../services/ocr';
 
 export class TesseractOCRService implements IOCRService {
-  private ocrService: OCRService;
+  private ocrService = ocrService;
 
   constructor() {
-    this.ocrService = new OCRService();
+    // Using singleton OCRService instance
   }
 
   async processDocument(filePath: string, options?: OCROptions): Promise<OCRResult> {
@@ -31,10 +31,9 @@ export class TesseractOCRService implements IOCRService {
   }
 
   async processMultiple(filePaths: string[], options?: OCROptions): Promise<OCRResult[]> {
-    const results = await Promise.all(
-      filePaths.map(path => this.processDocument(path, options))
+      return await Promise.all(
+        filePaths.map(path => this.processDocument(path, options))
     );
-    return results;
   }
 
   isSupported(mimeType: string): boolean {

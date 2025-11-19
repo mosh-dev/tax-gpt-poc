@@ -126,14 +126,11 @@ async function startServer() {
     await setupApplication();
 
     app.listen(env.PORT, () => {
-      console.log(`\n[Tax-GPT] API Server is running (Clean Architecture)`);
-      console.log(`[Server] Port: ${env.PORT}`);
+      console.log(`\n`);
       console.log(`[Server] Environment: ${env.NODE_ENV}`);
-      console.log(`[Server] Base URL: ${env.BASE_URL}`);
       console.log(`[Server] API: ${env.BASE_URL}/api`);
       console.log(`[Server] Health: ${env.BASE_URL}/api/health`);
-      console.log(`[Server] Files: ${env.BASE_URL}/files`);
-      console.log(`[Server] LLM: ${env.LLM_BASE_URL}\n`);
+      console.log(`[Server] Files: ${env.BASE_URL}/files\n`);
     });
   } catch (error) {
     console.error('[Server] Failed to start:', error);
