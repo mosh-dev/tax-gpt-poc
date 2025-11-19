@@ -226,6 +226,7 @@ export default function Chat({ threadId }: ChatProps) {
             // Handle workflow state updates
             if (event.toolName === 'startWorkflowTool' || event.toolName === 'resumeWorkflowTool') {
               const result = event.result;
+              console.log('[Workflow] Tool result received:', event.toolName, result);
 
               // Handle successful workflow progression
               if (result?.success && !result?.completed && result?.runId) {
@@ -432,6 +433,25 @@ export default function Chat({ threadId }: ChatProps) {
   // Handle workflow step submission - send through chat so LLM can process
   const handleWorkflowStepSubmit = async (stepId: string, data: any) => {
     if (!activeWorkflow) return;
+
+    console.log('[Workflow] Submitting step:', stepId);
+    console.log('[Workflow] Active workflow state:', {
+      currentStep: activeWorkflow.currentStep,
+      runId: activeWorkflow.runId,
+      status: activeWorkflow.status
+    });
+
+    // Validate that the step being submitted matches the current workflow step
+    if (stepId !== activeWorkflow.currentStep) {
+      console.error('[Workflow] Step mismatch detected!', {
+        submitting: stepId,
+        expected: activeWorkflow.currentStep
+      });
+      // Force sync by clearing workflow - user will need to restart
+      setActiveWorkflow(null);
+      setError('Workflow state mismatch detected. Please start a new workflow.');
+      return;
+    }
 
     setIsWorkflowSubmitting(true);
 
