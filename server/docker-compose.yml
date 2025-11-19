@@ -18,4 +18,4 @@ services:
       retries: 3
       start_period: 40s
     volumes:
-      - /app/storage:/app/storage
+      - /app/storage/files:/app/storage/files
