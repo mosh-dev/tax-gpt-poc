@@ -6,3 +6,4 @@
 export { Conversation, IConversation, ConversationData } from './conversation.model';
 export { Message, IMessage, MessageData } from './message.model';
 export { File, IFile, FileData } from './file.model';
+export { User, IUser, UserData } from './user.model';

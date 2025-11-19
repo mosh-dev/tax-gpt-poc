@@ -4,13 +4,17 @@ import Sidebar from './components/Sidebar/Sidebar';
 import Chat from './components/Chat/Chat';
 import Welcome from './components/Welcome/Welcome';
 import ErrorBoundary from './components/ErrorBoundary';
+import Login from './components/Login/Login';
 import { useConversations } from './contexts/ConversationContext';
+import { authService } from './services/auth';
+import { AUTH_ERROR_EVENT } from './services/api';
 
 function App() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const { conversations, loading, deleteConversation, setCurrentThreadId } = useConversations();
+  const { conversations, loading, deleteConversation, setCurrentThreadId, refreshConversations } = useConversations();
   const [sidebarOpen, setSidebarOpen] = useState(true); // Keep sidebar open by default
+  const [isAuthenticated, setIsAuthenticated] = useState(authService.isAuthenticated());
 
   const threadId = searchParams.get('threadId');
 
@@ -18,6 +22,35 @@ function App() {
   useEffect(() => {
     setCurrentThreadId(threadId);
   }, [threadId, setCurrentThreadId]);
+
+  // Listen for auth errors (token expired, refresh failed)
+  useEffect(() => {
+    const handleAuthError = () => {
+      authService.logout();
+      setIsAuthenticated(false);
+    };
+
+    window.addEventListener(AUTH_ERROR_EVENT, handleAuthError);
+    return () => {
+      window.removeEventListener(AUTH_ERROR_EVENT, handleAuthError);
+    };
+  }, []);
+
+  const handleLoginSuccess = () => {
+    setIsAuthenticated(true);
+    refreshConversations();
+  };
+
+  const handleLogout = () => {
+    authService.logout();
+    setIsAuthenticated(false);
+    navigate('/');
+  };
+
+  // Show login page if not authenticated
+  if (!isAuthenticated) {
+    return <Login onLoginSuccess={handleLoginSuccess} />;
+  }
 
   const handleNewChat = () => {
     navigate('/');
@@ -50,6 +83,8 @@ function App() {
           isOpen={sidebarOpen}
           onToggle={() => setSidebarOpen(!sidebarOpen)}
           loading={loading}
+          userName={authService.getUser()?.name}
+          onLogout={handleLogout}
         />
 
         <main className="flex-1 flex flex-col overflow-hidden">

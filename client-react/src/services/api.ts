@@ -4,6 +4,7 @@
  */
 
 import type { Conversation, Message, FileMetadata, StreamEvent, WorkflowStatus } from '../types';
+import { authService } from './auth';
 
 // Get API base URL from environment variable
 // Empty string is valid (for Docker with nginx proxy using relative URLs)
@@ -16,12 +17,45 @@ if (API_BASE_URL === undefined) {
 // Export for use in other components
 export { API_BASE_URL };
 
+// Event to notify about auth failures
+export const AUTH_ERROR_EVENT = 'auth:error';
+
+/**
+ * Dispatch auth error event for components to handle
+ */
+function dispatchAuthError(): void {
+  window.dispatchEvent(new CustomEvent(AUTH_ERROR_EVENT));
+}
+
+/**
+ * Handle response and check for auth errors
+ */
+async function handleAuthResponse(response: Response): Promise<Response> {
+  if (response.status === 401) {
+    const data = await response.clone().json().catch(() => ({}));
+
+    // If token expired, try to refresh
+    if (data.code === 'TOKEN_EXPIRED') {
+      const refreshed = await authService.refreshAccessToken();
+      if (!refreshed) {
+        dispatchAuthError();
+      }
+    } else if (data.code === 'REFRESH_TOKEN_EXPIRED') {
+      dispatchAuthError();
+    } else {
+      dispatchAuthError();
+    }
+  }
+  return response;
+}
+
 class ApiService {
   /**
    * Get all conversations
    */
   async getConversations(): Promise<Conversation[]> {
-    const response = await fetch(`${API_BASE_URL}/api/chat/conversations`);
+    const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/chat/conversations`);
+    await handleAuthResponse(response);
     if (!response.ok) {
       throw new Error('Failed to fetch conversations');
     }
@@ -36,7 +70,8 @@ class ApiService {
     conversationId: string;
     messages: Message[];
   }> {
-    const response = await fetch(`${API_BASE_URL}/api/chat/conversations/${conversationId}`);
+    const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/chat/conversations/${conversationId}`);
+    await handleAuthResponse(response);
     if (!response.ok) {
       throw new Error('Failed to fetch conversation');
     }
@@ -51,9 +86,10 @@ class ApiService {
    * Delete a conversation
    */
   async deleteConversation(conversationId: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/api/chat/conversations/${conversationId}`, {
+    const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/chat/conversations/${conversationId}`, {
       method: 'DELETE',
     });
+    await handleAuthResponse(response);
     if (!response.ok) {
       throw new Error('Failed to delete conversation');
     }
@@ -63,7 +99,7 @@ class ApiService {
    * Save messages to a conversation (for workflow steps)
    */
   async saveMessages(threadId: string, messages: Array<{ role: string; content: string }>): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/api/chat/messages`, {
+    const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/chat/messages`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -73,6 +109,7 @@ class ApiService {
         messages,
       }),
     });
+    await handleAuthResponse(response);
     if (!response.ok) {
       throw new Error('Failed to save messages');
     }
@@ -90,7 +127,7 @@ class ApiService {
     threadId?: string,
     fileIds?: string[]
   ): AsyncGenerator<StreamEvent> {
-    const response = await fetch(`${API_BASE_URL}/api/chat/stream-with-tools`, {
+    const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/chat/stream-with-tools`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -101,6 +138,8 @@ class ApiService {
         fileIds,
       }),
     });
+
+    await handleAuthResponse(response);
 
     if (!response.ok) {
       throw new Error('Failed to stream chat');
@@ -172,10 +211,12 @@ class ApiService {
       formData.append('conversationId', threadId); // Backend still uses conversationId for files
     }
 
-    const response = await fetch(`${API_BASE_URL}/api/files/upload`, {
+    const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/files/upload`, {
       method: 'POST',
       body: formData,
     });
+
+    await handleAuthResponse(response);
 
     if (!response.ok) {
       throw new Error('Failed to upload files');
@@ -189,7 +230,8 @@ class ApiService {
    * Get file metadata
    */
   async getFile(fileId: string): Promise<FileMetadata> {
-    const response = await fetch(`${API_BASE_URL}/api/files/${fileId}`);
+    const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/files/${fileId}`);
+    await handleAuthResponse(response);
     if (!response.ok) {
       throw new Error('Failed to fetch file metadata');
     }
@@ -200,9 +242,10 @@ class ApiService {
    * Delete a file
    */
   async deleteFile(fileId: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/api/files/${fileId}`, {
+    const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/files/${fileId}`, {
       method: 'DELETE',
     });
+    await handleAuthResponse(response);
     if (!response.ok) {
       throw new Error('Failed to delete file');
     }
@@ -214,13 +257,15 @@ class ApiService {
    * Start a tax calculation workflow
    */
   async startTaxCalculationWorkflow(threadId: string, message?: string): Promise<WorkflowStatus> {
-    const response = await fetch(`${API_BASE_URL}/api/workflows/tax-calculation/start`, {
+    const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/workflows/tax-calculation/start`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ threadId, message }),
     });
+
+    await handleAuthResponse(response);
 
     if (!response.ok) {
       throw new Error('Failed to start workflow');
@@ -234,13 +279,15 @@ class ApiService {
    * Resume a suspended workflow with user data
    */
   async resumeWorkflow(runId: string, stepId: string, data: any): Promise<WorkflowStatus> {
-    const response = await fetch(`${API_BASE_URL}/api/workflows/${runId}/resume`, {
+    const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/workflows/${runId}/resume`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ stepId, data }),
     });
+
+    await handleAuthResponse(response);
 
     if (!response.ok) {
       throw new Error('Failed to resume workflow');
@@ -254,7 +301,9 @@ class ApiService {
    * Get workflow status
    */
   async getWorkflowStatus(runId: string): Promise<WorkflowStatus> {
-    const response = await fetch(`${API_BASE_URL}/api/workflows/${runId}/status`);
+    const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/workflows/${runId}/status`);
+
+    await handleAuthResponse(response);
 
     if (!response.ok) {
       throw new Error('Failed to get workflow status');
@@ -268,9 +317,11 @@ class ApiService {
    * Cancel a workflow
    */
   async cancelWorkflow(runId: string): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/api/workflows/${runId}`, {
+    const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/workflows/${runId}`, {
       method: 'DELETE',
     });
+
+    await handleAuthResponse(response);
 
     if (!response.ok) {
       throw new Error('Failed to cancel workflow');
@@ -281,7 +332,9 @@ class ApiService {
    * Get active workflows for a thread
    */
   async getActiveWorkflows(threadId: string): Promise<WorkflowStatus[]> {
-    const response = await fetch(`${API_BASE_URL}/api/workflows/thread/${threadId}`);
+    const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/workflows/thread/${threadId}`);
+
+    await handleAuthResponse(response);
 
     if (!response.ok) {
       throw new Error('Failed to get active workflows');

@@ -10,8 +10,9 @@ import { getStoragePath } from './config/storage';
 import { env } from './config/env';
 import { TaxAgent } from './agent';
 import { initializeContainer } from './di';
-import { createConversationRoutes, createChatRoutes, createFileRoutes, workflowRoutes } from './presentation/http/routes';
+import { createConversationRoutes, createChatRoutes, createFileRoutes, workflowRoutes, authRoutes } from './presentation/http/routes';
 import { MastraAIAgentService, TesseractOCRService } from './infrastructure/services';
+import { authMiddleware } from './middleware/auth.middleware';
 
 const app: Express = express();
 
@@ -70,17 +71,20 @@ async function setupApplication() {
     ? createFileRoutes(container.fileController)
     : express.Router();
 
-  // Mount routes
-  app.use('/api/chat/conversations', conversationRoutes);
-  app.use('/api/chat', chatRoutes);
-  app.use('/api/files', fileRoutes);
-  app.use('/api/workflows', workflowRoutes);
+  // Mount public routes (no auth required)
+  app.use('/api/auth', authRoutes);
 
-  console.log('[Setup] Routes configured');
-
-  // Serve static files
+  // Serve static files (no auth required for file downloads)
   const filesPath = getStoragePath('files');
   app.use('/files', express.static(filesPath));
+
+  // Mount protected routes (auth required)
+  app.use('/api/chat/conversations', authMiddleware, conversationRoutes);
+  app.use('/api/chat', authMiddleware, chatRoutes);
+  app.use('/api/files', authMiddleware, fileRoutes);
+  app.use('/api/workflows', authMiddleware, workflowRoutes);
+
+  console.log('[Setup] Routes configured');
 
   // 404 handler
   app.use((req: Request, res: Response) => {

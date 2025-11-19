@@ -53,7 +53,13 @@ export const env = {
   MONGODB_ATLAS_URI: getOptionalEnv('MONGODB_ATLAS_URI'),
 
   // File Upload Configuration
-  MAX_FILE_SIZE: parseInt(getRequiredEnv('MAX_FILE_SIZE'), 10)
+  MAX_FILE_SIZE: parseInt(getRequiredEnv('MAX_FILE_SIZE'), 10),
+
+  // JWT Configuration
+  JWT_SECRET: getRequiredEnv('JWT_SECRET'),
+  JWT_REFRESH_SECRET: getRequiredEnv('JWT_REFRESH_SECRET'),
+  JWT_EXPIRES_IN: getOptionalEnv('JWT_EXPIRES_IN') || '15m',
+  JWT_REFRESH_EXPIRES_IN: getOptionalEnv('JWT_REFRESH_EXPIRES_IN') || '7d'
 } as const;
 
 // Validate configuration at startup

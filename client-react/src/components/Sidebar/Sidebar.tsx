@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, MessageSquare, Trash2, HelpCircle, FileText } from 'lucide-react';
+import { Search, MessageSquare, Trash2, HelpCircle, FileText, LogOut, User } from 'lucide-react';
 import type { Conversation } from '../../types';
 
 interface SidebarProps {
@@ -11,6 +11,8 @@ interface SidebarProps {
   isOpen: boolean;
   onToggle: () => void;
   loading: boolean;
+  userName?: string;
+  onLogout?: () => void;
 }
 
 export default function Sidebar({
@@ -21,7 +23,9 @@ export default function Sidebar({
   onDeleteConversation,
   isOpen,
   onToggle,
-  loading
+  loading,
+  userName,
+  onLogout
 }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -130,7 +134,13 @@ export default function Sidebar({
           </div>
 
           {/* Footer */}
-          <div className=" p-4">
+          <div className="p-4 border-t border-gray-200">
+            {userName && (
+              <div className="flex items-center gap-3 px-3 py-2 mb-2">
+                <User className="w-4 h-4 text-gray-500" />
+                <span className="text-sm text-gray-700 truncate">{userName}</span>
+              </div>
+            )}
             <h2 className="text-xs font-semibold text-gray-500 uppercase mb-2">INFO</h2>
             <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 text-sm">
               <FileText className="w-4 h-4" />
@@ -140,6 +150,15 @@ export default function Sidebar({
               <HelpCircle className="w-4 h-4" />
               Support
             </button>
+            {onLogout && (
+              <button
+                onClick={onLogout}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-50 text-red-600 text-sm mt-2"
+              >
+                <LogOut className="w-4 h-4" />
+                Sign out
+              </button>
+            )}
           </div>
         </div>
       </aside>

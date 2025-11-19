@@ -8,6 +8,7 @@ interface ConversationContextType {
   loading: boolean;
   error: string | null;
   loadConversations: () => Promise<void>;
+  refreshConversations: () => Promise<void>;
   setCurrentThreadId: (threadId: string | null) => void;
   deleteConversation: (threadId: string) => Promise<void>;
   addConversation: (conversation: Conversation) => void;
@@ -124,6 +125,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
     loading,
     error,
     loadConversations,
+    refreshConversations: loadConversations,
     setCurrentThreadId,
     deleteConversation,
     addConversation,
