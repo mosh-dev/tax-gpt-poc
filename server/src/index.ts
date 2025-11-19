@@ -8,9 +8,9 @@ import cors from 'cors';
 import { connectDatabase } from './config/database';
 import { getStoragePath } from './config/storage';
 import { env } from './config/env';
-import { TaxAgent } from './agent';
+import { initializeTaxAgent } from './agent';
 import { initializeContainer } from './di';
-import { createConversationRoutes, createChatRoutes, createFileRoutes, workflowRoutes, authRoutes } from './presentation/http/routes';
+import { createConversationRoutes, createChatRoutes, createFileRoutes, workflowRoutes, authRoutes, agentConfigRoutes } from './presentation/http/routes';
 import { MastraAIAgentService, TesseractOCRService } from './infrastructure/services';
 import { authMiddleware } from './middleware/auth.middleware';
 
@@ -51,8 +51,8 @@ async function setupApplication() {
 
   console.log('[Setup] DI Container initialized');
 
-  // Initialize Tax Agent (memory setup handled internally)
-  const taxAgent = new TaxAgent();
+  // Initialize Tax Agent with instructions from database
+  await initializeTaxAgent();
   const aiAgentService = new MastraAIAgentService();
   container.setAIAgentService(aiAgentService);
   console.log('[Setup] AI Agent Service initialized');
@@ -83,6 +83,7 @@ async function setupApplication() {
   app.use('/api/chat', authMiddleware, chatRoutes);
   app.use('/api/files', authMiddleware, fileRoutes);
   app.use('/api/workflows', authMiddleware, workflowRoutes);
+  app.use('/api/agent-config', authMiddleware, agentConfigRoutes);
 
   console.log('[Setup] Routes configured');
 

@@ -4,5 +4,5 @@
  */
 
 export { TaxAgent } from './tax-agent';
-export { taxAgent } from './setup';
+export { taxAgent, initializeTaxAgent, getTaxAgent } from './setup';
 export * from './tools';

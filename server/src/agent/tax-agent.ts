@@ -6,6 +6,7 @@ import { processDocumentsTool } from './tools/process-documents-tool';
 import { resumeWorkflowTool } from './tools/resume-workflow-tool';
 import { startWorkflowTool } from './tools/start-workflow-tool';
 import { createMastraMemory, createMemoryConfigFromEnv } from './mastra-memory';
+import { AgentConfig } from '../models';
 
 /**
  * System prompt for the Swiss Tax Assistant
@@ -84,7 +85,7 @@ export class TaxAgent {
     private agent: Agent;
     public readonly memory?: Memory;
 
-    constructor() {
+    constructor(instructions?: string) {
         const model = getOpenAiModel();
 
         // Initialize Memory internally
@@ -100,9 +101,13 @@ export class TaxAgent {
             this.memory = undefined;
         }
 
+        // Use provided instructions or fall back to default
+        const agentInstructions = instructions || SWISS_TAX_SYSTEM_PROMPT;
+        console.log(`[TaxAgent] Using ${instructions ? 'custom' : 'default'} instructions`);
+
         this.agent = new Agent({
             name: 'zurich-tax-assistant',
-            instructions: SWISS_TAX_SYSTEM_PROMPT,
+            instructions: agentInstructions,
             model: model,
             memory: this.memory, // Use internally initialized memory
             tools: {
@@ -114,6 +119,24 @@ export class TaxAgent {
                 resumeWorkflowTool,
             },
         });
+    }
+
+    /**
+     * Create a TaxAgent with instructions from the database
+     * Falls back to default instructions if not found in DB
+     */
+    static async createWithDbInstructions(): Promise<TaxAgent> {
+        try {
+            const config = await AgentConfig.findOne().lean();
+            if (config?.instructions) {
+                console.log('[TaxAgent] Loaded instructions from database');
+                return new TaxAgent(config.instructions);
+            }
+        } catch (error: any) {
+            console.warn('[TaxAgent] Failed to load instructions from DB:', error.message);
+        }
+        console.log('[TaxAgent] Using default instructions');
+        return new TaxAgent();
     }
 
     /**
@@ -231,6 +254,3 @@ export class TaxAgent {
     }
 }
 
-// Note: The singleton is exported but will be initialized with Memory in the entry point
-// For now, export a default instance without memory (for backward compatibility)
-export const taxAgent = new TaxAgent();

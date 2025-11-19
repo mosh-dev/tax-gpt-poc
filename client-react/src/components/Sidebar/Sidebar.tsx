@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, MessageSquare, Trash2, HelpCircle, FileText, LogOut, User } from 'lucide-react';
+import { Search, MessageSquare, Trash2, HelpCircle, FileText, LogOut, User, Settings } from 'lucide-react';
 import type { Conversation } from '../../types';
 
 interface SidebarProps {
@@ -13,6 +13,7 @@ interface SidebarProps {
   loading: boolean;
   userName?: string;
   onLogout?: () => void;
+  onOpenConfig?: () => void;
 }
 
 export default function Sidebar({
@@ -25,7 +26,8 @@ export default function Sidebar({
   onToggle,
   loading,
   userName,
-  onLogout
+  onLogout,
+  onOpenConfig
 }: SidebarProps) {
   const [searchQuery, setSearchQuery] = useState('');
 
@@ -142,6 +144,15 @@ export default function Sidebar({
               </div>
             )}
             <h2 className="text-xs font-semibold text-gray-500 uppercase mb-2">INFO</h2>
+            {onOpenConfig && (
+              <button
+                onClick={onOpenConfig}
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 text-sm"
+              >
+                <Settings className="w-4 h-4" />
+                Agent Config
+              </button>
+            )}
             <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 text-sm">
               <FileText className="w-4 h-4" />
               Updates & FAQ

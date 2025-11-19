@@ -343,6 +343,40 @@ class ApiService {
     const data = await response.json();
     return data.workflows;
   }
+
+  // === Agent Config API Methods ===
+
+  /**
+   * Get agent configuration
+   */
+  async getAgentConfig(): Promise<{ id: string; instructions: string; updatedAt: string }> {
+    const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/agent-config`);
+    await handleAuthResponse(response);
+    if (!response.ok) {
+      throw new Error('Failed to fetch agent configuration');
+    }
+    const data = await response.json();
+    return data.config;
+  }
+
+  /**
+   * Update agent configuration
+   */
+  async updateAgentConfig(instructions: string): Promise<{ id: string; instructions: string; updatedAt: string }> {
+    const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/agent-config`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ instructions }),
+    });
+    await handleAuthResponse(response);
+    if (!response.ok) {
+      throw new Error('Failed to update agent configuration');
+    }
+    const data = await response.json();
+    return data.config;
+  }
 }
 
 export const apiService = new ApiService();
