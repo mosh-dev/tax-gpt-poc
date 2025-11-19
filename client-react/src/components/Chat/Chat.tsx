@@ -251,7 +251,7 @@ export default function Chat({ threadId }: ChatProps) {
         }
         break;
 
-      case 'generate-tax-pdf':
+      case 'generateTaxPDFTool':
         if (event.result?.success && event.result?.downloadUrl) {
           const downloadUrl = `${API_BASE_URL}${event.result.downloadUrl}`;
           assistantMessage.content += `\n\n${event.result.message}\n\n📄 [Download PDF](${downloadUrl})`;
@@ -260,7 +260,7 @@ export default function Chat({ threadId }: ChatProps) {
         }
         break;
 
-      case 'calculate-deductions':
+      case 'calculateDeductionsTool':
         if (event.result) {
           const result = event.result;
           let summary = `\n\n📊 **Deduction Calculation Results:**\n`;
