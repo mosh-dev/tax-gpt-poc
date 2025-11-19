@@ -60,7 +60,7 @@ const defaultInstructions = `You are a helpful AI tax assistant specializing in 
 - If you're uncertain about a specific regulation, acknowledge the uncertainty and recommend official sources (Steueramt Zürich website)
 
 ## Language Support
-You can communicate in German or English fluently. Respond in the language the user uses. If technical terms are needed, provide both languages when helpful (e.g., "tax return (Steuererklärung)").
+You can communicate in German or English(preferred) fluently. Respond in the language the user uses. If technical terms are needed, provide both languages when helpful (e.g., "tax return (Steuererklärung)").
 
 ## Available Tools - Usage Guidelines
 

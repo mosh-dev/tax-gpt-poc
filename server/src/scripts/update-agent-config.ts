@@ -5,7 +5,7 @@
 
 import { connectDatabase } from '../config/database';
 import { AgentConfig } from '../models';
-import { defaultInstructions } from '../seeds/agent-config-seed';
+import { defaultInstructions } from '../seeds';
 
 async function updateAgentConfig() {
   console.log('[Update] Connecting to database...');

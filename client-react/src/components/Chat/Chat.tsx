@@ -240,16 +240,19 @@ export default function Chat({ threadId }: ChatProps) {
                   updatedAt: new Date().toISOString(),
                 };
                 setActiveWorkflow(workflowStatus);
+                setIsWorkflowSubmitting(false); // Clear submitting state - new step is ready
                 console.log('[Workflow] Updated:', workflowStatus.currentStep);
               }
               // Handle workflow completion
               else if (result?.success && result?.completed) {
                 setActiveWorkflow(null);
+                setIsWorkflowSubmitting(false); // Clear submitting state
                 console.log('[Workflow] Completed');
               }
               // Handle workflow errors - clear workflow state
               else if (result?.success === false) {
                 setActiveWorkflow(null);
+                setIsWorkflowSubmitting(false); // Clear submitting state
                 console.log('[Workflow] Error:', result.error || result.message);
                 // Error message will be shown by the assistant
               }
@@ -284,6 +287,10 @@ export default function Chat({ threadId }: ChatProps) {
     } finally {
       setIsLoading(false);
       setIsStreaming(false); // Re-enable input after streaming completes
+      // Safety: Clear workflow submitting state if it wasn't cleared by tool-result
+      if (isWorkflowSubmitting) {
+        setIsWorkflowSubmitting(false);
+      }
     }
   };
 
@@ -430,8 +437,8 @@ export default function Chat({ threadId }: ChatProps) {
 
     const userContent = formatWorkflowMessage(activeWorkflow.runId, stepId, data);
 
-    // Clear the active workflow UI - LLM will handle from here
-    setActiveWorkflow(null);
+    // Keep workflow UI visible - backend will update to next step or clear on completion/error
+    // DON'T clear activeWorkflow here to prevent UI flicker
 
     const userMessage: Message = {
       conversationId: threadId,
@@ -441,8 +448,8 @@ export default function Chat({ threadId }: ChatProps) {
     };
 
     setMessages(prev => [...prev, userMessage]);
-    setIsWorkflowSubmitting(false);
     setIsLoading(true);
+    // Keep isWorkflowSubmitting true - will be cleared when workflow updates in tool-result handler
 
     await streamChatMessage(userContent, threadId);
   };
@@ -550,15 +557,9 @@ export default function Chat({ threadId }: ChatProps) {
   };
 
   const sendMessage = async () => {
-    // Always require a message (files alone are not enough)
-    if (!currentMessage.trim() || isLoading || isUploading) {
+    // Prevent sending if streaming or workflow active
+    if (!currentMessage.trim() || isLoading || isUploading || isStreaming || activeWorkflow) {
       return;
-    }
-
-    // Clear active workflow if user sends custom message instead of using workflow form
-    if (activeWorkflow) {
-      setActiveWorkflow(null);
-      console.log('[Workflow] Cleared - user sent custom message');
     }
 
     // Upload files first
@@ -618,7 +619,10 @@ export default function Chat({ threadId }: ChatProps) {
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      sendMessage();
+      // Only send if not streaming, no active workflow, and message is not empty
+      if (!isStreaming && !activeWorkflow && currentMessage.trim()) {
+        sendMessage();
+      }
     }
   };
 
@@ -694,7 +698,7 @@ export default function Chat({ threadId }: ChatProps) {
         )}
 
         {/* Workflow step form - rendered inline in chat */}
-        {activeWorkflow && activeWorkflow.status === 'suspended' && (
+        {activeWorkflow && activeWorkflow.status === 'suspended' && !isWorkflowSubmitting && !isStreaming && (
           <div className="flex gap-4 mb-6">
             <div className="w-10 h-10 bg-primary-100 rounded-lg flex-shrink-0 flex items-center justify-center text-primary-600">
               <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
@@ -761,27 +765,32 @@ export default function Chat({ threadId }: ChatProps) {
             onChange={(e) => setCurrentMessage(e.target.value)}
             onKeyDown={handleKeyPress}
             placeholder="Type message"
-            disabled={isStreaming}
             rows={1}
-            className="w-full bg-white px-4 py-3 pr-32 border border-gray-300 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50 resize-none"
+            className="w-full bg-white px-4 py-3 pr-32 border border-gray-300 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-primary-500 resize-none"
           />
 
           {/* Icons inside input on the right */}
           <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 pb-1">
             <button
               onClick={() => fileInputRef.current?.click()}
-              disabled={isStreaming || isUploading}
+              disabled={isStreaming || isUploading || !!activeWorkflow}
               className="p-2 text-gray-500 hover:bg-gray-100 rounded-full disabled:opacity-50 transition-colors flex items-center justify-center"
-              title="Attach file"
+              title={activeWorkflow ? "Complete workflow step first" : "Attach file"}
             >
               <Paperclip className="w-5 h-5" />
             </button>
 
             <button
               onClick={sendMessage}
-              disabled={!currentMessage.trim() || isStreaming || isUploading}
+              disabled={!currentMessage.trim() || isStreaming || isUploading || !!activeWorkflow}
               className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
-              title={selectedFiles.length > 0 && !currentMessage.trim() ? "Please add a message to send with your files" : "Send"}
+              title={
+                activeWorkflow
+                  ? "Complete workflow step first"
+                  : selectedFiles.length > 0 && !currentMessage.trim()
+                  ? "Please add a message to send with your files"
+                  : "Send"
+              }
             >
               {isUploading ? (
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-600"></div>
