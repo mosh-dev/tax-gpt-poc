@@ -6,6 +6,7 @@
 import { useState } from 'react';
 import { Upload, Check, FileText } from 'lucide-react';
 import type { WorkflowStatus, PersonalInfo, TaxDocument, ExtractedTaxData } from '../../types';
+import { WORKFLOW_STEPS } from '../../constants';
 
 interface WorkflowStepMessageProps {
   workflow: WorkflowStatus;
@@ -27,7 +28,7 @@ export default function WorkflowStepMessage({
   if (!currentStep) return null;
 
   switch (currentStep) {
-    case 'collect-personal-info':
+    case WORKFLOW_STEPS.COLLECT_PERSONAL_INFO:
       return (
         <PersonalInfoForm
           payload={suspendPayload}
@@ -37,7 +38,7 @@ export default function WorkflowStepMessage({
         />
       );
 
-    case 'upload-documents':
+    case WORKFLOW_STEPS.UPLOAD_DOCUMENTS:
       return (
         <DocumentUploadForm
           payload={suspendPayload}
@@ -48,7 +49,7 @@ export default function WorkflowStepMessage({
         />
       );
 
-    case 'review-extracted-data':
+    case WORKFLOW_STEPS.REVIEW_EXTRACTED_DATA:
       return (
         <ReviewDataForm
           payload={suspendPayload}
@@ -58,7 +59,7 @@ export default function WorkflowStepMessage({
         />
       );
 
-    case 'generate-summary':
+    case WORKFLOW_STEPS.GENERATE_SUMMARY:
       return (
         <SummaryForm
           payload={suspendPayload}

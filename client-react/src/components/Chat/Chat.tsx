@@ -8,6 +8,7 @@ import { apiService, API_BASE_URL } from '../../services/api';
 import { useConversations } from '../../contexts/ConversationContext';
 import TaxDataModal from './TaxDataModal';
 import WorkflowStepMessage from './WorkflowStepMessage';
+import { WORKFLOW_IDS, WORKFLOW_STEPS, TOOL_NAMES, STEP_TITLES, WORKFLOW_STATUS } from '../../constants';
 
 interface LocationState {
   initialMessage?: string;
@@ -146,15 +147,15 @@ export default function Chat({ threadId }: ChatProps) {
           // Find the last workflow tool call
           for (let i = lastMessage.toolCalls.length - 1; i >= 0; i--) {
               const toolCall = lastMessage.toolCalls[i];
-              if ((toolCall.toolName === 'startWorkflowTool' || toolCall.toolName === 'resumeWorkflowTool') && toolCall.result) {
+              if ((toolCall.toolName === TOOL_NAMES.START_WORKFLOW || toolCall.toolName === TOOL_NAMES.RESUME_WORKFLOW) && toolCall.result) {
                   const result = toolCall.result;
                   // Check if workflow is suspended (not completed)
                   if (result.success && !result.completed && result.runId) {
                       setActiveWorkflow({
                           runId: result.runId,
                           threadId: threadId,
-                          workflowId: 'tax-calculation-workflow',
-                          status: 'suspended',
+                          workflowId: WORKFLOW_IDS.TAX_CALCULATION,
+                          status: WORKFLOW_STATUS.SUSPENDED,
                           currentStep: result.nextStep || result.currentStep,
                           suspendPayload: result.suspendPayload,
                           createdAt: new Date().toISOString(),
@@ -224,7 +225,7 @@ export default function Chat({ threadId }: ChatProps) {
             handleToolResult(event, assistantMessage);
 
             // Handle workflow state updates
-            if (event.toolName === 'startWorkflowTool' || event.toolName === 'resumeWorkflowTool') {
+            if (event.toolName === TOOL_NAMES.START_WORKFLOW || event.toolName === TOOL_NAMES.RESUME_WORKFLOW) {
               const result = event.result;
               console.log('[Workflow] Tool result received:', event.toolName, result);
 
@@ -233,8 +234,8 @@ export default function Chat({ threadId }: ChatProps) {
                 const workflowStatus = {
                   runId: result.runId,
                   threadId: threadIdToUse,
-                  workflowId: 'tax-calculation-workflow',
-                  status: 'suspended' as const,
+                  workflowId: WORKFLOW_IDS.TAX_CALCULATION,
+                  status: WORKFLOW_STATUS.SUSPENDED as const,
                   currentStep: result.nextStep || result.currentStep,
                   suspendPayload: result.suspendPayload,
                   createdAt: new Date().toISOString(),
@@ -336,19 +337,18 @@ export default function Chat({ threadId }: ChatProps) {
     return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
   };
 
-  // Clean up message content for display (remove fileId tags)
+  // Clean up message content for display (remove internal instructions)
   const cleanMessageContent = (content: string): string => {
-    // Remove [Uploaded Files] section and [fileId: xxx] tags
+    // Remove workflow resume instructions meant for LLM
     const cleaned = content
-      // .replace(/\n\n\[Uploaded Files\]\n?/g, '')
-      // .replace(/\[fileId: [^\]]+\]\n?/g, '')
-      // .replace(/\[Uploaded Files\]/g, '')
+      // Remove the IMPORTANT instruction block for resume-workflow (handles nested JSON)
+      .replace(/\n\n\*\*IMPORTANT: Call resume-workflow with this EXACT data:\*\*\n- stepId: "[^"]+"\n- data: .+\n?/g, '')
+      .replace(/\nDo NOT modify the stepId or data structure\. Pass them exactly as shown above\.\n?/g, '')
+      // Remove [Workflow Context] section
+      .replace(/\n\[Workflow Context\]\n- Run ID: [^\n]+\n- Step ID: [^\n]+\n?/g, '')
+      // Remove [Context: threadId=xxx] tags
+      .replace(/\s*\[Context: threadId=[^\]]+\]/g, '')
       .trim();
-
-    // If nothing left after cleaning, show a default message
-    // if (!cleaned) {
-    //   return '📎 *Documents uploaded for analysis*';
-    // }
 
     return cleaned;
   };
@@ -369,7 +369,7 @@ export default function Chat({ threadId }: ChatProps) {
 
   const handleToolResult = (event: StreamEvent, assistantMessage: Message) => {
     switch (event.toolName) {
-      case 'getTaxDataTool':
+      case TOOL_NAMES.GET_TAX_DATA:
         if (event.result?.success && event.result?.data) {
           setPendingTaxData(event.result.data);
           setPendingScenario(event.result.scenario);
@@ -377,7 +377,7 @@ export default function Chat({ threadId }: ChatProps) {
         }
         break;
 
-      case 'generateTaxPDFTool':
+      case TOOL_NAMES.GENERATE_TAX_PDF:
         if (event.result?.success && event.result?.downloadUrl) {
           const downloadUrl = `${API_BASE_URL}${event.result.downloadUrl}`;
           assistantMessage.content += `\n\n${event.result.message}\n\n📄 [Download PDF](${downloadUrl})`;
@@ -386,7 +386,7 @@ export default function Chat({ threadId }: ChatProps) {
         }
         break;
 
-      case 'calculateDeductionsTool':
+      case TOOL_NAMES.CALCULATE_DEDUCTIONS:
         if (event.result) {
           const result = event.result;
           let summary = `\n\n📊 **Deduction Calculation Results:**\n`;
@@ -483,7 +483,7 @@ export default function Chat({ threadId }: ChatProps) {
     content += `- Step ID: ${stepId}\n\n`;
 
     switch (stepId) {
-      case 'collect-personal-info':
+      case WORKFLOW_STEPS.COLLECT_PERSONAL_INFO:
         content += `**Personal Information:**\n`;
         content += `- First Name: ${data.firstName}\n`;
         content += `- Last Name: ${data.lastName}\n`;
@@ -491,31 +491,40 @@ export default function Chat({ threadId }: ChatProps) {
         content += `- Number of Children: ${data.numberOfChildren}\n`;
         content += `- Canton: ${data.canton}\n`;
         content += `- Tax Year: ${data.taxYear}\n`;
+        content += `\n**IMPORTANT: Call resume-workflow with this EXACT data:**\n`;
+        content += `- stepId: "${WORKFLOW_STEPS.COLLECT_PERSONAL_INFO}"\n`;
+        content += `- data: ${JSON.stringify(data)}\n`;
         break;
-      case 'upload-documents':
+      case WORKFLOW_STEPS.UPLOAD_DOCUMENTS:
         const docs = data.documents || [];
-        const fileIds = docs.map((d: TaxDocument) => d.fileId);
         content += `**Uploaded Documents:** ${docs.length} file(s)\n`;
         docs.forEach((d: TaxDocument) => {
-          content += `- ${d.fileName} (${d.fileId})\n`;
+          content += `- ${d.fileName} (ID: ${d.fileId})\n`;
         });
-        content += `\n**File IDs for OCR processing:** ${JSON.stringify(fileIds)}\n`;
-        content += `Please use the process-documents tool to extract text from these files before continuing the workflow.\n`;
+        content += `\n**IMPORTANT: Call resume-workflow with this EXACT data:**\n`;
+        content += `- stepId: "${WORKFLOW_STEPS.UPLOAD_DOCUMENTS}"\n`;
+        content += `- data: ${JSON.stringify(data)}\n`;
+        content += `\nDo NOT modify the stepId or data structure. Pass them exactly as shown above.\n`;
         break;
-      case 'review-extracted-data':
+      case WORKFLOW_STEPS.REVIEW_EXTRACTED_DATA:
         content += `**Confirmed Tax Data**\n`;
         content += `I confirm the extracted tax data is correct.\n`;
+        content += `\n**IMPORTANT: Call resume-workflow with this EXACT data:**\n`;
+        content += `- stepId: "${WORKFLOW_STEPS.REVIEW_EXTRACTED_DATA}"\n`;
+        content += `- data: ${JSON.stringify(data)}\n`;
         break;
-      case 'generate-summary':
+      case WORKFLOW_STEPS.GENERATE_SUMMARY:
         content += data.generatePdf
           ? `Please generate the PDF summary.\n`
           : `Finish without PDF generation.\n`;
+        content += `\n**IMPORTANT: Call resume-workflow with this EXACT data:**\n`;
+        content += `- stepId: "${WORKFLOW_STEPS.GENERATE_SUMMARY}"\n`;
+        content += `- data: ${JSON.stringify(data)}\n`;
         break;
       default:
         content += JSON.stringify(data, null, 2);
     }
 
-    content += `\nPlease continue the workflow with this data.`;
     return content;
   };
 
@@ -531,14 +540,7 @@ export default function Chat({ threadId }: ChatProps) {
 
   // Helper to get step title
   const getStepTitle = (stepId: string): string => {
-    const titles: Record<string, string> = {
-      'collect-personal-info': 'Personal Information',
-      'upload-documents': 'Upload Documents',
-      'review-extracted-data': 'Review Extracted Data',
-      'calculate-tax': 'Calculate Tax',
-      'generate-summary': 'Summary',
-    };
-    return titles[stepId] || stepId;
+    return STEP_TITLES[stepId] || stepId;
   };
 
   // Send initial message from Welcome page navigation

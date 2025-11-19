@@ -7,6 +7,7 @@ import { Mastra } from '@mastra/core';
 import { MongoDBStore } from '@mastra/mongodb';
 import { taxCalculationWorkflow } from './tax-calculation-workflow';
 import { env } from '../../config/env';
+import { WORKFLOW_IDS, WORKFLOW_STATUS } from '../../constants';
 
 // Create MongoDB storage for workflow snapshots
 const workflowStorage = new MongoDBStore({
@@ -58,7 +59,7 @@ export class WorkflowService {
       workflowRuns.set(runId, {
         run,
         threadId,
-        workflowId: 'tax-calculation-workflow',
+        workflowId: WORKFLOW_IDS.TAX_CALCULATION,
         createdAt: new Date(),
       });
       console.log(`[WorkflowService] Stored workflow run in memory. Active runs: ${workflowRuns.size}`);
@@ -78,7 +79,7 @@ export class WorkflowService {
       const status: WorkflowStatus = {
         runId,
         threadId,
-        workflowId: 'tax-calculation-workflow',
+        workflowId: WORKFLOW_IDS.TAX_CALCULATION,
         status: result.status as WorkflowStatus['status'],
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -142,8 +143,10 @@ export class WorkflowService {
 
       // Log resume data for debugging
       console.log(`[WorkflowService] Resume data:`, JSON.stringify(resumeData, null, 2));
+      console.log(`[WorkflowService] Resuming at step: ${stepId}`);
 
-      // Resume the workflow
+      // Resume the workflow with the provided step
+      // The client validates stepId matches workflow.currentStep before calling
       const result = await run.resume({
         step: stepId,
         resumeData,

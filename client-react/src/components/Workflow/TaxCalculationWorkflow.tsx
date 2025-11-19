@@ -6,21 +6,13 @@
 import { useState, useEffect } from 'react';
 import { apiService } from '../../services/api';
 import type { WorkflowStatus, PersonalInfo, TaxDocument, ExtractedTaxData } from '../../types';
+import { WORKFLOW_STEPS, STEP_TITLES } from '../../constants';
 
 interface TaxCalculationWorkflowProps {
   threadId: string;
   onComplete?: (result: any) => void;
   onCancel?: () => void;
 }
-
-// Step names to display names mapping
-const STEP_NAMES: Record<string, string> = {
-  'collect-personal-info': 'Personal Information',
-  'upload-documents': 'Upload Documents',
-  'review-extracted-data': 'Review Data',
-  'calculate-tax': 'Calculate Tax',
-  'generate-summary': 'Summary',
-};
 
 export default function TaxCalculationWorkflow({
   threadId,
@@ -138,7 +130,7 @@ export default function TaxCalculationWorkflow({
 
       {/* Step Content */}
       <div className="p-6">
-        {workflow.currentStep === 'collect-personal-info' && (
+        {workflow.currentStep === WORKFLOW_STEPS.COLLECT_PERSONAL_INFO && (
           <PersonalInfoStep
             payload={workflow.suspendPayload}
             onSubmit={resumeWorkflow}
@@ -147,7 +139,7 @@ export default function TaxCalculationWorkflow({
           />
         )}
 
-        {workflow.currentStep === 'upload-documents' && (
+        {workflow.currentStep === WORKFLOW_STEPS.UPLOAD_DOCUMENTS && (
           <DocumentUploadStep
             payload={workflow.suspendPayload}
             threadId={threadId}
@@ -157,7 +149,7 @@ export default function TaxCalculationWorkflow({
           />
         )}
 
-        {workflow.currentStep === 'review-extracted-data' && (
+        {workflow.currentStep === WORKFLOW_STEPS.REVIEW_EXTRACTED_DATA && (
           <ReviewDataStep
             payload={workflow.suspendPayload}
             onSubmit={resumeWorkflow}
@@ -166,7 +158,7 @@ export default function TaxCalculationWorkflow({
           />
         )}
 
-        {workflow.currentStep === 'generate-summary' && (
+        {workflow.currentStep === WORKFLOW_STEPS.GENERATE_SUMMARY && (
           <SummaryStep
             payload={workflow.suspendPayload}
             onSubmit={resumeWorkflow}
@@ -183,11 +175,11 @@ export default function TaxCalculationWorkflow({
 
 function WorkflowProgress({ currentStep }: { currentStep?: string }) {
   const steps = [
-    'collect-personal-info',
-    'upload-documents',
-    'review-extracted-data',
-    'calculate-tax',
-    'generate-summary',
+    WORKFLOW_STEPS.COLLECT_PERSONAL_INFO,
+    WORKFLOW_STEPS.UPLOAD_DOCUMENTS,
+    WORKFLOW_STEPS.REVIEW_EXTRACTED_DATA,
+    WORKFLOW_STEPS.CALCULATE_TAX,
+    WORKFLOW_STEPS.GENERATE_SUMMARY,
   ];
 
   const currentIndex = steps.indexOf(currentStep || '');
@@ -220,7 +212,7 @@ function WorkflowProgress({ currentStep }: { currentStep?: string }) {
       </div>
       <div className="mt-2 text-center">
         <span className="text-sm font-medium text-gray-700">
-          {STEP_NAMES[currentStep || ''] || 'Processing...'}
+          {STEP_TITLES[currentStep || ''] || 'Processing...'}
         </span>
       </div>
     </div>

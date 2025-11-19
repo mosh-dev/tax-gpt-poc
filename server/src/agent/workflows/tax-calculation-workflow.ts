@@ -5,6 +5,7 @@
 
 import { createWorkflow, createStep } from '@mastra/core/workflows';
 import { z } from 'zod';
+import { WORKFLOW_IDS, WORKFLOW_STEPS } from '../../constants';
 
 // === SCHEMA DEFINITIONS ===
 
@@ -82,7 +83,7 @@ const summarySchema = z.object({
  * Suspends to wait for user to provide their personal details
  */
 const collectPersonalInfoStep = createStep({
-  id: 'collect-personal-info',
+  id: WORKFLOW_STEPS.COLLECT_PERSONAL_INFO,
   inputSchema: z.object({
     threadId: z.string(),
     message: z.string().optional(),
@@ -120,7 +121,7 @@ const collectPersonalInfoStep = createStep({
  * Suspends to wait for user to upload their tax documents
  */
 const uploadDocumentsStep = createStep({
-  id: 'upload-documents',
+  id: WORKFLOW_STEPS.UPLOAD_DOCUMENTS,
   inputSchema: personalInfoSchema,
   outputSchema: z.object({
     personalInfo: personalInfoSchema,
@@ -163,7 +164,7 @@ const uploadDocumentsStep = createStep({
  * Shows extracted data from documents and suspends for user confirmation
  */
 const reviewExtractedDataStep = createStep({
-  id: 'review-extracted-data',
+  id: WORKFLOW_STEPS.REVIEW_EXTRACTED_DATA,
   inputSchema: z.object({
     personalInfo: personalInfoSchema,
     documents: documentSchema.shape.documents,
@@ -230,7 +231,7 @@ const reviewExtractedDataStep = createStep({
  * Performs tax calculation based on confirmed data
  */
 const calculateTaxStep = createStep({
-  id: 'calculate-tax',
+  id: WORKFLOW_STEPS.CALCULATE_TAX,
   inputSchema: z.object({
     personalInfo: personalInfoSchema,
     taxData: extractedDataSchema,
@@ -312,7 +313,7 @@ const calculateTaxStep = createStep({
  * Suspends for final confirmation before generating PDF
  */
 const generateSummaryStep = createStep({
-  id: 'generate-summary',
+  id: WORKFLOW_STEPS.GENERATE_SUMMARY,
   inputSchema: z.object({
     personalInfo: personalInfoSchema,
     taxData: extractedDataSchema,
@@ -382,7 +383,7 @@ ${calculation.recommendations.map(r => `- ${r}`).join('\n')}
 // === WORKFLOW DEFINITION ===
 
 export const taxCalculationWorkflow = createWorkflow({
-  id: 'tax-calculation-workflow',
+  id: WORKFLOW_IDS.TAX_CALCULATION,
   inputSchema: z.object({
     threadId: z.string(),
     message: z.string().optional(),

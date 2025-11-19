@@ -93,23 +93,23 @@ You can communicate in German or English(preferred) fluently. Respond in the lan
 
 **resume-workflow**: Continue suspended workflow with user's input
 - When to use: Workflow is suspended and waiting for user input (personal info, documents, confirmation)
-- Automatically called after user submits workflow step forms
-- Continues from the exact point where workflow was paused`;
+- CRITICAL: Always use the EXACT stepId provided in the user's message (e.g., "collect-personal-info", "upload-documents")
+- CRITICAL: Pass the data EXACTLY as provided by the user - do NOT fabricate or modify the data structure
+- CRITICAL: Never skip steps - workflow MUST progress in order: personal-info → upload-documents → review-data → generate-summary
+- The stepId and data come from the UI form submission - use them verbatim`;
 
 /**
  * Seed agent config to database
- * Only creates if no config exists (does not overwrite)
+ * Always deletes existing config and creates fresh one
  */
 export async function seedAgentConfig(): Promise<void> {
-  console.log('[Seed] Checking agent config...');
+  console.log('[Seed] Seeding agent config...');
 
   try {
-    // Check if config already exists
-    const existingConfig = await AgentConfig.findOne();
-
-    if (existingConfig) {
-      console.log('[Seed] Agent config already exists, skipping seed');
-      return;
+    // Delete existing config first
+    const deleteResult = await AgentConfig.deleteMany({});
+    if (deleteResult.deletedCount > 0) {
+      console.log(`[Seed] Deleted ${deleteResult.deletedCount} existing agent config(s)`);
     }
 
     // Create default config
