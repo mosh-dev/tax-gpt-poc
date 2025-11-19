@@ -225,6 +225,65 @@ export class FileService {
     const file = await mongoRepository.findFileById(fileId);
     return file ? file.storedPath : null;
   }
+
+  /**
+   * Save a generated file (e.g., PDF) and create database record
+   */
+  async saveGeneratedFile(
+    content: Buffer | string,
+    filename: string,
+    mimeType: string,
+    conversationId?: string
+  ): Promise<UploadedFileInfo> {
+    // Import env here to avoid circular dependency
+    const { env } = require('../config/env');
+
+    const fileId = randomUUID();
+    const storedFilename = `${fileId}${path.extname(filename)}`;
+    const storedPath = path.join(getStoragePath('files'), storedFilename);
+    const fileUrl = `${env.BASE_URL}/files/${storedFilename}`;
+
+    // Write file to disk
+    const buffer = typeof content === 'string' ? Buffer.from(content, 'utf-8') : content;
+    await fs.writeFile(storedPath, buffer);
+
+    const fileData = {
+      fileId,
+      conversationId,
+      originalName: filename,
+      storedPath,
+      url: fileUrl,
+      mimeType,
+      size: buffer.length,
+      processed: true, // Generated files are already processed
+      uploadedAt: new Date(),
+      // No expiry for generated files - they should persist
+    };
+
+    // Save to database
+    await mongoRepository.createFile(fileData);
+
+    console.log(`[FileService] Saved generated file: ${filename} (ID: ${fileId}, ${buffer.length} bytes)`);
+
+    return {
+      fileId,
+      originalName: filename,
+      storedPath,
+      url: fileUrl,
+      mimeType,
+      size: buffer.length,
+      uploadedAt: new Date(),
+      conversationId,
+    };
+  }
+
+  /**
+   * Get file URL by ID
+   */
+  async getFileUrl(fileId: string): Promise<string | null> {
+    const file = await mongoRepository.findFileById(fileId);
+    return file ? file.url : null;
+  }
 }
 
 // Export singleton instance

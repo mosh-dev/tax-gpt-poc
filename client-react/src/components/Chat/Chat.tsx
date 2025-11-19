@@ -379,7 +379,8 @@ export default function Chat({ threadId }: ChatProps) {
 
       case TOOL_NAMES.GENERATE_TAX_PDF:
         if (event.result?.success && event.result?.downloadUrl) {
-          const downloadUrl = `${API_BASE_URL}${event.result.downloadUrl}`;
+          // downloadUrl is already a full URL from fileService
+          const downloadUrl = event.result.downloadUrl;
           assistantMessage.content += `\n\n${event.result.message}\n\n📄 [Download PDF](${downloadUrl})`;
         } else {
           assistantMessage.content += `\n\nFailed to generate PDF: ${event.result?.error || 'Unknown error'}`;

@@ -6,7 +6,8 @@
 import { createWorkflow, createStep } from '@mastra/core/workflows';
 import { z } from 'zod';
 import { WORKFLOW_IDS, WORKFLOW_STEPS } from '../../constants';
-import { env } from '../../config/env';
+import { fileService } from '../../services/file-service';
+import { generateTaxReturnPDF } from '../../services/pdf-generator';
 
 // === SCHEMA DEFINITIONS ===
 
@@ -334,37 +335,62 @@ const generateSummaryStep = createStep({
       const { calculation, personalInfo } = inputData;
 
       if (resumeData.generatePdf) {
-        // Generate PDF (placeholder - would call actual PDF generation)
         console.log('[Workflow] Generating PDF summary');
 
-        const summary = `
-# Tax Return Summary ${personalInfo.taxYear}
+        // Build tax data structure for PDF generator
+        const taxDataForPdf = {
+          taxYear: personalInfo.taxYear,
+          personalInfo: {
+            firstName: personalInfo.firstName,
+            lastName: personalInfo.lastName,
+            dateOfBirth: personalInfo.dateOfBirth || '',
+            address: personalInfo.municipality || '',
+            municipality: personalInfo.municipality || personalInfo.canton,
+            maritalStatus: personalInfo.maritalStatus,
+          },
+          income: {
+            employment: inputData.taxData.income.employment,
+            selfEmployment: inputData.taxData.income.selfEmployment,
+            investments: inputData.taxData.income.investments,
+            rental: inputData.taxData.income.rental,
+            other: inputData.taxData.income.other,
+          },
+          deductions: {
+            professionalExpenses: inputData.taxData.deductions.professionalExpenses,
+            healthcareExpenses: 0,
+            pillar3a: inputData.taxData.deductions.pillar3a,
+            childcare: inputData.taxData.deductions.childcare,
+            education: inputData.taxData.deductions.education,
+            commuting: 0,
+            donations: inputData.taxData.deductions.donations,
+          },
+          wealth: {
+            bankAccounts: inputData.taxData.wealth.bankAccounts,
+            securities: inputData.taxData.wealth.securities,
+            realEstate: inputData.taxData.wealth.realEstate,
+            other: inputData.taxData.wealth.other + inputData.taxData.wealth.vehicles,
+          },
+        };
 
-## Personal Information
-- Name: ${personalInfo.firstName} ${personalInfo.lastName}
-- Marital Status: ${personalInfo.maritalStatus}
-- Canton: ${personalInfo.canton}
+        // Generate actual PDF using PDF generator service
+        const pdfBuffer = await generateTaxReturnPDF(taxDataForPdf);
 
-## Financial Summary
-- Gross Income: CHF ${calculation.grossIncome.toLocaleString()}
-- Total Deductions: CHF ${calculation.totalDeductions.toLocaleString()}
-- Taxable Income: CHF ${calculation.taxableIncome.toLocaleString()}
+        // Save PDF using fileService for consistent URL handling
+        const filename = `Tax_Return_${personalInfo.lastName}_${personalInfo.taxYear}_${Date.now()}.pdf`;
+        const savedFile = await fileService.saveGeneratedFile(
+          pdfBuffer,
+          filename,
+          'application/pdf'
+        );
 
-## Tax Estimate
-- Estimated Tax: CHF ${calculation.estimatedTax.toLocaleString()}
-- Effective Tax Rate: ${calculation.taxRate}%
-
-## Recommendations
-${calculation.recommendations.map(r => `- ${r}`).join('\n')}
-        `.trim();
-
-        // Construct full URL using BASE_URL from environment
-        const pdfPath = `/files/Tax_Return_${personalInfo.taxYear}_${Date.now()}.pdf`;
-        const fullPdfUrl = `${env.BASE_URL}${pdfPath}`;
+        const summary = `Tax return PDF generated for ${personalInfo.firstName} ${personalInfo.lastName} (Tax Year ${personalInfo.taxYear}). ` +
+          `Gross Income: CHF ${calculation.grossIncome.toLocaleString()}, ` +
+          `Deductions: CHF ${calculation.totalDeductions.toLocaleString()}, ` +
+          `Estimated Tax: CHF ${calculation.estimatedTax.toLocaleString()}`;
 
         return {
           pdfGenerated: true,
-          pdfUrl: fullPdfUrl,
+          pdfUrl: savedFile.url,
           summary,
         };
       }

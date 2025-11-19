@@ -2,9 +2,7 @@ import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 import { generateTaxReturnPDF } from '../../services/pdf-generator';
 import { SwissTaxData } from '../../types';
-import { getStoragePath } from '../../config/storage';
-import * as fs from 'fs';
-import * as path from 'path';
+import { fileService } from '../../services/file-service';
 
 /**
  * Tool to generate a PDF document of calculated tax data
@@ -59,15 +57,8 @@ export const generateTaxPDFTool = createTool({
   }),
   execute: async ({ taxData, fileName }) => {
     try {
-
       // Generate the PDF buffer
       const pdfBuffer = await generateTaxReturnPDF(taxData as SwissTaxData);
-
-      // Create output directory if it doesn't exist
-      const outputDir = getStoragePath('files');
-      if (!fs.existsSync(outputDir)) {
-        fs.mkdirSync(outputDir, { recursive: true });
-      }
 
       // Generate filename
       const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -75,22 +66,21 @@ export const generateTaxPDFTool = createTool({
         ? `${fileName}_${timestamp}.pdf`
         : `Tax_Return_${taxData.personalInfo.lastName}_${taxData.taxYear}_${timestamp}.pdf`;
 
-      const filePath = path.join(outputDir, pdfFileName);
-
-      // Save PDF to file
-      fs.writeFileSync(filePath, pdfBuffer);
+      // Save PDF using fileService for consistent URL handling
+      const savedFile = await fileService.saveGeneratedFile(
+        pdfBuffer,
+        pdfFileName,
+        'application/pdf'
+      );
 
       // Calculate file size
       const fileSizeKB = (pdfBuffer.length / 1024).toFixed(2);
 
-      // Import env here to avoid issues with tool execution
-      const { env } = require('../../config/env');
-
       return {
         success: true,
-        fileName: pdfFileName,
-        filePath: filePath,
-        downloadUrl: `${env.BASE_URL}/files/${pdfFileName}`,
+        fileName: savedFile.originalName,
+        filePath: savedFile.storedPath,
+        downloadUrl: savedFile.url,
         message: `Successfully generated tax return PDF for ${taxData.personalInfo.firstName} ${taxData.personalInfo.lastName} (Tax Year ${taxData.taxYear}). File size: ${fileSizeKB} KB. The PDF includes income summary, deductions, wealth declaration, and taxable income calculation.`,
       };
     } catch (error: any) {
