@@ -61,6 +61,8 @@ export class WorkflowService {
         workflowId: 'tax-calculation-workflow',
         createdAt: new Date(),
       });
+      console.log(`[WorkflowService] Stored workflow run in memory. Active runs: ${workflowRuns.size}`);
+      console.log(`[WorkflowService] RunId: ${runId}`);
 
       // Start the workflow
       const result = await run.start({
@@ -98,12 +100,20 @@ export class WorkflowService {
       if (result.status === 'success') {
         status.status = 'completed';
         status.result = result.result;
+        console.log(`[WorkflowService] Workflow completed on start`);
       }
 
       // Handle error state
       if (result.status === 'failed') {
         status.error = result.error?.message || 'Unknown error';
+        console.log(`[WorkflowService] Workflow failed on start:`, status.error);
       }
+
+      console.log(`[WorkflowService] Returning initial status:`, {
+        runId: status.runId,
+        status: status.status,
+        currentStep: status.currentStep
+      });
 
       return status;
     } catch (error: any) {
@@ -117,14 +127,21 @@ export class WorkflowService {
    */
   async resumeWorkflow(runId: string, stepId: string, resumeData: any): Promise<WorkflowStatus> {
     console.log(`[WorkflowService] Resuming workflow ${runId} at step ${stepId}`);
+    console.log(`[WorkflowService] Currently active runs: ${workflowRuns.size}`);
+    console.log(`[WorkflowService] Active runIds:`, Array.from(workflowRuns.keys()));
 
     const runData = workflowRuns.get(runId);
     if (!runData) {
-      throw new Error(`Workflow run not found: ${runId}`);
+      console.error(`[WorkflowService] RunId ${runId} not found in memory!`);
+      console.error(`[WorkflowService] Available runIds:`, Array.from(workflowRuns.keys()));
+      throw new Error(`Workflow run not found: ${runId}. The server may have restarted or the workflow session expired.`);
     }
 
     try {
       const { run, threadId, workflowId } = runData;
+
+      // Log resume data for debugging
+      console.log(`[WorkflowService] Resume data:`, JSON.stringify(resumeData, null, 2));
 
       // Resume the workflow
       const result = await run.resume({
@@ -133,6 +150,12 @@ export class WorkflowService {
       });
 
       console.log(`[WorkflowService] Workflow resumed, status: ${result.status}`);
+      console.log(`[WorkflowService] Full result object:`, JSON.stringify({
+        status: result.status,
+        suspended: result.suspended,
+        error: result.error,
+        steps: Object.keys(result.steps || {})
+      }, null, 2));
 
       // Build status response
       const status: WorkflowStatus = {
@@ -149,10 +172,14 @@ export class WorkflowService {
         const suspendedStepId = result.suspended[0][0];
         status.currentStep = suspendedStepId;
 
+        console.log(`[WorkflowService] After resume - suspended at step: ${suspendedStepId}`);
+        console.log(`[WorkflowService] Suspended steps array:`, result.suspended);
+
         // Get suspend payload from the step
         const stepResult = result.steps?.[suspendedStepId];
         if (stepResult?.suspendPayload) {
           status.suspendPayload = stepResult.suspendPayload;
+          console.log(`[WorkflowService] Suspend payload for step ${suspendedStepId}:`, status.suspendPayload.reason);
         }
       }
 
@@ -163,13 +190,21 @@ export class WorkflowService {
 
         // Clean up completed run
         workflowRuns.delete(runId);
+        console.log(`[WorkflowService] Deleted completed workflow from memory. Active runs: ${workflowRuns.size}`);
       }
 
       // Handle error state
       if (result.status === 'failed') {
         status.error = result.error?.message || 'Unknown error';
         workflowRuns.delete(runId);
+        console.log(`[WorkflowService] Deleted failed workflow from memory. Active runs: ${workflowRuns.size}`);
       }
+
+      console.log(`[WorkflowService] Returning resume status:`, {
+        runId: status.runId,
+        status: status.status,
+        currentStep: status.currentStep
+      });
 
       return status;
     } catch (error: any) {
