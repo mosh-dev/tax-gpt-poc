@@ -235,7 +235,7 @@ export default function Chat({ threadId }: ChatProps) {
                   runId: result.runId,
                   threadId: threadIdToUse,
                   workflowId: WORKFLOW_IDS.TAX_CALCULATION,
-                  status: WORKFLOW_STATUS.SUSPENDED as const,
+                  status: WORKFLOW_STATUS.SUSPENDED,
                   currentStep: result.nextStep || result.currentStep,
                   suspendPayload: result.suspendPayload,
                   createdAt: new Date().toISOString(),

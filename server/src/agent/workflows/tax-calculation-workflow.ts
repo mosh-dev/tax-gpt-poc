@@ -6,6 +6,7 @@
 import { createWorkflow, createStep } from '@mastra/core/workflows';
 import { z } from 'zod';
 import { WORKFLOW_IDS, WORKFLOW_STEPS } from '../../constants';
+import { env } from '../../config/env';
 
 // === SCHEMA DEFINITIONS ===
 
@@ -357,9 +358,13 @@ const generateSummaryStep = createStep({
 ${calculation.recommendations.map(r => `- ${r}`).join('\n')}
         `.trim();
 
+        // Construct full URL using BASE_URL from environment
+        const pdfPath = `/files/Tax_Return_${personalInfo.taxYear}_${Date.now()}.pdf`;
+        const fullPdfUrl = `${env.BASE_URL}${pdfPath}`;
+
         return {
           pdfGenerated: true,
-          pdfUrl: `/files/Tax_Return_${personalInfo.taxYear}_${Date.now()}.pdf`,
+          pdfUrl: fullPdfUrl,
           summary,
         };
       }
