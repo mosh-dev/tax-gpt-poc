@@ -3,7 +3,7 @@
  * Renders workflow steps as interactive chat messages
  */
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Upload, Check, FileText } from 'lucide-react';
 import type { WorkflowStatus, PersonalInfo, TaxDocument, ExtractedTaxData } from '../../types';
 import { WORKFLOW_STEPS } from '../../constants';
@@ -14,6 +14,7 @@ interface WorkflowStepMessageProps {
   onUploadFiles: (files: File[]) => Promise<TaxDocument[]>;
   onCancel?: () => void;
   isSubmitting: boolean;
+  onRender?: () => void; // Callback to notify parent that UI has rendered
 }
 
 export default function WorkflowStepMessage({
@@ -21,9 +22,15 @@ export default function WorkflowStepMessage({
   onSubmit,
   onUploadFiles,
   onCancel,
-  isSubmitting
+  isSubmitting,
+  onRender
 }: WorkflowStepMessageProps) {
   const { currentStep, suspendPayload } = workflow;
+
+  // Notify parent when component renders/updates
+  useEffect(() => {
+    onRender?.();
+  }, [currentStep, onRender]);
 
   if (!currentStep) return null;
 

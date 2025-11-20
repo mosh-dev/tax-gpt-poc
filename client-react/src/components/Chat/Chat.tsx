@@ -116,7 +116,7 @@ export default function Chat({ threadId }: ChatProps) {
   // Auto-scroll
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isLoading, activeWorkflow]);
+  }, [messages, isLoading]);
 
   const loadConversation = async () => {
     if (!threadId) {
@@ -739,6 +739,7 @@ export default function Chat({ threadId }: ChatProps) {
                   console.log('[Workflow] Skipped by user');
                 }}
                 isSubmitting={isWorkflowSubmitting}
+                onRender={scrollToBottom}
               />
             </div>
           </div>
