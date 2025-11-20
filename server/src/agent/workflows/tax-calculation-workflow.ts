@@ -88,7 +88,7 @@ const collectPersonalInfoStep = createStep({
   id: WORKFLOW_STEPS.COLLECT_PERSONAL_INFO,
   inputSchema: z.object({
     threadId: z.string(),
-    message: z.string().optional(),
+    message: z.string().optional().nullable(),
   }),
   outputSchema: personalInfoSchema,
   resumeSchema: personalInfoSchema,
@@ -417,7 +417,7 @@ export const taxCalculationWorkflow = createWorkflow({
   id: WORKFLOW_IDS.TAX_CALCULATION,
   inputSchema: z.object({
     threadId: z.string(),
-    message: z.string().optional(),
+    message: z.string().optional().nullable(),
   }),
   outputSchema: summarySchema,
 })
