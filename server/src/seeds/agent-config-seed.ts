@@ -4,19 +4,17 @@
  */
 
 import {AgentConfig, IAgentConfig} from '../models';
-import * as fs from 'fs';
-import * as path from 'path';
 
-// Load default system instructions from markdown file
-// This makes it easier to edit and maintain the instructions
-const instructionsPath = path.join(__dirname, 'system-instructions.md');
-const defaultInstructions = fs.readFileSync(instructionsPath, 'utf-8');
+const defaultInstructions = ``;
 
 /**
  * Seed agent config to database
  * Always deletes existing config and creates fresh one
  */
 export async function seedAgentConfig(): Promise<void> {
+    if (!defaultInstructions) {
+        console.log('[Seed] No instructions to seed...');
+    }
     console.log('[Seed] Seeding agent config...');
 
     try {
@@ -39,7 +37,6 @@ export async function seedAgentConfig(): Promise<void> {
 
         await config.save();
         console.log('[Seed] Agent config created with default instructions');
-        console.log(`[Seed] Instructions loaded from: ${instructionsPath}`);
     } catch (error) {
         console.error('[Seed] Error seeding agent config:', error);
         throw error;
