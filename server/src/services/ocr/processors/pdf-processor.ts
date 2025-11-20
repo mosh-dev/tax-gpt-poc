@@ -16,8 +16,8 @@ import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { createCanvas } from 'canvas';
 import { PDFParse } from 'pdf-parse';
 
-// Configure PDF.js for Node.js environment (disable worker)
-pdfjsLib.GlobalWorkerOptions.workerSrc = '';
+// Configure PDF.js worker to use the bundled version (matches API version)
+pdfjsLib.GlobalWorkerOptions.workerSrc = require.resolve('pdfjs-dist/legacy/build/pdf.worker.mjs');
 
 export class PDFProcessor extends BaseDocumentProcessor {
   protected supportedTypes: FileType[] = ['pdf'];
