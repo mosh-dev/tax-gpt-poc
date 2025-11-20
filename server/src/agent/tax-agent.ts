@@ -30,8 +30,7 @@ export class TaxAgent {
             this.memory = undefined;
         }
 
-        console.log('[TaxAgent] Using instructions from database');
-
+        console.log(`[TaxAgent] Using instructions from database - ${instructions}`);
         this.agent = new Agent({
             name: 'zurich-tax-assistant',
             instructions: instructions,
@@ -59,17 +58,6 @@ export class TaxAgent {
             throw new Error('Agent config not found in database. Please ensure seeds have been run.');
         }
         return config.instructions;
-    }
-
-    /**
-     * Create a TaxAgent with instructions from the database
-     * Throws error if no config found in DB
-     * @deprecated Use getOrCreateTaxAgent() from setup.ts instead
-     */
-    static async createWithDbInstructions(): Promise<TaxAgent> {
-        const instructions = await TaxAgent.getInstructionsFromDb();
-        console.log('[TaxAgent] Loaded instructions from database');
-        return new TaxAgent(instructions);
     }
 
     /**
