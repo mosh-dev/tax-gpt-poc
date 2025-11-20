@@ -7,6 +7,7 @@ import { resumeWorkflowTool } from './tools/resume-workflow-tool';
 import { startWorkflowTool } from './tools/start-workflow-tool';
 import { createMastraMemory, createMemoryConfigFromEnv } from './mastra-memory';
 import { AgentConfig } from '../models';
+import { encode } from 'gpt-tokenizer';
 
 /**
  * Tax Agent powered by Mastra and LMStudio
@@ -30,7 +31,14 @@ export class TaxAgent {
             this.memory = undefined;
         }
 
-        console.log(`[TaxAgent] Using instructions from database - ${instructions}`);
+        // Count tokens in system instructions
+        const tokenCount = encode(instructions).length;
+        console.log(`[TaxAgent] System instructions loaded from database:`);
+        console.log(`  - Character count: ${instructions.length.toLocaleString()}`);
+        console.log(`  - Token count: ${tokenCount.toLocaleString()} tokens`);
+        console.log(`  - Estimated cost per request (input): $${(tokenCount * 0.003 / 1000).toFixed(6)}`);
+        console.log(`  - (Assuming $0.003/1K input tokens - adjust for your model)`);
+
         this.agent = new Agent({
             name: 'zurich-tax-assistant',
             instructions: instructions,

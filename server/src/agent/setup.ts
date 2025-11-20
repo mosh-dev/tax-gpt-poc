@@ -39,7 +39,6 @@ export async function getOrCreateTaxAgent(): Promise<TaxAgent> {
 
     // If agent exists and doesn't need refresh, return immediately (no DB query)
     if (taxAgentInstance && !needsRefresh) {
-        console.log('[TaxAgent] Using cached agent instance (no refresh needed)');
         return taxAgentInstance;
     }
 
