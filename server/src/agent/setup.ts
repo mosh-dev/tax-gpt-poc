@@ -1,6 +1,6 @@
 /**
  * Agent Setup
- * Singleton pattern with manual invalidation on config updates
+ * Singleton pattern with flag-based invalidation for efficiency
  */
 
 import { TaxAgent } from './tax-agent';
@@ -10,62 +10,74 @@ import { TaxAgent } from './tax-agent';
  * Recreated when agent config is updated
  */
 let taxAgentInstance: TaxAgent | null = null;
-let currentInstructions: string | null = null;
 
 /**
- * Promise to track ongoing agent creation
+ * Flag to indicate if instructions need to be refreshed from DB
+ * Set to true when invalidateTaxAgent() is called
+ */
+let needsRefresh: boolean = true;
+
+/**
+ * Flag to track ongoing agent creation
  * Prevents multiple simultaneous instantiations
  */
-let creationPromise: Promise<TaxAgent> | null = null;
+let isCreating: boolean = false;
 
 /**
  * Get or create the singleton TaxAgent instance
- * Checks if instructions have changed and recreates agent if needed
+ * Only queries DB if needsRefresh flag is set (after invalidation)
  * Thread-safe: prevents multiple simultaneous agent creations
  * @returns Promise<TaxAgent> - Singleton agent instance
  */
 export async function getOrCreateTaxAgent(): Promise<TaxAgent> {
-    // If agent is currently being created, wait for that to complete
-    if (creationPromise) {
-        console.log('[TaxAgent] Waiting for ongoing agent creation');
-        return await creationPromise;
+    // If agent is currently being created, wait briefly and retry
+    if (isCreating) {
+        console.log('[TaxAgent] Agent creation in progress, waiting...');
+        await new Promise(resolve => setTimeout(resolve, 100));
+        return getOrCreateTaxAgent(); // Retry
     }
 
-    // Fetch current instructions from database
-    const instructions = await TaxAgent.getInstructionsFromDb();
-
-    // If no instance exists, or instructions have changed, create new agent
-    if (!taxAgentInstance || currentInstructions !== instructions) {
-        console.log('[TaxAgent] Creating new agent instance with fresh instructions');
-
-        // Start creation and store promise to prevent concurrent creation
-        creationPromise = (async () => {
-            try {
-                const agent = new TaxAgent(instructions);
-                taxAgentInstance = agent;
-                currentInstructions = instructions;
-                return agent;
-            } finally {
-                // Clear the creation promise when done
-                creationPromise = null;
-            }
-        })();
-
-        return await creationPromise;
-    } else {
-        console.log('[TaxAgent] Using existing agent instance');
+    // If agent exists and doesn't need refresh, return immediately (no DB query)
+    if (taxAgentInstance && !needsRefresh) {
+        console.log('[TaxAgent] Using cached agent instance (no refresh needed)');
         return taxAgentInstance;
+    }
+
+    // Agent needs to be created or refreshed - query DB for latest instructions
+    console.log('[TaxAgent] Fetching instructions from database', {
+        reason: !taxAgentInstance ? 'no instance' : 'refresh requested'
+    });
+
+    isCreating = true;
+    try {
+        const instructions = await TaxAgent.getInstructionsFromDb();
+        const agent = new TaxAgent(instructions);
+
+        taxAgentInstance = agent;
+        needsRefresh = false; // Clear refresh flag
+
+        console.log('[TaxAgent] Agent instance created successfully', {
+            instructionsLength: instructions.length
+        });
+
+        return agent;
+    } catch (error) {
+        console.error('[TaxAgent] Error creating agent instance:', error);
+        throw error;
+    } finally {
+        isCreating = false;
     }
 }
 
 /**
- * Invalidate and recreate the agent instance
+ * Invalidate the agent instance
  * Call this when agent config is updated in the database
+ * Sets the needsRefresh flag so next request will fetch fresh instructions
  */
 export async function invalidateTaxAgent(): Promise<void> {
-    console.log('[TaxAgent] Invalidating agent instance - will recreate on next request');
+    console.log('[TaxAgent] Invalidating agent - next request will fetch fresh instructions from DB');
     taxAgentInstance = null;
-    currentInstructions = null;
+    needsRefresh = true;
 }
 
 /**

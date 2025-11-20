@@ -116,7 +116,7 @@ export default function Chat({ threadId }: ChatProps) {
   // Auto-scroll
   useEffect(() => {
     scrollToBottom();
-  }, [messages, isLoading]);
+  }, [messages, isLoading, activeWorkflow]);
 
   const loadConversation = async () => {
     if (!threadId) {
