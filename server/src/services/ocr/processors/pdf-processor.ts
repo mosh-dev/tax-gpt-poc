@@ -12,12 +12,8 @@ import { ImageProcessor } from './image-processor';
 import { DEFAULT_OCR_CONFIG } from '../config';
 import path from 'path';
 import fs from 'fs/promises';
-import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { createCanvas } from 'canvas';
 import { PDFParse } from 'pdf-parse';
-
-// Configure PDF.js for Node.js environment (disable worker)
-pdfjsLib.GlobalWorkerOptions.workerSrc = '';
 
 export class PDFProcessor extends BaseDocumentProcessor {
   protected supportedTypes: FileType[] = ['pdf'];
