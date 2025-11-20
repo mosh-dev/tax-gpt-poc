@@ -26,7 +26,6 @@
     "mongoose": "^8.19.4",
     "multer": "^2.0.2",
     "pdf-parse": "~2.4.5",
-    "pdfjs-dist": "~5.4.394",
     "pdfkit": "~0.17.2",
     "safe-stable-stringify": "^2.5.0",
     "sharp": "~0.34.5",
