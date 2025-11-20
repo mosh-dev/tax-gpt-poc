@@ -3,7 +3,7 @@
  * Seeds the database with default AI agent system instructions
  */
 
-import { AgentConfig } from '../models';
+import {AgentConfig, IAgentConfig} from '../models';
 
 // Default system instructions for Swiss Tax Assistant
 const defaultInstructions = `You are a helpful AI tax assistant specializing in Swiss taxation, particularly for Canton Zurich. Your role is to help users understand and complete their tax returns accurately.
@@ -103,33 +103,39 @@ You can communicate in German or English(preferred) fluently. Respond in the lan
  * Always deletes existing config and creates fresh one
  */
 export async function seedAgentConfig(): Promise<void> {
-  console.log('[Seed] Seeding agent config...');
+    console.log('[Seed] Seeding agent config...');
 
-  try {
-    // Delete existing config first
-    const deleteResult = await AgentConfig.deleteMany({});
-    if (deleteResult.deletedCount > 0) {
-      console.log(`[Seed] Deleted ${deleteResult.deletedCount} existing agent config(s)`);
+    try {
+
+        const existingAgentConfig = await AgentConfig.findOne().lean<IAgentConfig>();
+        if (existingAgentConfig) {
+            return;
+        }
+
+        // Delete existing config first
+        const deleteResult = await AgentConfig.deleteMany({});
+        if (deleteResult.deletedCount > 0) {
+            console.log(`[Seed] Deleted ${deleteResult.deletedCount} existing agent config(s)`);
+        }
+
+        // Create default config
+        const config = new AgentConfig({
+            instructions: defaultInstructions,
+        });
+
+        await config.save();
+        console.log('[Seed] Agent config created with default instructions');
+    } catch (error) {
+        console.error('[Seed] Error seeding agent config:', error);
+        throw error;
     }
-
-    // Create default config
-    const config = new AgentConfig({
-      instructions: defaultInstructions,
-    });
-
-    await config.save();
-    console.log('[Seed] Agent config created with default instructions');
-  } catch (error) {
-    console.error('[Seed] Error seeding agent config:', error);
-    throw error;
-  }
 }
 
 /**
  * Get current agent config
  */
 export async function getAgentConfig() {
-  return AgentConfig.findOne();
+    return AgentConfig.findOne();
 }
 
-export { defaultInstructions };
+export {defaultInstructions};

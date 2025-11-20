@@ -5,6 +5,7 @@
 
 import { Router, Request, Response } from 'express';
 import { AgentConfig } from '../../../models';
+import { invalidateTaxAgent } from '../../../agent';
 
 const router = Router();
 
@@ -63,6 +64,10 @@ router.put('/', async (req: Request, res: Response) => {
     ).lean();
 
     console.log('[AgentConfig] Configuration updated');
+
+    // Invalidate the agent instance so it gets recreated with new instructions
+    await invalidateTaxAgent();
+    console.log('[AgentConfig] Agent instance invalidated - will use new instructions on next request');
 
     res.json({
       success: true,

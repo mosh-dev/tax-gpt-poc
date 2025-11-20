@@ -1,6 +1,6 @@
 import { Request, Response, Router } from 'express';
-import { taxAgent } from '../agent';
-import { ChatRequest, ChatResponse } from '../types';
+import { getOrCreateTaxAgent } from '../agent';
+import { ChatRequest } from '../types';
 import { mongoMemory } from '../services/mongodb-memory';
 
 // Type definition for stream events
@@ -138,7 +138,8 @@ router.delete('/conversations/:id', async (req: Request, res: Response) => {
         await mongoMemory.deleteConversation(conversationId);
 
         // Also delete from Mastra memory (agent's thread history)
-        await taxAgent.deleteThread(conversationId);
+        const agent = await getOrCreateTaxAgent();
+        await agent.deleteThread(conversationId);
 
         res.json({
             success: true,
@@ -204,6 +205,9 @@ router.post('/stream-with-tools', async (req: Request, res: Response) => {
         })}\n\n`);
 
         try {
+            // Get agent with fresh instructions from database
+            const taxAgent = await getOrCreateTaxAgent();
+
             // Stream with Mastra Memory - threadId is REQUIRED
             const fullStream = taxAgent.streamChatWithTools(
                 message,

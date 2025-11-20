@@ -3,8 +3,8 @@
  * Implements IAIAgentService using the existing TaxAgent
  */
 
-import { IAIAgentService, StreamEvent, ChatMessage } from '../../../core/application/services';
-import { getTaxAgent } from '../../../agent';
+import { IAIAgentService, StreamEvent, ChatMessage } from '../../../core/application';
+import { getOrCreateTaxAgent } from '../../../agent';
 
 export class MastraAIAgentService implements IAIAgentService {
   async *streamChat(
@@ -18,8 +18,8 @@ export class MastraAIAgentService implements IAIAgentService {
       throw new Error('threadId is required for conversation management');
     }
 
-    // Get the initialized tax agent (with DB instructions)
-    const taxAgent = getTaxAgent();
+    // Get or create tax agent with fresh instructions from DB
+    const taxAgent = await getOrCreateTaxAgent();
 
     // Stream from tax agent (threadId is mandatory)
     for await (const event of taxAgent.streamChatWithTools(

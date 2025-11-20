@@ -49,16 +49,27 @@ export class TaxAgent {
     }
 
     /**
-     * Create a TaxAgent with instructions from the database
+     * Get instructions from the database
      * Throws error if no config found in DB
+     * @returns Promise<string> - The system instructions
      */
-    static async createWithDbInstructions(): Promise<TaxAgent> {
+    static async getInstructionsFromDb(): Promise<string> {
         const config = await AgentConfig.findOne().lean();
         if (!config?.instructions) {
             throw new Error('Agent config not found in database. Please ensure seeds have been run.');
         }
+        return config.instructions;
+    }
+
+    /**
+     * Create a TaxAgent with instructions from the database
+     * Throws error if no config found in DB
+     * @deprecated Use getOrCreateTaxAgent() from setup.ts instead
+     */
+    static async createWithDbInstructions(): Promise<TaxAgent> {
+        const instructions = await TaxAgent.getInstructionsFromDb();
         console.log('[TaxAgent] Loaded instructions from database');
-        return new TaxAgent(config.instructions);
+        return new TaxAgent(instructions);
     }
 
     /**
