@@ -3,9 +3,9 @@
  * Handles streaming chat with AI agent
  */
 
-import { IConversationRepository, IMessageRepository } from '../../../domain/repositories';
-import { Conversation, Message } from '../../../domain/entities';
-import { ConversationId, MessageId, MessageRole } from '../../../domain/value-objects';
+import { IConversationRepository, IMessageRepository } from '../../../domain';
+import { Conversation, Message } from '../../../domain';
+import { ConversationId, MessageId, MessageRole } from '../../../domain';
 import { StreamChatRequestDTO, StreamEventDTO, ChatMessageDTO } from '../../dtos';
 import { IAIAgentService } from '../../services';
 
@@ -24,14 +24,14 @@ export class StreamChatUseCase {
     const cleanMessage = message
       .replace(/\[Context:.*?\]/g, '')
       .replace(/\[Workflow Context\][\s\S]*?(?=\n\n|$)/g, '')
-      .replace(/\[fileId:.*?\]/g, '')
+      .replace(/\[fileId:.*?]/g, '')
       .replace(/\*\*/g, '')
       .trim();
 
     // Get first 3 words
     const words = cleanMessage.split(/\s+/).filter(w => w.length > 0);
     if (words.length > 0) {
-      const title = words.slice(0, 3).join(' ');
+      const title = words.slice(0, 6).join(' ');
       // Capitalize first letter
       return title.charAt(0).toUpperCase() + title.slice(1);
     }
