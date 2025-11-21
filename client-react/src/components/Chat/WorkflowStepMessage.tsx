@@ -7,6 +7,7 @@ import { useState, useEffect } from 'react';
 import { Upload, Check, FileText } from 'lucide-react';
 import type { WorkflowStatus, PersonalInfo, TaxDocument, ExtractedTaxData } from '../../types';
 import { WORKFLOW_STEPS } from '../../constants';
+import * as React from "react";
 
 interface WorkflowStepMessageProps {
   workflow: WorkflowStatus;
@@ -102,7 +103,7 @@ function PersonalInfoForm({
     maritalStatus: 'single',
     numberOfChildren: 0,
     canton: 'zurich',
-    taxYear: new Date().getFullYear() - 1,
+    taxYear: new Date().getFullYear(),
   });
 
   const handleSubmit = (e: React.FormEvent) => {

@@ -10,42 +10,19 @@ import { workflowService } from '../workflows';
 
 export const resumeWorkflowTool = createTool({
   id: 'resume-workflow',
-  description: `Resume a suspended tax calculation workflow with user data.
-
-USE THIS WHEN:
+  description: `Resume a suspended tax calculation workflow with user data. Use this tool when:
 - User has provided their personal information (firstName, lastName, maritalStatus, etc.)
 - User has uploaded documents
 - User has confirmed extracted tax data
 - User wants to generate PDF summary
 
-WORKFLOW STEP SEQUENCE (must progress in order):
+The workflow progresses through these steps in order:
 1. collect-personal-info - User provides name, marital status, children, canton, tax year
 2. upload-documents - User uploads tax documents (Lohnausweis, receipts, etc.)
 3. review-extracted-data - User reviews and confirms extracted income/deductions/wealth
 4. generate-summary - User confirms to finish or generate PDF
 
-CRITICAL USAGE RULES:
-- Always use the EXACT stepId provided in the user's message (e.g., "collect-personal-info", "upload-documents")
-- Pass the data EXACTLY as provided by the user - do NOT fabricate or modify the data structure
-- Never skip steps - workflow MUST progress in order
-- The stepId and data come from the UI form submission - use them verbatim
-- Always check what step the workflow is currently on before resuming
-
-INPUT:
-- runId: The workflow run ID from start-workflow output (required)
-- stepId: The current step ID to resume (required) - use EXACT value from suspendPayload or UI
-- data: The user-provided data for this step (required) - structure depends on step type, use EXACTLY as provided
-
-OUTPUT:
-- success: Boolean indicating if resume was successful
-- completed: Boolean - true if workflow finished, false if more steps remain
-- message: Human-readable status message
-- result: Final workflow result (only if completed=true)
-- nextStep: Next step ID (only if suspended)
-- suspendPayload: Data describing what information is needed next (only if suspended)
-- runId: Workflow run identifier for next resume call
-- error: Error message if resume failed
-- suggestion: Suggested action (e.g., 'restart_workflow') if error occurred`,
+Always check what step the workflow is currently on before resuming.`,
   inputSchema: z.object({
     runId: z.string().describe('The workflow run ID'),
     stepId: z.string().describe('The current step ID to resume (e.g., collect-personal-info, upload-documents)'),

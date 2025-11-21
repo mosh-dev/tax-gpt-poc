@@ -19,7 +19,7 @@ const starterPrompts = [
   },
   {
     icon: '📊',
-    title: 'I want to calculate my taxes for this year with all required documents',
+    title: 'I want to calculate my taxes for this year with all required documents, Start the Process',
     badge: 'Interactive',
   },
   {

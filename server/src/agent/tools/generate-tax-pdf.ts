@@ -10,40 +10,7 @@ import { fileService } from '../../services/file-service';
  */
 export const generateTaxPDFTool = createTool({
   id: 'generate-tax-pdf',
-  description: `Generates a PDF document containing a comprehensive tax return summary with income, deductions, and wealth information for Canton Zurich.
-
-USE THIS WHEN:
-- User asks to "generate PDF", "create document", "download summary"
-- User wants "a PDF of their tax data" or "tax return summary"
-- User wants to "get a PDF" of their tax calculation
-- Workflow completes and user wants final PDF output
-
-PDF CONTENTS:
-- Personal Information (name, address, marital status, tax year)
-- Income Summary (employment, self-employment, investments, rental, other)
-- Deductions Breakdown (professional, healthcare, Pillar 3a, childcare, education, commuting, donations)
-- Wealth Declaration (bank accounts, securities, real estate, other assets)
-- Taxable Income Calculation (total income minus deductions)
-
-LANGUAGE:
-- PDF is always generated in English (optimized for readability and international use)
-
-INPUT REQUIREMENTS:
-- taxData: Complete Swiss tax data object with all required fields
-  - taxYear: The tax year (e.g., 2024)
-  - personalInfo: firstName, lastName, dateOfBirth, address, municipality, maritalStatus
-  - income: employment, selfEmployment, investments, rental, other (all optional)
-  - deductions: professionalExpenses, healthcareExpenses, pillar3a, childcare, education, commuting, donations (all optional)
-  - wealth: bankAccounts, securities, realEstate, other (optional)
-- fileName (optional): Custom filename without extension (timestamp will be appended automatically)
-
-OUTPUT:
-- success: Boolean indicating generation success
-- fileName: Generated filename (includes timestamp)
-- filePath: Server-side storage path
-- downloadUrl: Public URL for downloading the PDF
-- message: Human-readable success message with file size
-- error: Error message if generation fails`,
+  description: 'Generates a PDF document containing a comprehensive tax return summary with income, deductions, and wealth information for Canton Zurich In English. Use this when the user asks to generate, create, or download a PDF of their tax data or tax return summary. And Use English Language',
   inputSchema: z.object({
     taxData: z.object({
       taxYear: z.number(),
