@@ -1,11 +1,9 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Users, DollarSign, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
+import { Users, DollarSign, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
 import { apiService } from '../../services/api';
 import type { Employee, SwissTaxData } from '../../types';
 
 export default function EmployeeData() {
-  const navigate = useNavigate();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -72,22 +70,6 @@ export default function EmployeeData() {
 
   return (
     <div className="h-full flex flex-col bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center gap-4">
-          <button
-            onClick={() => navigate('/')}
-            className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-          >
-            <ArrowLeft className="w-5 h-5" />
-          </button>
-          <div>
-            <h1 className="text-xl font-bold text-gray-900">Mock Employee Data</h1>
-            <p className="text-sm text-gray-500">View available test scenarios in the database</p>
-          </div>
-        </div>
-      </div>
-
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6">
         {error ? (

@@ -9,7 +9,10 @@ interface SidebarProps {
   onSelectConversation: (id: string) => void;
   onDeleteConversation: (id: string) => void;
   isOpen: boolean;
-  onToggle: () => void;
+  onToggle?: () => void;
+  onClose?: () => void;
+  onItemClick?: () => void;
+  isMobile?: boolean;
   loading: boolean;
   userName?: string;
   onLogout?: () => void;
@@ -20,11 +23,12 @@ interface SidebarProps {
 export default function Sidebar({
   conversations = [],
   currentConversationId,
-  onNewChat,
   onSelectConversation,
   onDeleteConversation,
   isOpen,
-  onToggle,
+  onClose,
+  onItemClick,
+  isMobile = false,
   loading,
   userName,
   onLogout,
@@ -39,13 +43,40 @@ export default function Sidebar({
       )
     : [];
 
+  const handleConversationClick = (id: string) => {
+    onSelectConversation(id);
+    onItemClick?.();
+  };
+
+  const handleConfigClick = () => {
+    onOpenConfig?.();
+    onItemClick?.();
+  };
+
+  const handleEmployeeDataClick = () => {
+    onOpenEmployeeData?.();
+    onItemClick?.();
+  };
+
   return (
     <>
+      {/* Backdrop for mobile overlay */}
+      {isMobile && isOpen && (
+        <div
+          className="fixed top-16 left-0 right-0 bottom-0 bg-black/50 z-40 transition-opacity duration-300"
+          onClick={onClose}
+          aria-hidden="true"
+        />
+      )}
+
       {/* Sidebar */}
       <aside
         className={`
+          ${isMobile ? 'fixed top-16 left-0 bottom-0 z-50' : 'relative'}
           ${isOpen ? 'w-64' : 'w-0'}
-          h-full bg-white border-r border-gray-200
+          ${isMobile && isOpen ? 'translate-x-0' : ''}
+          ${isMobile && !isOpen ? '-translate-x-full' : ''}
+          bg-white border-r border-gray-200
           flex flex-col
           transition-all duration-300 ease-in-out
           overflow-hidden flex-shrink-0
@@ -53,31 +84,8 @@ export default function Sidebar({
       >
         {/* Inner wrapper to prevent content collapse */}
         <div className="min-w-64 flex flex-col h-full">
-          {/* Header */}
-          <div className="p-4 border-gray-200">
-            <div className="flex items-center justify-between mb-4">
-              <div
-                className="cursor-pointer hover:opacity-80 transition-opacity"
-                onClick={onNewChat}
-              >
-                <h1 className="text-xl font-bold text-gray-900">TaxGPT</h1>
-              </div>
-              {isOpen && (
-                <button
-                  onClick={onToggle}
-                  className="p-2 hover:bg-gray-200 rounded-lg transition-colors"
-                  title="Close sidebar"
-                >
-                  <svg viewBox="0 0 24 24" fill="none" className="w-5 h-5" stroke="currentColor">
-                    <path d="M3 12h18M3 6h18M3 18h18" strokeWidth="2" strokeLinecap="round"/>
-                  </svg>
-                </button>
-              )}
-            </div>
-          </div>
-
           {/* Search */}
-          <div className="p-4 border-gray-200">
+          <div className="p-4 border-gray-200 pt-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
               <input
@@ -114,7 +122,7 @@ export default function Sidebar({
                         : 'hover:bg-gray-100 text-gray-700'
                       }
                     `}
-                    onClick={() => onSelectConversation(conv.conversationId)}
+                    onClick={() => handleConversationClick(conv.conversationId)}
                   >
                     <MessageSquare className="w-4 h-4 flex-shrink-0" />
                     <span className="flex-1 truncate text-[0.9rem]">
@@ -148,7 +156,7 @@ export default function Sidebar({
             <h2 className="text-xs font-semibold text-gray-500 uppercase mb-2">INFO</h2>
             {onOpenConfig && (
               <button
-                onClick={onOpenConfig}
+                onClick={handleConfigClick}
                 className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 text-sm"
               >
                 <Settings className="w-4 h-4" />
@@ -157,7 +165,7 @@ export default function Sidebar({
             )}
             {onOpenEmployeeData && (
               <button
-                onClick={onOpenEmployeeData}
+                onClick={handleEmployeeDataClick}
                 className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 text-sm"
               >
                 <Users className="w-4 h-4" />
