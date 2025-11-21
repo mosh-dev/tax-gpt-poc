@@ -45,7 +45,45 @@ function createSafeResult(result: any): any {
 
 export const processDocumentsTool = createTool({
   id: 'process-documents',
-  description: 'Process uploaded documents with OCR to extract text. Use this when the user has uploaded files and wants to analyze them.',
+  description: `Process uploaded documents with OCR to extract text from Swiss tax documents.
+
+USE THIS WHEN:
+- User has uploaded files (images, PDFs) and mentions them or asks to process them
+- Message contains file IDs in format: [fileId: uuid]
+- User wants to "analyze documents", "extract text", or "read uploaded files"
+- User uploads Lohnausweis, receipts, tax forms, or other tax-related documents
+
+FEATURES:
+- Supports multiple formats: JPG, PNG, BMP, TIFF, WebP, PDF
+- Multi-language OCR: English + German (optimized for Swiss tax documents)
+- Hybrid PDF processing: Digital text extraction + OCR fallback for scanned pages
+- Quality presets: 'fast' (quick processing), 'balanced' (default, good accuracy), 'accurate' (highest quality, slower)
+
+HOW IT WORKS:
+1. File IDs provided in user message format: [fileId: uuid]
+2. Tool processes each file with OCR using Tesseract.js (standalone, no system dependencies)
+3. Extracted text saved to database with metadata (word count, language, confidence)
+4. Returns results with extracted text for agent analysis
+
+INPUT:
+- fileIds: Array of file ID strings (required) - Extract from user message format [fileId: uuid]
+- quality: OCR quality preset - 'fast', 'balanced', or 'accurate' (optional, default: balanced)
+
+OUTPUT:
+- success: Overall operation status
+- message: Human-readable summary (e.g., "Processed 2/2 documents successfully. Extracted 450 words total.")
+- total: Total number of files processed
+- successful: Number of successfully processed files
+- failed: Number of failed files
+- totalWords: Combined word count across all processed documents
+- results: Array of individual file results, each containing:
+  - fileId, fileName, success
+  - extractedText: The OCR-extracted text content
+  - wordCount: Number of words extracted
+  - language: Detected language (eng, deu, etc.)
+  - processingTime: Time taken in milliseconds
+  - fileType: Original file type (image or pdf)
+  - error: Error message if processing failed`,
   inputSchema: z.object({
     fileIds: z.array(z.string()).describe('Array of file IDs to process with OCR'),
     quality: z.enum(['fast', 'balanced', 'accurate']).optional().default('balanced').describe('OCR quality preset'),

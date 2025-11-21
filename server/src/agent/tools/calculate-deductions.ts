@@ -6,7 +6,37 @@ import { z } from 'zod';
  */
 export const calculateDeductionsTool = createTool({
   id: 'calculate-deductions',
-  description: 'Calculates potential tax deductions for Canton Zurich based on income and expenses. Use this when the user wants to know what deductions they can claim or optimize their tax situation.',
+  description: `Calculates potential tax deductions for Canton Zurich based on income and expenses.
+
+USE THIS WHEN:
+- User asks about "deductions I can claim" or "what can I deduct"
+- User wants to "optimize my taxes" or "reduce my tax burden"
+- User asks "how to save on taxes" through deductions
+- User wants a deduction calculation or breakdown
+
+WHAT IT CALCULATES:
+- Professional Expenses (3% of income cap) - work-related costs, home office, equipment
+- Healthcare Costs (deductible above 5% of income threshold) - medical expenses, insurance
+- Pension Contributions (CHF 7,056 cap for Pillar 3a in 2025) - retirement savings
+- Childcare Costs (no specific cap) - daycare, after-school care
+- Commuting Costs (CHF 3,600 cap) - travel between home and work, public transport
+
+CANTON ZURICH RULES APPLIED:
+- Professional expenses capped at 3% of gross income
+- Healthcare only deductible above 5% of income threshold
+- Pillar 3a contributions limited to CHF 7,056 (2025 limit)
+- Commuting expenses capped at approximately CHF 3,600
+- Estimated tax savings based on ~20% average tax rate
+
+INPUT REQUIREMENTS:
+- income: Total annual income in CHF (required)
+- All expense categories optional (professionalExpenses, healthcareCosts, pensionContributions, childcareCosts, commutingCosts)
+
+OUTPUT:
+- totalDeductions: Sum of all eligible deductions in CHF
+- breakdown: Detailed amounts by category (professional, healthcare, pension, childcare, commuting)
+- recommendations: Personalized suggestions to maximize deductions (e.g., "Consider maximizing Pillar 3a contributions")
+- estimatedTaxSavings: Approximate tax savings from deductions (assumes 20% effective rate)`,
   inputSchema: z.object({
     income: z.number().describe('Total annual income in CHF'),
     professionalExpenses: z.number().optional().describe('Professional expenses in CHF'),

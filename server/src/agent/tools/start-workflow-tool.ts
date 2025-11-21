@@ -10,19 +10,33 @@ import { workflowService } from '../workflows';
 
 export const startWorkflowTool = createTool({
   id: 'start-workflow',
-  description: `Start a new tax calculation workflow. Use this tool when:
-- User wants to calculate their taxes
+  description: `Start a new tax calculation workflow.
+
+USE THIS WHEN:
+- User explicitly requests the workflow using "start workflow", "begin workflow", "start it", "initiate workflow"
+- User confirms after you offer the workflow choice
+- User wants to calculate their taxes step-by-step
 - User wants to do a complete tax return
 - User mentions they need help filing taxes
-- User wants a step-by-step tax calculation process
 
+WORKFLOW PROCESS:
 This starts a multi-step workflow that collects:
-1. Personal information (name, marital status, children, canton)
+1. Personal information (name, marital status, children, canton, tax year)
 2. Tax documents (upload and OCR processing)
 3. Income, deductions, and wealth data
 4. Final summary with PDF generation
 
-After starting, you'll receive the first step's requirements. Guide the user through each step.`,
+INPUT:
+- threadId: The conversation thread ID (required)
+- message: Optional initial message from the user
+
+OUTPUT:
+- success: Boolean indicating if workflow started successfully
+- message: Human-readable status message
+- runId: Unique workflow run identifier for resuming later
+- currentStep: The current step ID (e.g., "collect-personal-info")
+- suspendPayload: Data describing what information is needed from user
+- status: Workflow status (suspended, completed, failed)`,
   inputSchema: z.object({
     threadId: z.string().describe('The conversation thread ID'),
     message: z.string().optional().describe('Optional initial message from the user'),
