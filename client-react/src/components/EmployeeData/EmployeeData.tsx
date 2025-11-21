@@ -229,13 +229,6 @@ export default function EmployeeData() {
           </div>
         )}
       </div>
-
-      {/* Footer */}
-      <div className="bg-white border-t border-gray-200 px-6 py-3">
-        <p className="text-xs text-gray-500">
-          {employees.length} scenario{employees.length !== 1 ? 's' : ''} available for testing
-        </p>
-      </div>
     </div>
   );
 }

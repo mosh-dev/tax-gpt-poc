@@ -78,7 +78,7 @@ export default function Welcome({ }: WelcomeProps) {
   };
   return (
     <div className="flex-1 flex items-center justify-center px-4 py-12">
-      <div className="max-w-3xl w-full text-center">
+      <div className="max-w-4xl w-full text-center">
         {/* Greeting */}
         <div className="mb-8">
           <div className="text-6xl mb-4">👋</div>

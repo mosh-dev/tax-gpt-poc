@@ -61,9 +61,11 @@ export default function Sidebar({
   return (
     <>
       {/* Backdrop for mobile overlay */}
-      {isMobile && isOpen && (
+      {isMobile && (
         <div
-          className="fixed top-16 left-0 right-0 bottom-0 bg-black/50 z-40 transition-opacity duration-300"
+          className={`fixed top-16 left-0 right-0 bottom-0 bg-black/50 z-40 transition-opacity duration-300 ${
+            isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
+          }`}
           onClick={onClose}
           aria-hidden="true"
         />
@@ -149,7 +151,7 @@ export default function Sidebar({
           <div className="p-4 border-t border-gray-200">
             {userName && (
               <div className="flex items-center gap-3 px-3 py-2 mb-2">
-                <User className="w-4 h-4 text-gray-500" />
+                <User className="w-4 h-4 text-slate-500" />
                 <span className="text-sm text-gray-700 truncate">{userName}</span>
               </div>
             )}
@@ -157,27 +159,27 @@ export default function Sidebar({
             {onOpenConfig && (
               <button
                 onClick={handleConfigClick}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 text-sm"
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 text-sm group"
               >
-                <Settings className="w-4 h-4" />
+                <Settings className="w-4 h-4 text-slate-600" />
                 Agent Config
               </button>
             )}
             {onOpenEmployeeData && (
               <button
                 onClick={handleEmployeeDataClick}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 text-sm"
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 text-sm group"
               >
-                <Users className="w-4 h-4" />
+                <Users className="w-4 h-4 text-emerald-600" />
                 Mock Data
               </button>
             )}
-            <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 text-sm">
-              <FileText className="w-4 h-4" />
+            <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 text-sm group">
+              <FileText className="w-4 h-4 text-sky-600" />
               Updates & FAQ
             </button>
-            <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 text-sm">
-              <HelpCircle className="w-4 h-4" />
+            <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 text-sm group">
+              <HelpCircle className="w-4 h-4 text-amber-600" />
               Support
             </button>
             {onLogout && (
@@ -185,7 +187,7 @@ export default function Sidebar({
                 onClick={onLogout}
                 className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-50 text-red-600 text-sm mt-2"
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className="w-4 h-4 text-red-600" />
                 Sign out
               </button>
             )}

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useIsMobile } from '../../hooks/useMediaQuery';
 import Toolbar from '../Toolbar/Toolbar';
@@ -14,10 +14,25 @@ interface AppLayoutProps {
 export default function AppLayout({ children }: AppLayoutProps) {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+  const [sidebarOpen, setSidebarOpen] = useState(() => {
+    // Lazy initialization to properly detect initial mobile state
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 768;
+    }
+    return true;
+  });
   const { conversations, loading, deleteConversation } = useConversations();
   const [searchParams] = useSearchParams();
   const currentThreadId = searchParams.get('threadId');
+
+  // Auto-close sidebar when switching to mobile, auto-open when switching to desktop
+  useEffect(() => {
+    if (isMobile) {
+      setSidebarOpen(false);
+    } else {
+      setSidebarOpen(true);
+    }
+  }, [isMobile]);
 
   const handleToggleSidebar = () => {
     setSidebarOpen(!sidebarOpen);
@@ -80,8 +95,10 @@ export default function AppLayout({ children }: AppLayoutProps) {
         />
 
         {/* Main content */}
-        <main className="flex-1 overflow-auto">
-          {children}
+        <main className="flex-1 overflow-auto pb-20 md:pb-0">
+          <div className="max-w-4xl mx-auto">
+            {children}
+          </div>
         </main>
       </div>
     </div>
