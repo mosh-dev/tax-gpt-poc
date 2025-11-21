@@ -245,7 +245,7 @@ export default function AgentConfig() {
           <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
             <button
               onClick={() => setInstructionsExpanded(!instructionsExpanded)}
-              className="w-full px-4 py-3 border-b border-gray-200 flex items-center justify-between hover:bg-gray-50 transition-colors"
+              className="w-full px-4 py-3 border-b border-gray-200 flex items-center justify-between"
             >
               <label className="text-sm font-medium text-gray-700 cursor-pointer">
                 System Instructions
@@ -274,7 +274,7 @@ export default function AgentConfig() {
                   className="w-full h-[500px] p-4 font-mono text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
                   placeholder="Enter the AI agent's system instructions..."
                 />
-                  <div className="text-right pt-2 gap-3">
+                  <div className="flex justify-end pt-2 gap-3">
                       {hasChanges && (
                           <button
                               onClick={handleReset}
