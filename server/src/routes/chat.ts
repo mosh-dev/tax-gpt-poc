@@ -206,14 +206,24 @@ router.post('/stream-with-tools', async (req: Request, res: Response) => {
         })}\n\n`);
 
         try {
-            // Hybrid Retrieval: Augment message with knowledge base context
+            // Hybrid Retrieval: Augment message with knowledge base context (KB-FIRST)
             const { augmentedMessage, hasContext, sources } = await augmentMessageWithContext(message);
 
-            // If knowledge base context was retrieved, send a retrieval event
+            // Always send retrieval event to show KB was checked
             if (hasContext && sources) {
                 const retrievalEvent = formatRetrievalEvent(sources, sources.length);
                 res.write(`data: ${JSON.stringify(retrievalEvent)}\n\n`);
-                console.log(`[Hybrid Retrieval] Context injected from: ${sources.join(', ')}`);
+                console.log(`[Hybrid Retrieval] KB results found from: ${sources.join(', ')}`);
+            } else {
+                // KB was checked but no results found
+                const noResultsEvent = {
+                    type: 'knowledge-retrieval',
+                    sources: [],
+                    count: 0,
+                    message: 'Knowledge base checked - no relevant results found',
+                };
+                res.write(`data: ${JSON.stringify(noResultsEvent)}\n\n`);
+                console.log(`[Hybrid Retrieval] KB checked - no relevant results`);
             }
 
             // Get agent with fresh instructions from database

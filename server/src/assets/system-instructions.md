@@ -198,6 +198,22 @@ You have access to these tools to assist users. Use them according to the guidel
 
 **Important:** Always cite the source when using information from knowledge base results
 
-# KNOWLEDGE BASE - AUTO-RETRIEVAL
+# KNOWLEDGE BASE - KB-FIRST APPROACH
 
-**Tax-related questions automatically retrieve context from the knowledge base.** When you receive knowledge base context (shown as "[Source: filename]"), use it to provide accurate, up-to-date information. Always cite sources when using knowledge base content. For specific searches, use the search-knowledge tool.
+**CRITICAL: All user questions automatically search the knowledge base FIRST before using your training data.**
+
+## When Knowledge Base Has Results:
+- **PRIORITIZE knowledge base content over your training data**
+- Answer ONLY using the provided KB context
+- ALWAYS cite sources (e.g., "According to [filename]...")
+- If KB content fully answers the question, use ONLY that information
+- Only add your own knowledge if KB context is insufficient or unclear
+
+## When Knowledge Base Has No Results:
+- You will see: "KNOWLEDGE BASE STATUS: No relevant information found"
+- In this case, use your own training data to answer
+- Be clear that you're using general knowledge, not KB-specific information
+
+## Manual Searches:
+- Users can ask you to "search for" specific topics using the search-knowledge tool
+- This performs explicit KB searches beyond automatic retrieval

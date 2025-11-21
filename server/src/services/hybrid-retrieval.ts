@@ -6,31 +6,6 @@
 import { getRAGService } from './rag';
 
 /**
- * Tax-related keywords that trigger automatic retrieval
- * Supports both English and German
- */
-const TAX_KEYWORDS = [
-  // English
-  'tax', 'deduction', 'deduct', 'canton', 'federal', 'swiss',
-  'income', 'wealth', 'allowance', 'rate', 'form', 'filing',
-  'return', 'calculation', 'assessment', 'exemption',
-  // German
-  'steuer', 'abzug', 'kanton', 'eidgenössisch', 'einkommen',
-  'vermögen', 'steuersatz', 'formular', 'berechnung', 'veranlagung',
-  'befreiung', 'pauschale', 'abrechnung', 'erklärung',
-  // Swiss canton specific
-  'zurich', 'zürich', 'zuerich', 'zh',
-];
-
-/**
- * Check if a message contains tax-related keywords
- */
-export function isTaxRelatedQuery(message: string): boolean {
-  const lowerMessage = message.toLowerCase();
-  return TAX_KEYWORDS.some(keyword => lowerMessage.includes(keyword.toLowerCase()));
-}
-
-/**
  * Retrieve relevant knowledge base context for a query
  */
 export async function retrieveKnowledgeContext(query: string): Promise<{
@@ -42,8 +17,8 @@ export async function retrieveKnowledgeContext(query: string): Promise<{
   try {
     const ragService = getRAGService();
     const results = await ragService.searchKnowledge(query, {
-      topK: 3, // Retrieve top 3 chunks for automatic context
-      minScore: 0.6, // Higher threshold for automatic retrieval
+      topK: 5, // Retrieve top 5 chunks for better coverage
+      minScore: 0.65, // Higher threshold (65%) - only use KB if highly relevant
     });
 
     if (results.length === 0) {
@@ -75,11 +50,12 @@ export async function retrieveKnowledgeContext(query: string): Promise<{
 
 /**
  * Augment user message with knowledge base context
+ * KB-FIRST APPROACH: Always search KB, only use LLM knowledge if KB has no results
  */
 export async function augmentMessageWithContext(
   userMessage: string,
   options: {
-    forceRetrieval?: boolean; // Force retrieval even if not tax-related
+    forceRetrieval?: boolean;
     topK?: number;
   } = {}
 ): Promise<{
@@ -88,32 +64,29 @@ export async function augmentMessageWithContext(
   hasContext: boolean;
   sources?: string[];
 }> {
-  const { forceRetrieval = false, topK = 3 } = options;
+  const { topK = 3 } = options;
 
-  // Check if message is tax-related (or force retrieval)
-  const shouldRetrieve = forceRetrieval || isTaxRelatedQuery(userMessage);
-
-  if (!shouldRetrieve) {
-    return {
-      augmentedMessage: userMessage,
-      originalMessage: userMessage,
-      hasContext: false,
-    };
-  }
-
-  // Retrieve context
+  // ALWAYS search knowledge base first (KB-first approach)
   const retrievalResult = await retrieveKnowledgeContext(userMessage);
 
   if (!retrievalResult || !retrievalResult.hasResults) {
+    // No KB results found - instruct LLM to use its own knowledge
+    const augmentedMessage = `KNOWLEDGE BASE STATUS: No relevant information found in knowledge base.
+
+USER QUESTION:
+${userMessage}
+
+INSTRUCTIONS: The knowledge base search returned no results. Answer this question using your own knowledge and training data. If you don't know the answer, say so clearly.`;
+
     return {
-      augmentedMessage: userMessage,
+      augmentedMessage,
       originalMessage: userMessage,
       hasContext: false,
     };
   }
 
-  // Augment message with context
-  const augmentedMessage = `KNOWLEDGE BASE CONTEXT (automatically retrieved):
+  // KB results found - instruct LLM to prioritize KB content
+  const augmentedMessage = `KNOWLEDGE BASE RESULTS (PRIORITIZE THIS INFORMATION):
 
 ${retrievalResult.context}
 
@@ -122,7 +95,12 @@ ${retrievalResult.context}
 USER QUESTION:
 ${userMessage}
 
-(Note: Use the knowledge base context above to answer the user's question if relevant. Cite sources when using information from the knowledge base.)`;
+CRITICAL INSTRUCTIONS:
+1. Answer ONLY using the knowledge base context above
+2. If the KB content fully answers the question, use ONLY that information
+3. ALWAYS cite your sources from the knowledge base (e.g., "According to [filename]...")
+4. If the KB context is insufficient or unclear, say "The knowledge base has limited information on this topic" and then provide what you know
+5. DO NOT add information from your training data unless the KB content is insufficient`;
 
   return {
     augmentedMessage,

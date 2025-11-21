@@ -7,9 +7,10 @@ import {AgentConfig, IAgentConfig} from '../models';
 import * as fs from 'fs';
 import * as path from 'path';
 
-// Load default system instructions from markdown file
+// Load default system instructions from assets folder
 // This makes it easier to edit and maintain the instructions
-const instructionsPath = path.join(__dirname, 'system-instructions.md');
+// Works in both dev (src/assets) and production (dist/assets)
+const instructionsPath = path.join(__dirname, '../assets/system-instructions.md');
 const defaultInstructions = fs.readFileSync(instructionsPath, 'utf-8');
 
 /**
