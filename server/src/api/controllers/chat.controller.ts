@@ -4,8 +4,8 @@
  */
 
 import { Request, Response } from 'express';
-import { StreamChatUseCase } from '../../../core/application/use-cases';
-import { StreamChatRequestDTO } from '../../../core/application/dtos';
+import { StreamChatUseCase } from '../../core/application/use-cases';
+import { StreamChatRequestDTO } from '../../core/application/dtos';
 
 export class ChatController {
   constructor(private streamChatUseCase: StreamChatUseCase) {}

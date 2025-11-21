@@ -4,15 +4,15 @@
  */
 
 // Domain repositories (interfaces)
-import type { IConversationRepository, IMessageRepository, IFileRepository } from '../core/domain/repositories';
+import type { IConversationRepository, IMessageRepository, IFileRepository } from '../core/domain';
 
 // Infrastructure implementations
 import {
   MongoConversationRepository,
   MongoMessageRepository,
   MongoFileRepository,
-} from '../infrastructure/database/mongodb';
-import { LocalFileStorageService } from '../infrastructure/services/storage';
+} from '../infrastructure';
+import { LocalFileStorageService } from '../infrastructure';
 
 // Application use cases
 import {
@@ -25,21 +25,21 @@ import {
   ProcessDocumentUseCase,
   GetFileUseCase,
   DeleteFileUseCase,
-} from '../core/application/use-cases';
+} from '../core/application';
 
 // Application services (interfaces)
 import type {
   IFileStorageService,
   IAIAgentService,
   IOCRService,
-} from '../core/application/services';
+} from '../core/application';
 
-// Presentation controllers
+// API controllers
 import {
   ConversationController,
   ChatController,
   FileController,
-} from '../presentation/http/controllers';
+} from '../api/controllers';
 
 /**
  * Container holds all instantiated dependencies
@@ -58,7 +58,7 @@ export class Container {
   // Use cases
   public readonly getAllConversationsUseCase: GetAllConversationsUseCase;
   public readonly getConversationHistoryUseCase: GetConversationHistoryUseCase;
-  public readonly deleteConversationUseCase: DeleteConversationUseCase;
+  public deleteConversationUseCase: DeleteConversationUseCase; // Not readonly - updated when AI agent is set
   public readonly createConversationUseCase: CreateConversationUseCase;
   public streamChatUseCase?: StreamChatUseCase; // Optional, requires AI agent
   public uploadFileUseCase?: UploadFileUseCase;
@@ -67,7 +67,7 @@ export class Container {
   public readonly deleteFileUseCase: DeleteFileUseCase;
 
   // Controllers
-  public readonly conversationController: ConversationController;
+  public conversationController: ConversationController; // Not readonly - updated when AI agent is set
   public chatController?: ChatController; // Optional, requires stream chat use case
   public fileController?: FileController; // Optional, requires upload/process use cases
 
@@ -90,9 +90,12 @@ export class Container {
       this.messageRepository
     );
 
+    // Note: DeleteConversationUseCase needs AI Agent Service for Mastra cleanup
+    // It will be wired when setAIAgentService() is called
     this.deleteConversationUseCase = new DeleteConversationUseCase(
       this.conversationRepository,
-      this.messageRepository
+      this.messageRepository,
+      undefined // AI Agent Service will be set later
     );
 
     this.createConversationUseCase = new CreateConversationUseCase(
@@ -120,6 +123,20 @@ export class Container {
    */
   setAIAgentService(aiAgentService: IAIAgentService): void {
     this.aiAgentService = aiAgentService;
+
+    // Re-wire DeleteConversationUseCase with AI Agent Service for Mastra cleanup
+    this.deleteConversationUseCase = new DeleteConversationUseCase(
+      this.conversationRepository,
+      this.messageRepository,
+      aiAgentService
+    );
+
+    // Re-wire ConversationController with updated use case
+    this.conversationController = new ConversationController(
+      this.getAllConversationsUseCase,
+      this.getConversationHistoryUseCase,
+      this.deleteConversationUseCase
+    );
 
     // Wire stream chat use case
     this.streamChatUseCase = new StreamChatUseCase(

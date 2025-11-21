@@ -52,9 +52,6 @@ export class FileService {
       ? `${baseUrl}/files/${file.filename}`
       : `${env.BASE_URL}/files/${file.filename}`;
 
-    // Calculate expiry (1 hour from now)
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
-
     const fileData = {
       fileId,
       conversationId,
@@ -65,7 +62,7 @@ export class FileService {
       size: file.size,
       processed: false,
       uploadedAt: new Date(),
-      expiresAt,
+      // No expiry - files are permanent
     };
 
     // Save to database

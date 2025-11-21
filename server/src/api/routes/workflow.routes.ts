@@ -4,7 +4,7 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { workflowService, type WorkflowStatus } from '../../../agent/workflows';
+import { workflowService, type WorkflowStatus } from '../../agent/workflows';
 
 const router = Router();
 

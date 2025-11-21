@@ -11,9 +11,8 @@ import { env } from './config/env';
 import { initializeLLMClient } from './config/llm';
 import { initializeTaxAgent } from './agent';
 import { initializeContainer } from './di';
-import { createConversationRoutes, createChatRoutes, createFileRoutes, workflowRoutes, authRoutes, agentConfigRoutes, employeeRoutes } from './presentation/http/routes';
+import { createConversationRoutes, createChatRoutes, createFileRoutes, workflowRoutes, authRoutes, agentConfigRoutes, employeeRoutes, knowledgeRoutes, authMiddleware } from './api';
 import { MastraAIAgentService, TesseractOCRService } from './infrastructure';
-import { authMiddleware } from './middleware/auth.middleware';
 import { runAllSeeds } from './seeds';
 
 const app: Express = express();
@@ -93,6 +92,7 @@ async function setupApplication() {
   app.use('/api/workflows', authMiddleware, workflowRoutes);
   app.use('/api/agent-config', authMiddleware, agentConfigRoutes);
   app.use('/api/employees', authMiddleware, employeeRoutes);
+  app.use('/api/knowledge', knowledgeRoutes); // Knowledge routes have auth middleware built-in
 
   console.log('[Setup] Routes configured');
 
@@ -137,6 +137,28 @@ async function startServer() {
     process.exit(1);
   }
 }
+
+/**
+ * Global error handlers for unhandled errors
+ */
+process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
+  console.error('[Process] Unhandled Promise Rejection:', reason);
+  console.error('[Process] Promise:', promise);
+  // Don't exit in production, just log the error
+  if (env.NODE_ENV === 'development') {
+    console.error('[Process] Full error:', reason?.stack || reason);
+  }
+});
+
+process.on('uncaughtException', (error: Error) => {
+  console.error('[Process] Uncaught Exception:', error.message);
+  console.error('[Process] Stack:', error.stack);
+  // In production, gracefully shutdown
+  if (env.NODE_ENV === 'production') {
+    console.error('[Process] Shutting down due to uncaught exception');
+    process.exit(1);
+  }
+});
 
 startServer();
 

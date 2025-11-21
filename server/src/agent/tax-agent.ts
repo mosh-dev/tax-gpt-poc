@@ -5,9 +5,12 @@ import { getTaxDataTool, calculateDeductionsTool, generateTaxPDFTool } from './t
 import { processDocumentsTool } from './tools/process-documents-tool';
 import { resumeWorkflowTool } from './tools/resume-workflow-tool';
 import { startWorkflowTool } from './tools/start-workflow-tool';
+import { searchKnowledgeTool } from './tools/search-knowledge-tool';
 import { createMastraMemory, createMemoryConfigFromEnv } from './mastra-memory';
 import { AgentConfig } from '../models';
 import { encode } from 'gpt-tokenizer';
+import { getCollection } from '../config/database-utils';
+import { MASTRA_COLLECTIONS } from '../config/database-collections';
 
 /**
  * Tax Agent powered by Mastra and LMStudio
@@ -51,6 +54,7 @@ export class TaxAgent {
                 processDocumentsTool,
                 startWorkflowTool,
                 resumeWorkflowTool,
+                searchKnowledgeTool,
             },
         });
     }
@@ -141,7 +145,7 @@ export class TaxAgent {
 
     /**
      * Delete a thread from Mastra memory
-     * This deletes all messages associated with the thread
+     * This deletes all messages associated with the thread using Mastra's official API
      */
     async deleteThread(threadId: string, resourceId?: string): Promise<void> {
         if (!this.memory) {
@@ -153,32 +157,58 @@ export class TaxAgent {
         console.log(`[TaxAgent] Deleting Mastra thread: ${threadId}, Resource: ${effectiveResourceId}`);
 
         try {
-            // Delete directly from MongoDB collections using Mastra's actual schema
-            const mongoose = await import('mongoose');
-            const db = mongoose.connection.db;
-
-            if (db) {
-                const threadsCollection = db.collection('mastra_threads');
-                const messagesCollection = db.collection('mastra_messages');
-
-                // Mastra stores threadId in 'id' field for threads
-                // and 'thread_id' (snake_case) for messages
-                const threadResult = await threadsCollection.deleteMany({
-                    id: threadId,
-                    resourceId: effectiveResourceId,
-                });
-
-                const msgResult = await messagesCollection.deleteMany({
-                    thread_id: threadId,
-                });
-
-                console.log(`[TaxAgent] Deleted Mastra data - threads: ${threadResult.deletedCount}, messages: ${msgResult.deletedCount}`);
-            } else {
-                console.warn('[TaxAgent] MongoDB connection not available for Mastra cleanup');
-            }
+            // Use Mastra's official Memory API to delete thread and messages
+            await this.memory.deleteThread(threadId);
+            console.log(`[TaxAgent] Successfully deleted Mastra thread via official API: ${threadId}`);
         } catch (error) {
             console.error('[TaxAgent] Error deleting Mastra thread:', error);
-            // Don't throw - deletion failure shouldn't break the main flow
+            // Log error but don't throw - deletion failure shouldn't break the main flow
+        }
+
+        // Also delete workflow snapshots (Mastra doesn't provide API for this yet)
+        try {
+            await this.deleteWorkflowSnapshots(threadId);
+        } catch (error) {
+            console.error('[TaxAgent] Error deleting workflow snapshots:', error);
+        }
+    }
+
+    /**
+     * Delete workflow snapshots for a thread
+     * Note: Mastra v1.0.0-beta doesn't provide workflow deletion APIs yet,
+     * so we use direct MongoDB access as a fallback
+     *
+     * Workflow snapshot schema:
+     * {
+     *   run_id: "...",
+     *   workflow_name: "tax-calculation-workflow",
+     *   snapshot: {
+     *     context: {
+     *       input: {
+     *         threadId: "..."  <- This is where threadId is stored
+     *       }
+     *     }
+     *   }
+     * }
+     */
+    private async deleteWorkflowSnapshots(threadId: string): Promise<void> {
+        try {
+            const snapshotCollection = getCollection(MASTRA_COLLECTIONS.WORKFLOW_SNAPSHOT);
+
+            if (snapshotCollection) {
+                // Delete all workflow snapshots where threadId matches
+                // Correct path: snapshot.context.input.threadId
+                const result = await snapshotCollection.deleteMany({
+                    'snapshot.context.input.threadId': threadId,
+                });
+
+                console.log(`[TaxAgent] Deleted ${result.deletedCount} workflow snapshots for thread: ${threadId}`);
+            } else {
+                console.warn('[TaxAgent] MongoDB connection not available for workflow snapshot cleanup');
+            }
+        } catch (error) {
+            console.error('[TaxAgent] Error deleting workflow snapshots:', error);
+            throw error;
         }
     }
 }

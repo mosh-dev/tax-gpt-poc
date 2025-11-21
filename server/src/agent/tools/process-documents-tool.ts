@@ -8,7 +8,7 @@ import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 import stringify from 'safe-stable-stringify';
 import { ocrService } from '../../services/ocr';
-import { getFileMetadata, markFileAsProcessed } from '../../routes/files';
+import { mongoRepository } from '../../services/mongo-repository';
 
 /**
  * Safely serialize any value to ensure it's JSON-safe
@@ -58,7 +58,7 @@ export const processDocumentsTool = createTool({
 
       for (const fileId of fileIds) {
         // Get file metadata
-        const metadata = await getFileMetadata(fileId);
+        const metadata = await mongoRepository.findFileById(fileId);
 
         if (!metadata) {
           results.push({
@@ -83,7 +83,7 @@ export const processDocumentsTool = createTool({
             const safeText = safeSerialize(ocrResult.text);
 
             // Mark as processed and save OCR result to database
-            await markFileAsProcessed(fileId, {
+            await mongoRepository.markFileAsProcessed(fileId, {
               text: safeText,
               language: ocrResult.language,
               confidence: ocrResult.confidence,
@@ -104,7 +104,7 @@ export const processDocumentsTool = createTool({
             console.log(`[ProcessDocumentsTool] Success: ${metadata.originalName}: ${ocrResult.wordCount} words`);
           } else {
             // Mark as processed even if failed
-            await markFileAsProcessed(fileId);
+            await mongoRepository.markFileAsProcessed(fileId);
 
             results.push({
               fileId,

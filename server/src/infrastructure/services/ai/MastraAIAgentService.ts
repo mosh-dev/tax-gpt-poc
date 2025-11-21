@@ -42,4 +42,13 @@ export class MastraAIAgentService implements IAIAgentService {
     // Not implemented yet - would use agent.generate() instead of stream
     throw new Error('Non-streaming chat not implemented yet');
   }
+
+  async deleteThread(threadId: string, resourceId?: string): Promise<void> {
+    // Get or create tax agent
+    const taxAgent = await getOrCreateTaxAgent();
+
+    // Delegate to TaxAgent's deleteThread method
+    // This will delete both Mastra data (threads, messages) and workflow snapshots
+    await taxAgent.deleteThread(threadId, resourceId);
+  }
 }

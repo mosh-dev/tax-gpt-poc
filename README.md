@@ -41,11 +41,6 @@ Open `http://localhost:5173` in your browser.
 
 Edit `server/.env`:
 ```env
-PORT=3000
-CLIENT_URL=http://localhost:5173
-LMSTUDIO_URL=http://localhost:1234
-LMSTUDIO_MODEL=openai/gpt-oss-20b
-MONGODB_URI=mongodb://localhost:27017/tax-gpt
 ```
 
 ## Technology Stack
@@ -54,10 +49,3 @@ MONGODB_URI=mongodb://localhost:27017/tax-gpt
 - **Backend**: Node.js, Express, Mastra AI, MongoDB
 - **AI**: LMStudio (local LLM), Tesseract.js (OCR)
 - **Database**: MongoDB (conversations, messages, files)
-
-## Key API Endpoints
-
-- `POST /api/chat/stream-with-tools` - SSE streaming chat
-- `GET /api/chat/conversations` - List conversations
-- `POST /api/files/upload` - Upload documents
-- `GET /api/health` - Health check

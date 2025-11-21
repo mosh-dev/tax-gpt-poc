@@ -191,7 +191,17 @@ export class MongoDBMemory {
   }
 
   /**
-   * Delete conversation and its messages
+   * Delete conversation and its messages from custom MongoDB collections
+   *
+   * IMPORTANT: This only deletes data from our custom collections (conversations, messages).
+   * It does NOT delete Mastra data (threads, messages, workflow snapshots).
+   *
+   * For complete deletion, use DeleteConversationUseCase which handles both:
+   * - Custom MongoDB collections (via this method)
+   * - Mastra data (via IAIAgentService.deleteThread())
+   *
+   * This method is kept for backward compatibility and specific use cases
+   * where only custom collection cleanup is needed.
    */
   async deleteConversation(conversationId: string): Promise<void> {
     await mongoRepository.deleteMessagesByConversationId(conversationId);

@@ -3,9 +3,9 @@
  * Implements IMessageRepository using MongoDB
  */
 
-import { IMessageRepository } from '../../../../core/domain/repositories';
-import { Message } from '../../../../core/domain/entities';
-import { MessageId, ConversationId } from '../../../../core/domain/value-objects';
+import { IMessageRepository } from '../../../../core/domain';
+import { Message } from '../../../../core/domain';
+import { MessageId, ConversationId } from '../../../../core/domain';
 import { Message as MessageModel } from '../../../../models';
 import { MessageMapper } from '../mappers';
 
@@ -39,7 +39,7 @@ export class MongoMessageRepository implements IMessageRepository {
   }
 
   async countByConversationId(conversationId: ConversationId): Promise<number> {
-    return await MessageModel.countDocuments({ conversationId: conversationId.value });
+    return MessageModel.countDocuments({conversationId: conversationId.value});
   }
 
   async getLatestByConversationId(conversationId: ConversationId): Promise<Message | null> {
