@@ -143,7 +143,7 @@ export class TaxAgent {
 
     /**
      * Delete a thread from Mastra memory
-     * This deletes all messages associated with the thread
+     * This deletes all messages associated with the thread using Mastra's official API
      */
     async deleteThread(threadId: string, resourceId?: string): Promise<void> {
         if (!this.memory) {
@@ -155,32 +155,47 @@ export class TaxAgent {
         console.log(`[TaxAgent] Deleting Mastra thread: ${threadId}, Resource: ${effectiveResourceId}`);
 
         try {
-            // Delete directly from MongoDB collections using Mastra's actual schema
+            // Use Mastra's official Memory API to delete thread and messages
+            await this.memory.deleteThread(threadId);
+            console.log(`[TaxAgent] Successfully deleted Mastra thread via official API: ${threadId}`);
+        } catch (error) {
+            console.error('[TaxAgent] Error deleting Mastra thread:', error);
+            // Log error but don't throw - deletion failure shouldn't break the main flow
+        }
+
+        // Also delete workflow snapshots (Mastra doesn't provide API for this yet)
+        try {
+            await this.deleteWorkflowSnapshots(threadId);
+        } catch (error) {
+            console.error('[TaxAgent] Error deleting workflow snapshots:', error);
+        }
+    }
+
+    /**
+     * Delete workflow snapshots for a thread
+     * Note: Mastra v1.0.0-beta doesn't provide workflow deletion APIs yet,
+     * so we use direct MongoDB access as a fallback
+     */
+    private async deleteWorkflowSnapshots(threadId: string): Promise<void> {
+        try {
             const mongoose = await import('mongoose');
             const db = mongoose.connection.db;
 
             if (db) {
-                const threadsCollection = db.collection('mastra_threads');
-                const messagesCollection = db.collection('mastra_messages');
+                const snapshotCollection = db.collection('mastra_workflow_snapshot');
 
-                // Mastra stores threadId in 'id' field for threads
-                // and 'thread_id' (snake_case) for messages
-                const threadResult = await threadsCollection.deleteMany({
-                    id: threadId,
-                    resourceId: effectiveResourceId,
+                // Delete all workflow snapshots associated with this thread
+                const result = await snapshotCollection.deleteMany({
+                    threadId: threadId,
                 });
 
-                const msgResult = await messagesCollection.deleteMany({
-                    thread_id: threadId,
-                });
-
-                console.log(`[TaxAgent] Deleted Mastra data - threads: ${threadResult.deletedCount}, messages: ${msgResult.deletedCount}`);
+                console.log(`[TaxAgent] Deleted ${result.deletedCount} workflow snapshots for thread: ${threadId}`);
             } else {
-                console.warn('[TaxAgent] MongoDB connection not available for Mastra cleanup');
+                console.warn('[TaxAgent] MongoDB connection not available for workflow snapshot cleanup');
             }
         } catch (error) {
-            console.error('[TaxAgent] Error deleting Mastra thread:', error);
-            // Don't throw - deletion failure shouldn't break the main flow
+            console.error('[TaxAgent] Error deleting workflow snapshots:', error);
+            throw error;
         }
     }
 }

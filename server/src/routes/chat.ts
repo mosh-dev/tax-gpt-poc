@@ -128,34 +128,6 @@ router.post('/messages', async (req: Request, res: Response) => {
 });
 
 /**
- * DELETE /api/chat/conversations/:id
- * Delete a conversation
- */
-router.delete('/conversations/:id', async (req: Request, res: Response) => {
-    try {
-        const conversationId = req.params.id;
-
-        // Delete from MongoDB (our messages)
-        await mongoMemory.deleteConversation(conversationId);
-
-        // Also delete from Mastra memory (agent's thread history)
-        const agent = await getOrCreateTaxAgent();
-        await agent.deleteThread(conversationId);
-
-        res.json({
-            success: true,
-            message: 'Conversation deleted',
-        });
-    } catch (error: any) {
-        console.error('[Chat] Failed to delete conversation:', error);
-        res.status(500).json({
-            success: false,
-            error: error.message || 'Failed to delete conversation',
-        });
-    }
-});
-
-/**
  * POST /api/chat/stream-with-tools
  * Stream chat responses with tool calling support
  * Handles tool calls and allows user confirmation

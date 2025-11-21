@@ -43,4 +43,12 @@ export interface IAIAgentService {
    * Get single chat response (non-streaming)
    */
   chat(message: string, conversationHistory: ChatMessage[]): Promise<string>;
+
+  /**
+   * Delete a conversation thread from Mastra memory
+   * This deletes all Mastra data (threads, messages, workflow snapshots)
+   * @param threadId The thread ID to delete
+   * @param resourceId Optional resource ID
+   */
+  deleteThread(threadId: string, resourceId?: string): Promise<void>;
 }
