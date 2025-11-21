@@ -5,7 +5,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import jwt, { SignOptions } from 'jsonwebtoken';
-import { env } from '../config/env';
+import { env } from '../../config/env';
 
 export interface AuthRequest extends Request {
   user?: {

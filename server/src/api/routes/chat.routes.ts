@@ -5,7 +5,7 @@
 
 import { Router } from 'express';
 import { ChatController } from '../controllers';
-import { mongoMemory } from '../../../services/mongodb-memory';
+import { mongoMemory } from '../../services/mongodb-memory';
 
 export function createChatRoutes(controller: ChatController): Router {
   const router = Router();

@@ -9,6 +9,8 @@ import { searchKnowledgeTool } from './tools/search-knowledge-tool';
 import { createMastraMemory, createMemoryConfigFromEnv } from './mastra-memory';
 import { AgentConfig } from '../models';
 import { encode } from 'gpt-tokenizer';
+import { getCollection } from '../config/database-utils';
+import { MASTRA_COLLECTIONS } from '../config/database-collections';
 
 /**
  * Tax Agent powered by Mastra and LMStudio
@@ -178,12 +180,9 @@ export class TaxAgent {
      */
     private async deleteWorkflowSnapshots(threadId: string): Promise<void> {
         try {
-            const mongoose = await import('mongoose');
-            const db = mongoose.connection.db;
+            const snapshotCollection = getCollection(MASTRA_COLLECTIONS.WORKFLOW_SNAPSHOT);
 
-            if (db) {
-                const snapshotCollection = db.collection('mastra_workflow_snapshot');
-
+            if (snapshotCollection) {
                 // Delete all workflow snapshots associated with this thread
                 const result = await snapshotCollection.deleteMany({
                     threadId: threadId,

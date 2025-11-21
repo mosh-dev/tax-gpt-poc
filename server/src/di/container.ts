@@ -34,12 +34,12 @@ import type {
   IOCRService,
 } from '../core/application';
 
-// Presentation controllers
+// API controllers
 import {
   ConversationController,
   ChatController,
   FileController,
-} from '../presentation';
+} from '../api/controllers';
 
 /**
  * Container holds all instantiated dependencies

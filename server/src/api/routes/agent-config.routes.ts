@@ -4,8 +4,8 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { AgentConfig } from '../../../models';
-import { invalidateTaxAgent } from '../../../agent';
+import { AgentConfig } from '../../models';
+import { invalidateTaxAgent } from '../../agent';
 
 const router = Router();
 

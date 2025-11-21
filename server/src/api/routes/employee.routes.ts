@@ -4,7 +4,7 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { Employee } from '../../../models';
+import { Employee } from '../../models';
 
 const router = Router();
 

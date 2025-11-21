@@ -11,11 +11,9 @@ import { env } from './config/env';
 import { initializeLLMClient } from './config/llm';
 import { initializeTaxAgent } from './agent';
 import { initializeContainer } from './di';
-import { createConversationRoutes, createChatRoutes, createFileRoutes, workflowRoutes, authRoutes, agentConfigRoutes, employeeRoutes } from './presentation/http/routes';
+import { createConversationRoutes, createChatRoutes, createFileRoutes, workflowRoutes, authRoutes, agentConfigRoutes, employeeRoutes, knowledgeRoutes, authMiddleware } from './api';
 import { MastraAIAgentService, TesseractOCRService } from './infrastructure';
-import { authMiddleware } from './middleware/auth.middleware';
 import { runAllSeeds } from './seeds';
-import knowledgeRoutes from './routes/knowledge.routes';
 
 const app: Express = express();
 

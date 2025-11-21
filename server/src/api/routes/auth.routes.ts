@@ -4,12 +4,12 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { User } from '../../../models';
+import { User } from '../../models';
 import {
   generateAccessToken,
   generateRefreshToken,
   verifyRefreshToken
-} from '../../../middleware/auth.middleware';
+} from '../middleware/auth.middleware';
 
 const router = Router();
 
@@ -150,7 +150,7 @@ router.get('/me', async (req: Request, res: Response) => {
 
   try {
     const jwt = await import('jsonwebtoken');
-    const { env } = await import('../../../config/env');
+    const { env } = await import('../../config/env');
 
     const decoded = jwt.default.verify(token, env.JWT_SECRET) as { userId: string; userName: string };
 

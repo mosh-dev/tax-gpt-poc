@@ -9,8 +9,8 @@ import {
   ProcessDocumentUseCase,
   GetFileUseCase,
   DeleteFileUseCase,
-} from '../../../core/application/use-cases';
-import { UploadFileDTO, ProcessDocumentDTO } from '../../../core/application/dtos';
+} from '../../core/application/use-cases';
+import { UploadFileDTO, ProcessDocumentDTO } from '../../core/application/dtos';
 
 export class FileController {
   constructor(

@@ -8,7 +8,7 @@ import {
   GetAllConversationsUseCase,
   GetConversationHistoryUseCase,
   DeleteConversationUseCase,
-} from '../../../core/application/use-cases';
+} from '../../core/application/use-cases';
 
 export class ConversationController {
   constructor(

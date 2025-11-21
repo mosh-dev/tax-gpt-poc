@@ -8,11 +8,11 @@ import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
 import { randomUUID } from 'crypto';
-import { getStoragePath } from '../config/storage';
-import { getRAGService } from '../services/rag';
+import { getStoragePath } from '../../config/storage';
+import { getRAGService } from '../../services/rag';
 import { authMiddleware } from '../middleware/auth.middleware';
-import { fileService } from '../services/file-service';
-import { env } from '../config/env';
+import { fileService } from '../../services/file-service';
+import { env } from '../../config/env';
 import fs from 'fs/promises';
 
 const router = Router();
