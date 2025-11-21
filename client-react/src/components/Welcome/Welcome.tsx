@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { Sparkles, BarChart3, Lightbulb } from 'lucide-react';
 import ChatInput from '../Chat/ChatInput';
 import { apiService } from '../../services/api';
 import { useConversations } from '../../contexts/ConversationContext';
@@ -13,17 +14,29 @@ interface WelcomeProps {
 
 const starterPrompts = [
   {
-    icon: '✨',
+    icon: Sparkles,
+    iconColor: 'text-slate-600',
+    iconBgColor: 'bg-slate-100',
+    cardBgColor: 'bg-gray-50',
+    hoverBgColor: 'hover:bg-gray-100',
     title: 'Explain Tax calculation in simple terms',
     badge: null,
   },
   {
-    icon: '📊',
+    icon: BarChart3,
+    iconColor: 'text-indigo-600',
+    iconBgColor: 'bg-indigo-100',
+    cardBgColor: 'bg-gray-50',
+    hoverBgColor: 'hover:bg-gray-100',
     title: 'I want to calculate my taxes for this year with all required documents, Start the Process',
     badge: 'Interactive',
   },
   {
-    icon: '💡',
+    icon: Lightbulb,
+    iconColor: 'text-teal-600',
+    iconBgColor: 'bg-teal-100',
+    cardBgColor: 'bg-gray-50',
+    hoverBgColor: 'hover:bg-gray-100',
     title: 'Advise me - How can I reduce my taxes effectively?',
     badge: null,
   },
@@ -92,28 +105,33 @@ export default function Welcome({ }: WelcomeProps) {
 
         {/* Starter Prompts */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          {starterPrompts.map((prompt, index) => (
-            <button
-              key={index}
-              onClick={() => handlePromptClick(prompt)}
-              disabled={isSending}
-              className="group relative bg-white border-2 border-gray-200 rounded-xl p-6 hover:border-primary-500 hover:shadow-lg transition-all duration-200 text-left disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <div className="flex flex-col items-start gap-3">
-                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center text-2xl group-hover:bg-primary-50 transition-colors">
-                  {prompt.icon}
+          {starterPrompts.map((prompt, index) => {
+            const Icon = prompt.icon;
+            return (
+              <button
+                key={index}
+                onClick={() => handlePromptClick(prompt)}
+                disabled={isSending}
+                className={`group relative ${prompt.cardBgColor} ${prompt.hoverBgColor} border border-transparent rounded-xl p-6 shadow-sm hover:shadow-lg transition-all duration-200 text-left disabled:opacity-50 disabled:cursor-not-allowed flex items-start justify-start`}
+              >
+                <div className="flex flex-col gap-4 items-start w-full">
+                  <div className={`w-12 h-12 ${prompt.iconBgColor} rounded-lg flex items-center justify-center group-hover:scale-110 transition-transform shadow-sm self-start`}>
+                    <Icon className={`w-6 h-6 ${prompt.iconColor}`} />
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <p className="text-sm text-gray-700 font-medium leading-relaxed">
+                      {prompt.title}
+                    </p>
+                    {prompt.badge && (
+                      <span className="text-xs bg-primary-100 text-primary-700 px-2 py-0.5 rounded self-start">
+                        {prompt.badge}
+                      </span>
+                    )}
+                  </div>
                 </div>
-                <p className="text-sm text-gray-700 font-medium leading-relaxed">
-                  {prompt.title}
-                </p>
-                {prompt.badge && (
-                  <span className="text-xs bg-primary-100 text-primary-700 px-2 py-0.5 rounded">
-                    {prompt.badge}
-                  </span>
-                )}
-              </div>
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </div>
 
         {/* Loading State */}

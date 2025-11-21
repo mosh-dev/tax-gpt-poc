@@ -8,7 +8,7 @@ interface ChatInputProps {
   placeholder?: string;
 }
 
-export default function ChatInput({ onSendMessage, disabled, isUploading, placeholder = "Ask me about your Swiss tax return or attach documents..." }: ChatInputProps) {
+export default function ChatInput({ onSendMessage, disabled, isUploading, placeholder = "Ask me about your Swiss tax retu..." }: ChatInputProps) {
   const [message, setMessage] = useState('');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -117,7 +117,7 @@ export default function ChatInput({ onSendMessage, disabled, isUploading, placeh
             placeholder={placeholder}
             disabled={disabled}
             rows={1}
-            className="w-full bg-white px-4 py-3 pr-24 border border-gray-300 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50 resize-none overflow-hidden"
+            className="w-full bg-white px-4 py-3 pr-24 border border-gray-300 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50 resize-none overflow-hidden leading-6 text-sm"
             style={{ minHeight: '48px', maxHeight: '200px' }}
           />
 

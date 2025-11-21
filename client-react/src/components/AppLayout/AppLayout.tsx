@@ -72,7 +72,12 @@ export default function AppLayout({ children }: AppLayoutProps) {
   return (
     <div className="h-screen flex flex-col overflow-hidden bg-gray-50">
       {/* Toolbar */}
-      <Toolbar onToggleSidebar={handleToggleSidebar} />
+      <Toolbar
+        onToggleSidebar={handleToggleSidebar}
+        onCloseSidebar={() => setSidebarOpen(false)}
+        isSidebarOpen={sidebarOpen}
+        isMobile={isMobile}
+      />
 
       {/* Main content area with sidebar */}
       <div className="flex-1 flex overflow-hidden pt-16">

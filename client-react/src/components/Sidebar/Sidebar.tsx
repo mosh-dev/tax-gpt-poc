@@ -82,7 +82,9 @@ export default function Sidebar({
           flex flex-col
           transition-all duration-300 ease-in-out
           overflow-hidden flex-shrink-0
+          ${isMobile ? 'overscroll-contain' : ''}
         `}
+        style={isMobile ? { touchAction: 'pan-y' } : undefined}
       >
         {/* Inner wrapper to prevent content collapse */}
         <div className="min-w-64 flex flex-col h-full">
@@ -101,7 +103,7 @@ export default function Sidebar({
           </div>
 
           {/* Conversations List */}
-          <div className="flex-1 overflow-y-auto">
+          <div className="flex-1 overflow-y-auto overscroll-contain">
             <div className="p-2">
               <h2 className="text-xs font-semibold text-gray-500 uppercase px-3 mb-2">CHATS</h2>
 
