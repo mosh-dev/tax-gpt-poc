@@ -178,17 +178,28 @@ export class TaxAgent {
      * Note: Mastra v1.0.0-beta doesn't provide workflow deletion APIs yet,
      * so we use direct MongoDB access as a fallback
      *
-     * Workflow snapshots store threadId inside state.inputData.threadId
+     * Workflow snapshot schema:
+     * {
+     *   run_id: "...",
+     *   workflow_name: "tax-calculation-workflow",
+     *   snapshot: {
+     *     context: {
+     *       input: {
+     *         threadId: "..."  <- This is where threadId is stored
+     *       }
+     *     }
+     *   }
+     * }
      */
     private async deleteWorkflowSnapshots(threadId: string): Promise<void> {
         try {
             const snapshotCollection = getCollection(MASTRA_COLLECTIONS.WORKFLOW_SNAPSHOT);
 
             if (snapshotCollection) {
-                // Delete all workflow snapshots where threadId is in the inputData
-                // Mastra stores workflows with structure: { state: { inputData: { threadId: "..." } } }
+                // Delete all workflow snapshots where threadId matches
+                // Correct path: snapshot.context.input.threadId
                 const result = await snapshotCollection.deleteMany({
-                    'state.inputData.threadId': threadId,
+                    'snapshot.context.input.threadId': threadId,
                 });
 
                 console.log(`[TaxAgent] Deleted ${result.deletedCount} workflow snapshots for thread: ${threadId}`);
