@@ -4,9 +4,9 @@
  * Called by AI agent when user asks to search for specific information
  */
 
-import { createTool } from '@mastra/core/tools';
-import { z } from 'zod';
-import { getRAGService } from '../../services/rag';
+import {createTool} from '@mastra/core/tools';
+import {z} from 'zod';
+import {getRAGService} from '../../services/rag';
 
 export const searchKnowledgeTool = createTool({
   id: 'search-knowledge',
@@ -15,7 +15,21 @@ export const searchKnowledgeTool = createTool({
     query: z.string().describe('The search query describing what information to find'),
     topK: z.number().optional().default(5).describe('Number of results to return (default: 5)'),
   }),
-  execute: async ({ query, topK }) => {
+  outputSchema: z.object({
+    success: z.boolean(),
+    query: z.string(),
+    resultsFound: z.number(),
+    message: z.string().optional(),
+    source: z.string().optional(),
+    results: z.array(z.object({
+      rank: z.number(),
+      content: z.string(),
+      relevanceScore: z.number(),
+      source: z.string(),
+      chunkInfo: z.string()
+    }))
+  }),
+  execute: async ({query, topK}) => {
     try {
       console.log(`[SearchKnowledgeTool] Searching for: "${query}"`);
 
@@ -50,6 +64,7 @@ export const searchKnowledgeTool = createTool({
         success: true,
         query,
         resultsFound: results.length,
+        source: formattedResults.sort((a, b) => a.rank - b.rank)[0]?.source,
         results: formattedResults,
         message: `Found ${results.length} relevant section(s) in the knowledge base.`,
       };

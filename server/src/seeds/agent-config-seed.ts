@@ -22,10 +22,10 @@ export async function seedAgentConfig(): Promise<void> {
 
     try {
 
-        const existingAgentConfig = await AgentConfig.findOne().lean<IAgentConfig>();
-        if (existingAgentConfig) {
-            return;
-        }
+        // const existingAgentConfig = await AgentConfig.findOne().lean<IAgentConfig>();
+        // if (existingAgentConfig) {
+        //     return;
+        // }
 
         // Delete existing config first
         const deleteResult = await AgentConfig.deleteMany({});
