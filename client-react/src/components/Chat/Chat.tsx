@@ -598,9 +598,9 @@ export default function Chat({ threadId }: ChatProps) {
   };
 
   return (
-    <div className="flex flex-col h-full">
+    <div className="flex flex-col h-full min-h-0">
       {/* Messages */}
-      <div className="flex-1 overflow-y-auto px-6 py-4">
+      <div className="flex-1 overflow-y-auto px-6 py-4 min-h-0">
         {messages.map((message, index) => (
           <div
             key={index}

@@ -409,7 +409,11 @@ export default function AgentConfig() {
                 </svg>
               </div>
             </button>
-            {instructionsExpanded && (
+            <div
+              className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                instructionsExpanded ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'
+              }`}
+            >
               <div className="p-3 md:p-4">
                 <textarea
                   value={instructions}
@@ -439,7 +443,7 @@ export default function AgentConfig() {
                       </button>
                   </div>
               </div>
-            )}
+            </div>
           </div>
 
           {/* Help text */}

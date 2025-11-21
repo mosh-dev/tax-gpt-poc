@@ -63,7 +63,7 @@ function HomePage() {
   }, [threadId, setCurrentThreadId]);
 
   return (
-    <div className="max-w-[1200px] w-full mx-auto flex flex-col flex-1 overflow-hidden">
+    <div className="w-full h-full flex flex-col">
       {threadId ? (
         <Chat key={threadId} threadId={threadId} />
       ) : (
