@@ -5,6 +5,7 @@ import { getTaxDataTool, calculateDeductionsTool, generateTaxPDFTool } from './t
 import { processDocumentsTool } from './tools/process-documents-tool';
 import { resumeWorkflowTool } from './tools/resume-workflow-tool';
 import { startWorkflowTool } from './tools/start-workflow-tool';
+import { searchKnowledgeTool } from './tools/search-knowledge-tool';
 import { createMastraMemory, createMemoryConfigFromEnv } from './mastra-memory';
 import { AgentConfig } from '../models';
 import { encode } from 'gpt-tokenizer';
@@ -51,6 +52,7 @@ export class TaxAgent {
                 processDocumentsTool,
                 startWorkflowTool,
                 resumeWorkflowTool,
+                searchKnowledgeTool,
             },
         });
     }

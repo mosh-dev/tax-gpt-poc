@@ -15,6 +15,7 @@ import { createConversationRoutes, createChatRoutes, createFileRoutes, workflowR
 import { MastraAIAgentService, TesseractOCRService } from './infrastructure';
 import { authMiddleware } from './middleware/auth.middleware';
 import { runAllSeeds } from './seeds';
+import knowledgeRoutes from './routes/knowledge.routes';
 
 const app: Express = express();
 
@@ -93,6 +94,7 @@ async function setupApplication() {
   app.use('/api/workflows', authMiddleware, workflowRoutes);
   app.use('/api/agent-config', authMiddleware, agentConfigRoutes);
   app.use('/api/employees', authMiddleware, employeeRoutes);
+  app.use('/api/knowledge', knowledgeRoutes); // Knowledge routes have auth middleware built-in
 
   console.log('[Setup] Routes configured');
 

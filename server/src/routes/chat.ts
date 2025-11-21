@@ -2,6 +2,7 @@ import { Request, Response, Router } from 'express';
 import { getOrCreateTaxAgent } from '../agent';
 import { ChatRequest } from '../types';
 import { mongoMemory } from '../services/mongodb-memory';
+import { augmentMessageWithContext, formatRetrievalEvent } from '../services/hybrid-retrieval';
 
 // Type definition for stream events
 interface StreamEvent {
@@ -205,12 +206,23 @@ router.post('/stream-with-tools', async (req: Request, res: Response) => {
         })}\n\n`);
 
         try {
+            // Hybrid Retrieval: Augment message with knowledge base context
+            const { augmentedMessage, hasContext, sources } = await augmentMessageWithContext(message);
+
+            // If knowledge base context was retrieved, send a retrieval event
+            if (hasContext && sources) {
+                const retrievalEvent = formatRetrievalEvent(sources, sources.length);
+                res.write(`data: ${JSON.stringify(retrievalEvent)}\n\n`);
+                console.log(`[Hybrid Retrieval] Context injected from: ${sources.join(', ')}`);
+            }
+
             // Get agent with fresh instructions from database
             const taxAgent = await getOrCreateTaxAgent();
 
             // Stream with Mastra Memory - threadId is REQUIRED
+            // Use augmented message if context was found, otherwise use original
             const fullStream = taxAgent.streamChatWithTools(
-                message,
+                augmentedMessage,
                 threadId, // threadId is mandatory
                 undefined // resourceId (optional, for user scoping)
             );
