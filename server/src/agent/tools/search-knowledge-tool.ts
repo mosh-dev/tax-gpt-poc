@@ -4,9 +4,9 @@
  * Called by AI agent when user asks to search for specific information
  */
 
-import {createTool} from '@mastra/core/tools';
-import {z} from 'zod';
-import {getRAGService} from '../../services/rag';
+import { createTool } from '@mastra/core/tools';
+import { z } from 'zod';
+import { getRAGService } from '../../services/rag';
 
 export const searchKnowledgeTool = createTool({
   id: 'search-knowledge',
