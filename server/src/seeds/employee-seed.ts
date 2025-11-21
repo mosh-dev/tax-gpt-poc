@@ -33,7 +33,7 @@ const mockEmployeeSingle: SwissTaxData = {
     securities: 25000,
     realEstate: 0,
   },
-  taxYear: 2024,
+  taxYear: 2025,
 };
 
 // Scenario 2: Married couple with children
@@ -64,7 +64,7 @@ const mockFamilyMarried: SwissTaxData = {
     securities: 120000,
     realEstate: 650000,
   },
-  taxYear: 2024,
+  taxYear: 2025,
 };
 
 // Scenario 3: Self-employed freelancer
@@ -92,7 +92,7 @@ const mockFreelancer: SwissTaxData = {
     bankAccounts: 32000,
     securities: 18000,
   },
-  taxYear: 2024,
+  taxYear: 2025,
 };
 
 // Scenario 4: Retiree with pension income
@@ -119,7 +119,7 @@ const mockRetiree: SwissTaxData = {
     securities: 350000,
     realEstate: 850000,
   },
-  taxYear: 2024,
+  taxYear: 2025,
 };
 
 // Scenario 5: Young professional starting career
@@ -147,7 +147,7 @@ const mockYoungProfessional: SwissTaxData = {
     bankAccounts: 12000,
     securities: 5000,
   },
-  taxYear: 2024,
+  taxYear: 2025,
 };
 
 // All employee seed data

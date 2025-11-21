@@ -104,12 +104,18 @@ export class WorkflowService {
         status.status = 'completed';
         status.result = result.result;
         console.log(`[WorkflowService] Workflow completed on start`);
+
+        // Delete workflow snapshot from MongoDB to prevent conflicts with future workflows
+        await this.deleteWorkflowSnapshot(runId);
       }
 
       // Handle error state
       if (result.status === 'failed') {
         status.error = result.error?.message || 'Unknown error';
         console.log(`[WorkflowService] Workflow failed on start:`, status.error);
+
+        // Delete workflow snapshot from MongoDB to prevent conflicts with future workflows
+        await this.deleteWorkflowSnapshot(runId);
       }
 
       console.log(`[WorkflowService] Returning initial status:`, {
@@ -196,6 +202,9 @@ export class WorkflowService {
         // Clean up completed run
         workflowRuns.delete(runId);
         console.log(`[WorkflowService] Deleted completed workflow from memory. Active runs: ${workflowRuns.size}`);
+
+        // Delete workflow snapshot from MongoDB to prevent conflicts with future workflows
+        await this.deleteWorkflowSnapshot(runId);
       }
 
       // Handle error state
@@ -203,6 +212,9 @@ export class WorkflowService {
         status.error = result.error?.message || 'Unknown error';
         workflowRuns.delete(runId);
         console.log(`[WorkflowService] Deleted failed workflow from memory. Active runs: ${workflowRuns.size}`);
+
+        // Delete workflow snapshot from MongoDB to prevent conflicts with future workflows
+        await this.deleteWorkflowSnapshot(runId);
       }
 
       console.log(`[WorkflowService] Returning resume status:`, {

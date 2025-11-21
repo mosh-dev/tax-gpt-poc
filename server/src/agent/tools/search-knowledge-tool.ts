@@ -16,7 +16,7 @@ IMPORTANT INSTRUCTIONS:
 1. You will receive MULTIPLE search results (up to 5) from potentially DIFFERENT source files
 2. Review ALL results, not just the highest ranked one - each result may contain valuable complementary information
 3. Synthesize information from ALL relevant results to provide a comprehensive answer
-4. ALWAYS cite the specific source file(s) you used in your response (e.g., "According to tax-guide-2024.pdf...")
+4. ALWAYS cite the specific source file(s) you used in your response (e.g., "According to tax-guide-2025.pdf...")
 5. If results come from multiple files, mention all sources used`,
   inputSchema: z.object({
     query: z.string().describe('The search query describing what information to find'),
