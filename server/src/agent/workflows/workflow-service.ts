@@ -8,6 +8,8 @@ import { MongoDBStore } from '@mastra/mongodb';
 import { taxCalculationWorkflow } from './tax-calculation-workflow';
 import { env } from '../../config/env';
 import { WORKFLOW_IDS, WORKFLOW_STATUS } from '../../constants';
+import { getCollection } from '../../config/database-utils';
+import { MASTRA_COLLECTIONS } from '../../config/database-collections';
 
 // Create MongoDB storage for workflow snapshots
 const workflowStorage = new MongoDBStore({
@@ -270,6 +272,26 @@ export class WorkflowService {
     });
 
     return active;
+  }
+
+  /**
+   * Delete workflow snapshot from MongoDB
+   * Called when workflow completes or fails to prevent conflicts with future workflows
+   */
+  private async deleteWorkflowSnapshot(runId: string): Promise<void> {
+    try {
+      const snapshotCollection = getCollection(MASTRA_COLLECTIONS.WORKFLOW_SNAPSHOT);
+
+      if (snapshotCollection) {
+        const result = await snapshotCollection.deleteMany({ run_id: runId });
+        console.log(`[WorkflowService] Deleted ${result.deletedCount} workflow snapshot(s) for runId: ${runId}`);
+      } else {
+        console.warn('[WorkflowService] MongoDB connection not available for workflow snapshot cleanup');
+      }
+    } catch (error) {
+      console.error('[WorkflowService] Error deleting workflow snapshot:', error);
+      // Don't throw - snapshot cleanup failure shouldn't break the main flow
+    }
   }
 }
 
