@@ -1,10 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { apiService } from '../../services/api';
 import { knowledgeApi, type KnowledgeFile } from '../../services/knowledge-api';
 
 export default function AgentConfig() {
-  const navigate = useNavigate();
   const [instructions, setInstructions] = useState('');
   const [originalInstructions, setOriginalInstructions] = useState('');
   const [loading, setLoading] = useState(true);
@@ -24,7 +22,7 @@ export default function AgentConfig() {
   const hasLoadedRef = useRef(false);
 
   // UI state
-  const [instructionsExpanded, setInstructionsExpanded] = useState(false);
+  const [instructionsExpanded, setInstructionsExpanded] = useState(true);
 
   const loadConfig = useCallback(async () => {
     try {
@@ -203,31 +201,8 @@ export default function AgentConfig() {
 
   return (
     <div className="flex-1 flex flex-col h-full bg-gray-50">
-      {/* Header */}
-      <div className="bg-white border-b border-gray-200 px-6 py-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <button
-              onClick={() => navigate('/')}
-              className="p-2 hover:bg-gray-100 rounded-lg transition-colors"
-              title="Back to chat"
-            >
-              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-              </svg>
-            </button>
-            <div>
-              <h1 className="text-xl font-semibold text-gray-900">Agent Configuration</h1>
-              <p className="text-sm text-gray-500">
-                Configure the AI agent's system instructions
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Content */}
-      <div className="flex-1 overflow-auto p-6">
+      <div className="flex-1 overflow-auto p-4 md:p-6">
         <div className="max-w-4xl mx-auto">
           {/* Status messages */}
           {error && (
@@ -241,87 +216,17 @@ export default function AgentConfig() {
             </div>
           )}
 
-          {/* Instructions editor */}
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-            <button
-              onClick={() => setInstructionsExpanded(!instructionsExpanded)}
-              className="w-full px-4 py-3 border-b border-gray-200 flex items-center justify-between"
-            >
-              <label className="text-sm font-medium text-gray-700 cursor-pointer">
-                System Instructions
-              </label>
-              <div className="flex items-center gap-3">
-                {lastUpdated && (
-                  <span className="text-xs text-gray-500">
-                    Last updated: {new Date(lastUpdated).toLocaleString()}
-                  </span>
-                )}
-                <svg
-                  className={`w-5 h-5 text-gray-500 transition-transform ${instructionsExpanded ? 'rotate-180' : ''}`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-            </button>
-            {instructionsExpanded && (
-              <div className="p-4">
-                <textarea
-                  value={instructions}
-                  onChange={(e) => setInstructions(e.target.value)}
-                  className="w-full h-[500px] p-4 font-mono text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
-                  placeholder="Enter the AI agent's system instructions..."
-                />
-                  <div className="flex justify-end pt-2 gap-3">
-                      {hasChanges && (
-                          <button
-                              onClick={handleReset}
-                              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-                          >
-                              Reset
-                          </button>
-                      )}
-                      <button
-                          onClick={handleSave}
-                          disabled={saving || !hasChanges}
-                          className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                              saving || !hasChanges
-                                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                  : 'bg-blue-600 text-white hover:bg-blue-700'
-                          }`}
-                      >
-                          {saving ? 'Saving...' : 'Save Changes'}
-                      </button>
-                  </div>
-              </div>
-            )}
-          </div>
-
-          {/* Help text */}
-          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h3 className="text-sm font-medium text-blue-800 mb-2">Tips for writing good instructions:</h3>
-            <ul className="text-sm text-blue-700 space-y-1 list-disc list-inside">
-              <li>Define the agent's role and expertise clearly</li>
-              <li>List the tools available and when to use them</li>
-              <li>Specify the language and tone to use</li>
-              <li>Include domain-specific knowledge (e.g., Swiss tax regulations)</li>
-              <li>Add guidelines for handling edge cases</li>
-            </ul>
-          </div>
-
           {/* Knowledge Base Section */}
-          <div className="mt-8 bg-white rounded-lg border border-gray-200 shadow-sm">
-            <div className="px-4 py-3 border-b border-gray-200">
-              <h2 className="text-lg font-medium text-gray-900">Knowledge Base</h2>
-              <p className="text-sm text-gray-500 mt-1">
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
+            <div className="px-3 md:px-4 py-3 border-b border-gray-200">
+              <h2 className="text-base md:text-lg font-medium text-gray-900">Knowledge Base</h2>
+              <p className="text-xs md:text-sm text-gray-500 mt-1">
                 Upload documents to enhance the agent's knowledge. Files are automatically processed and indexed for semantic search.
               </p>
             </div>
 
             {/* KB Status messages */}
-            <div className="p-4">
+            <div className="p-3 md:p-4">
               {kbError && (
                 <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
                   {kbError}
@@ -357,9 +262,9 @@ export default function AgentConfig() {
                       </svg>
                       Select Files
                     </label>
-                    <span className="ml-3 text-sm text-gray-500">
+                    <div className="text-sm text-gray-500 mt-2">
                       Accepts: .txt, .md, .pdf (max 50MB each) • Multiple files allowed
-                    </span>
+                    </div>
                   </div>
                 ) : (
                   <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
@@ -468,14 +373,88 @@ export default function AgentConfig() {
           </div>
 
           {/* KB Help text */}
-          <div className="mt-4 p-4 bg-purple-50 border border-purple-200 rounded-lg">
-            <h3 className="text-sm font-medium text-purple-800 mb-2">How Knowledge Base works:</h3>
-            <ul className="text-sm text-purple-700 space-y-1 list-disc list-inside">
+          <div className="mt-4 p-3 md:p-4 bg-purple-50 border border-purple-200 rounded-lg">
+            <h3 className="text-xs md:text-sm font-medium text-purple-800 mb-2">How Knowledge Base works:</h3>
+            <ul className="text-xs md:text-sm text-purple-700 space-y-1 list-disc list-inside">
               <li>Upload tax regulations, guides, or reference documents (.txt, .md, .pdf)</li>
               <li>Files are automatically chunked and indexed using semantic search</li>
               <li>Agent automatically retrieves relevant content for tax-related questions</li>
               <li>Use the "search-knowledge" tool for specific information lookups</li>
               <li>Updates take effect immediately for all conversations</li>
+            </ul>
+          </div>
+
+          {/* Instructions editor */}
+          <div className="bg-white rounded-lg border border-gray-200 shadow-sm mt-8">
+            <button
+              onClick={() => setInstructionsExpanded(!instructionsExpanded)}
+              className="w-full px-3 md:px-4 py-3 border-b border-gray-200 flex items-center justify-between gap-2"
+            >
+              <label className="text-sm font-medium text-gray-700 cursor-pointer">
+                System Instructions
+              </label>
+              <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
+                {lastUpdated && (
+                  <span className="hidden sm:inline text-xs text-gray-500">
+                    {new Date(lastUpdated).toLocaleDateString()}
+                  </span>
+                )}
+                <svg
+                  className={`w-5 h-5 text-gray-500 transition-transform ${instructionsExpanded ? 'rotate-180' : ''}`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
+              </div>
+            </button>
+            <div
+              className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                instructionsExpanded ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0'
+              }`}
+            >
+              <div className="p-3 md:p-4">
+                <textarea
+                  value={instructions}
+                  onChange={(e) => setInstructions(e.target.value)}
+                  className="w-full h-[300px] md:h-[500px] p-3 md:p-4 font-mono text-xs md:text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                  placeholder="Enter the AI agent's system instructions..."
+                />
+                  <div className="flex flex-col sm:flex-row justify-end pt-2 gap-2 sm:gap-3">
+                      {hasChanges && (
+                          <button
+                              onClick={handleReset}
+                              className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                          >
+                              Reset
+                          </button>
+                      )}
+                      <button
+                          onClick={handleSave}
+                          disabled={saving || !hasChanges}
+                          className={`w-full sm:w-auto px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                              saving || !hasChanges
+                                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                  : 'bg-blue-600 text-white hover:bg-blue-700'
+                          }`}
+                      >
+                          {saving ? 'Saving...' : 'Save Changes'}
+                      </button>
+                  </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Help text */}
+          <div className="mt-4 p-3 md:p-4 bg-blue-50 border border-blue-200 rounded-lg">
+            <h3 className="text-xs md:text-sm font-medium text-blue-800 mb-2">Tips for writing good instructions:</h3>
+            <ul className="text-xs md:text-sm text-blue-700 space-y-1 list-disc list-inside">
+              <li>Define the agent's role and expertise clearly</li>
+              <li>List the tools available and when to use them</li>
+              <li>Specify the language and tone to use</li>
+              <li>Include domain-specific knowledge (e.g., Swiss tax regulations)</li>
+              <li>Add guidelines for handling edge cases</li>
             </ul>
           </div>
         </div>

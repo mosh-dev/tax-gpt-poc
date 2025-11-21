@@ -116,7 +116,7 @@ function PersonalInfoForm({
       <p className="text-gray-700 mb-4">{payload?.reason || 'Please provide your personal information:'}</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
             <input
@@ -139,7 +139,7 @@ function PersonalInfoForm({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Marital Status</label>
             <select
@@ -165,7 +165,7 @@ function PersonalInfoForm({
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Canton</label>
             <select
@@ -399,7 +399,7 @@ function ReviewDataForm({
       {/* Income */}
       <div>
         <h4 className="font-medium text-gray-900 mb-2">Income</h4>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {Object.entries(formData.income).map(([key, value]) => (
             <div key={key}>
               <label className="block text-xs text-gray-600 mb-1 capitalize">{key.replace(/([A-Z])/g, ' $1')}</label>
@@ -417,7 +417,7 @@ function ReviewDataForm({
       {/* Deductions */}
       <div>
         <h4 className="font-medium text-gray-900 mb-2">Deductions</h4>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {Object.entries(formData.deductions).map(([key, value]) => (
             <div key={key}>
               <label className="block text-xs text-gray-600 mb-1 capitalize">{key.replace(/([A-Z])/g, ' $1')}</label>
@@ -435,7 +435,7 @@ function ReviewDataForm({
       {/* Wealth */}
       <div>
         <h4 className="font-medium text-gray-900 mb-2">Wealth</h4>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {Object.entries(formData.wealth).map(([key, value]) => (
             <div key={key}>
               <label className="block text-xs text-gray-600 mb-1 capitalize">{key.replace(/([A-Z])/g, ' $1')}</label>
@@ -504,7 +504,7 @@ function SummaryForm({
       <p className="text-gray-700 mb-4">{payload?.reason || 'Your tax calculation summary:'}</p>
 
       {/* Summary stats */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="bg-gray-50 p-3 rounded-lg">
           <p className="text-xs text-gray-600">Gross Income</p>
           <p className="text-lg font-semibold text-gray-900">CHF {calculation.grossIncome?.toLocaleString()}</p>
