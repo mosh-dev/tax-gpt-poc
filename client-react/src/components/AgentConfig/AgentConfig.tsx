@@ -189,27 +189,6 @@ export default function AgentConfig() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            {hasChanges && (
-              <button
-                onClick={handleReset}
-                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
-              >
-                Reset
-              </button>
-            )}
-            <button
-              onClick={handleSave}
-              disabled={saving || !hasChanges}
-              className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
-                saving || !hasChanges
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-blue-600 text-white hover:bg-blue-700'
-              }`}
-            >
-              {saving ? 'Saving...' : 'Save Changes'}
-            </button>
-          </div>
         </div>
       </div>
 
@@ -261,6 +240,27 @@ export default function AgentConfig() {
                   className="w-full h-[500px] p-4 font-mono text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
                   placeholder="Enter the AI agent's system instructions..."
                 />
+                  <div className="text-right pt-2 gap-3">
+                      {hasChanges && (
+                          <button
+                              onClick={handleReset}
+                              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                          >
+                              Reset
+                          </button>
+                      )}
+                      <button
+                          onClick={handleSave}
+                          disabled={saving || !hasChanges}
+                          className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                              saving || !hasChanges
+                                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                  : 'bg-blue-600 text-white hover:bg-blue-700'
+                          }`}
+                      >
+                          {saving ? 'Saving...' : 'Save Changes'}
+                      </button>
+                  </div>
               </div>
             )}
           </div>
@@ -347,7 +347,7 @@ export default function AgentConfig() {
                       <button
                         onClick={handleUploadConfirm}
                         disabled={uploadingKB}
-                        className={`flex-1 px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
+                        className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
                           uploadingKB
                             ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                             : 'bg-blue-600 text-white hover:bg-blue-700'
@@ -392,9 +392,22 @@ export default function AgentConfig() {
                           </div>
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium text-gray-900 truncate">
-                            {file.name}
-                          </div>
+                          {file.downloadUrl ? (
+                            <a
+                              href={file.downloadUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              download={file.name}
+                              className="text-sm font-medium text-gray-900 hover:text-blue-600 hover:underline cursor-pointer truncate block"
+                              title="Click to download"
+                            >
+                              {file.name}
+                            </a>
+                          ) : (
+                            <div className="text-sm font-medium text-gray-900 truncate">
+                              {file.name}
+                            </div>
+                          )}
                           <div className="text-xs text-gray-500">
                             {file.type.toUpperCase()} • {(file.size / 1024).toFixed(1)} KB • {file.chunkCount} chunks
                           </div>

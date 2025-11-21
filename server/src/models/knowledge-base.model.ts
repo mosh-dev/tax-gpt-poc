@@ -11,10 +11,9 @@ export type KnowledgeFileType = 'txt' | 'md' | 'pdf';
 
 // Plain data interface
 export interface KnowledgeBaseData {
-  fileId: string;
+  fileId: string; // References File model
   fileName: string;
   fileType: KnowledgeFileType;
-  storedPath: string;
   size: number;
   chunkCount: number;
   vectorIds: string[]; // IDs in LibSQL vector store
@@ -35,6 +34,7 @@ const KnowledgeBaseSchema = new Schema<IKnowledgeBase>(
       required: true,
       unique: true,
       index: true,
+      comment: 'References File model for file metadata and storage path',
     },
     fileName: {
       type: String,
@@ -44,10 +44,6 @@ const KnowledgeBaseSchema = new Schema<IKnowledgeBase>(
       type: String,
       required: true,
       enum: ['txt', 'md', 'pdf'],
-    },
-    storedPath: {
-      type: String,
-      required: true,
     },
     size: {
       type: Number,

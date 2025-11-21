@@ -3,13 +3,13 @@
  * Main service for knowledge base ingestion and retrieval
  */
 
-import fs from 'fs/promises';
 import {v4 as uuidv4} from 'uuid';
 import {PDFParse} from 'pdf-parse';
 import {KnowledgeBase} from '../../models/knowledge-base.model';
 import {chunkDocument, getChunkStats} from './chunker';
 import {generateEmbeddings} from './embedder';
 import {getVectorStore, SearchResult, VectorDocument} from './retriever';
+import fs from 'fs/promises';
 
 export interface IngestResult {
     fileId: string;
@@ -102,7 +102,6 @@ export class RAGService {
             fileId: metadata.fileId,
             fileName: metadata.fileName,
             fileType: metadata.fileType,
-            storedPath: filePath,
             size: metadata.size,
             chunkCount: chunks.length,
             vectorIds,
@@ -144,6 +143,7 @@ export class RAGService {
 
     /**
      * Delete a knowledge base file and all its vectors
+     * Note: Physical file deletion is handled by File Service in the route
      */
     async deleteFile(fileId: string): Promise<void> {
         console.log(`[RAG] Deleting file: ${fileId}`);
@@ -157,14 +157,6 @@ export class RAGService {
 
         // Delete vectors from LibSQL
         await this.vectorStore.deleteByFileId(fileId);
-
-        // Delete file from disk (non-critical, log warning if fails)
-        try {
-            await fs.unlink(kbFile.storedPath);
-            console.log(`[RAG] Deleted file from disk: ${kbFile.storedPath}`);
-        } catch (error) {
-            console.warn(`[RAG] Could not delete file from disk:`, error);
-        }
 
         // Delete metadata from MongoDB
         await KnowledgeBase.deleteOne({fileId});

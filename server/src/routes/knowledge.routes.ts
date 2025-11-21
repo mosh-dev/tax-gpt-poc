@@ -11,6 +11,8 @@ import { randomUUID } from 'crypto';
 import { getStoragePath } from '../config/storage';
 import { getRAGService } from '../services/rag';
 import { authMiddleware } from '../middleware/auth.middleware';
+import { fileService } from '../services/file-service';
+import { env } from '../config/env';
 import fs from 'fs/promises';
 
 const router = Router();
@@ -23,10 +25,10 @@ const storage = multer.diskStorage({
     cb(null, filesDir);
   },
   filename: (req, file, cb) => {
-    // Generate unique filename with UUID
+    // Generate unique filename with UUID (File Service pattern)
     const fileId = randomUUID();
     const ext = path.extname(file.originalname);
-    cb(null, `kb_${fileId}${ext}`); // Prefix with 'kb_' for knowledge base files
+    cb(null, `${fileId}${ext}`);
   }
 });
 
@@ -67,17 +69,17 @@ router.post('/upload', authMiddleware, upload.single('file'), async (req: Reques
 
     console.log(`[Knowledge API] Uploading file: ${file.originalname}`);
 
-    // Extract file ID from filename (remove 'kb_' prefix and extension)
-    const fileId = path.basename(file.filename, path.extname(file.filename)).replace(/^kb_/, '');
+    // Save file using File Service
+    const savedFile = await fileService.saveFile(file, undefined, env.BASE_URL);
     const fileType = path.extname(file.originalname).substring(1) as 'txt' | 'md' | 'pdf';
 
     // Ingest file with RAG service
     const ragService = getRAGService();
-    const result = await ragService.ingestFile(file.path, {
-      fileId,
-      fileName: file.originalname,
+    const result = await ragService.ingestFile(savedFile.storedPath, {
+      fileId: savedFile.fileId,
+      fileName: savedFile.originalName,
       fileType,
-      size: file.size,
+      size: savedFile.size,
     });
 
     console.log(`[Knowledge API] File ingested successfully: ${result.chunkCount} chunks created`);
@@ -94,12 +96,6 @@ router.post('/upload', authMiddleware, upload.single('file'), async (req: Reques
 
   } catch (error) {
     console.error('[Knowledge API] Upload error:', error);
-
-    // Clean up file if it exists
-    const file = req.file as Express.Multer.File;
-    if (file) {
-      await fs.unlink(file.path).catch(() => {});
-    }
 
     res.status(500).json({
       error: 'Failed to upload and process file',
@@ -118,17 +114,26 @@ router.get('/files', authMiddleware, async (req: Request, res: Response) => {
     const ragService = getRAGService();
     const files = await ragService.listFiles();
 
+    // Fetch download URLs from File service
+    const filesWithUrls = await Promise.all(
+      files.map(async (f) => {
+        const fileUrl = await fileService.getFileUrl(f.fileId);
+        return {
+          id: f.fileId,
+          name: f.fileName,
+          type: f.fileType,
+          size: f.size,
+          chunkCount: f.chunkCount,
+          uploadedAt: f.uploadedAt,
+          downloadUrl: fileUrl || undefined,
+        };
+      })
+    );
+
     res.json({
       success: true,
-      count: files.length,
-      files: files.map(f => ({
-        id: f.fileId,
-        name: f.fileName,
-        type: f.fileType,
-        size: f.size,
-        chunkCount: f.chunkCount,
-        uploadedAt: f.uploadedAt,
-      }))
+      count: filesWithUrls.length,
+      files: filesWithUrls,
     });
 
   } catch (error) {
@@ -156,8 +161,12 @@ router.delete('/files/:id', authMiddleware, async (req: Request, res: Response) 
 
     console.log(`[Knowledge API] Deleting file: ${id}`);
 
+    // Delete vectors from RAG service
     const ragService = getRAGService();
     await ragService.deleteFile(id);
+
+    // Delete file from File service (handles physical file + DB)
+    await fileService.deleteFile(id);
 
     console.log(`[Knowledge API] File deleted successfully: ${id}`);
 

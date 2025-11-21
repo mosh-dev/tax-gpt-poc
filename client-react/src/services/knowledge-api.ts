@@ -13,6 +13,7 @@ export interface KnowledgeFile {
   size: number;
   chunkCount: number;
   uploadedAt: string;
+  downloadUrl?: string;
 }
 
 export interface UploadKnowledgeFileResponse {
