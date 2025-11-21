@@ -4,15 +4,15 @@
  */
 
 // Domain repositories (interfaces)
-import type { IConversationRepository, IMessageRepository, IFileRepository } from '../core/domain/repositories';
+import type { IConversationRepository, IMessageRepository, IFileRepository } from '../core/domain';
 
 // Infrastructure implementations
 import {
   MongoConversationRepository,
   MongoMessageRepository,
   MongoFileRepository,
-} from '../infrastructure/database/mongodb';
-import { LocalFileStorageService } from '../infrastructure/services/storage';
+} from '../infrastructure';
+import { LocalFileStorageService } from '../infrastructure';
 
 // Application use cases
 import {
@@ -25,21 +25,21 @@ import {
   ProcessDocumentUseCase,
   GetFileUseCase,
   DeleteFileUseCase,
-} from '../core/application/use-cases';
+} from '../core/application';
 
 // Application services (interfaces)
 import type {
   IFileStorageService,
   IAIAgentService,
   IOCRService,
-} from '../core/application/services';
+} from '../core/application';
 
 // Presentation controllers
 import {
   ConversationController,
   ChatController,
   FileController,
-} from '../presentation/http/controllers';
+} from '../presentation';
 
 /**
  * Container holds all instantiated dependencies
