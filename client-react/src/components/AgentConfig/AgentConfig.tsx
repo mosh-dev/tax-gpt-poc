@@ -19,7 +19,7 @@ export default function AgentConfig() {
   const [uploadingKB, setUploadingKB] = useState(false);
   const [kbError, setKbError] = useState<string | null>(null);
   const [kbSuccess, setKbSuccess] = useState<string | null>(null);
-  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const hasLoadedRef = useRef(false);
 
@@ -64,42 +64,76 @@ export default function AgentConfig() {
   }, [loadConfig, loadKnowledgeFiles]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
-    // Validate file type
     const allowedTypes = ['.txt', '.md', '.pdf'];
-    const fileExt = '.' + file.name.split('.').pop()?.toLowerCase();
-    if (!allowedTypes.includes(fileExt)) {
-      setKbError(`Invalid file type. Allowed: ${allowedTypes.join(', ')}`);
-      return;
+    const validFiles: File[] = [];
+    const errors: string[] = [];
+
+    // Validate each file
+    for (const file of files) {
+      const fileExt = '.' + file.name.split('.').pop()?.toLowerCase();
+
+      if (!allowedTypes.includes(fileExt)) {
+        errors.push(`${file.name}: Invalid file type`);
+        continue;
+      }
+
+      if (file.size > 50 * 1024 * 1024) {
+        errors.push(`${file.name}: File size exceeds 50MB`);
+        continue;
+      }
+
+      validFiles.push(file);
     }
 
-    // Validate file size (50MB max)
-    if (file.size > 50 * 1024 * 1024) {
-      setKbError('File size must be less than 50MB');
-      return;
+    if (errors.length > 0) {
+      setKbError(errors.join(', '));
+    } else {
+      setKbError(null);
     }
 
-    // Store file for confirmation
-    setSelectedFile(file);
-    setKbError(null);
+    // Store valid files for confirmation
+    setSelectedFiles(validFiles);
   };
 
   const handleUploadConfirm = async () => {
-    if (!selectedFile) return;
+    if (selectedFiles.length === 0) return;
 
     try {
       setUploadingKB(true);
       setKbError(null);
       setKbSuccess(null);
 
-      await knowledgeApi.uploadFile(selectedFile);
-      setKbSuccess(`File "${selectedFile.name}" uploaded and processed successfully!`);
+      // Upload files one by one
+      const results = [];
+      for (const file of selectedFiles) {
+        try {
+          await knowledgeApi.uploadFile(file);
+          results.push({ file: file.name, success: true });
+        } catch (err: any) {
+          results.push({ file: file.name, success: false, error: err.message });
+        }
+      }
+
+      const successCount = results.filter(r => r.success).length;
+      const failedCount = results.filter(r => !r.success).length;
+
+      if (failedCount === 0) {
+        setKbSuccess(`Successfully uploaded ${successCount} file(s)!`);
+      } else {
+        const failedFiles = results.filter(r => !r.success).map(r => r.file).join(', ');
+        setKbError(`${successCount} file(s) uploaded, ${failedCount} failed: ${failedFiles}`);
+        if (successCount > 0) {
+          setKbSuccess(`${successCount} file(s) uploaded successfully`);
+        }
+      }
+
       await loadKnowledgeFiles();
 
       // Clear selection and file input
-      setSelectedFile(null);
+      setSelectedFiles([]);
       if (fileInputRef.current) {
         fileInputRef.current.value = '';
       }
@@ -107,14 +141,14 @@ export default function AgentConfig() {
       // Hide success message after 5 seconds
       setTimeout(() => setKbSuccess(null), 5000);
     } catch (err: any) {
-      setKbError(err.message || 'Failed to upload file');
+      setKbError(err.message || 'Failed to upload files');
     } finally {
       setUploadingKB(false);
     }
   };
 
   const handleCancelUpload = () => {
-    setSelectedFile(null);
+    setSelectedFiles([]);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
@@ -305,13 +339,14 @@ export default function AgentConfig() {
                   ref={fileInputRef}
                   type="file"
                   accept=".txt,.md,.pdf"
+                  multiple
                   onChange={handleFileSelect}
                   className="hidden"
                   id="kb-file-upload"
-                  disabled={selectedFile !== null || uploadingKB}
+                  disabled={selectedFiles.length > 0 || uploadingKB}
                 />
 
-                {!selectedFile ? (
+                {selectedFiles.length === 0 ? (
                   <div>
                     <label
                       htmlFor="kb-file-upload"
@@ -320,27 +355,30 @@ export default function AgentConfig() {
                       <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                       </svg>
-                      Select File
+                      Select Files
                     </label>
                     <span className="ml-3 text-sm text-gray-500">
-                      Accepts: .txt, .md, .pdf (max 50MB)
+                      Accepts: .txt, .md, .pdf (max 50MB each) • Multiple files allowed
                     </span>
                   </div>
                 ) : (
                   <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
-                    <div className="flex items-center justify-between mb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                          <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                          </svg>
-                        </div>
-                        <div>
-                          <div className="text-sm font-medium text-gray-900">{selectedFile.name}</div>
-                          <div className="text-xs text-gray-500">
-                            {(selectedFile.size / 1024).toFixed(1)} KB
+                    <div className="mb-3">
+                      <div className="text-sm font-medium text-gray-900 mb-2">
+                        {selectedFiles.length} file(s) selected
+                      </div>
+                      <div className="space-y-2 max-h-40 overflow-y-auto">
+                        {selectedFiles.map((file, index) => (
+                          <div key={index} className="flex items-center gap-2 text-xs text-gray-700 bg-white p-2 rounded">
+                            <svg className="w-4 h-4 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                            </svg>
+                            <span className="truncate flex-1">{file.name}</span>
+                            <span className="text-gray-500 flex-shrink-0">
+                              {(file.size / 1024).toFixed(1)} KB
+                            </span>
                           </div>
-                        </div>
+                        ))}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
@@ -353,7 +391,7 @@ export default function AgentConfig() {
                             : 'bg-blue-600 text-white hover:bg-blue-700'
                         }`}
                       >
-                        {uploadingKB ? 'Uploading...' : 'Confirm Upload'}
+                        {uploadingKB ? 'Uploading...' : `Upload ${selectedFiles.length} File(s)`}
                       </button>
                       <button
                         onClick={handleCancelUpload}

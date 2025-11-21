@@ -10,7 +10,14 @@ import { getRAGService } from '../../services/rag';
 
 export const searchKnowledgeTool = createTool({
   id: 'search-knowledge',
-  description: 'Search the knowledge base for specific information about Swiss tax regulations, deductions, or procedures. Use this when the user asks to "search for", "find information about", or "look up" specific tax topics.',
+  description: `Search the knowledge base for Swiss tax regulations, deductions, or procedures. Use this when the user asks to "search for", "find information about", or "look up" specific tax topics.
+
+IMPORTANT INSTRUCTIONS:
+1. You will receive MULTIPLE search results (up to 5) from potentially DIFFERENT source files
+2. Review ALL results, not just the highest ranked one - each result may contain valuable complementary information
+3. Synthesize information from ALL relevant results to provide a comprehensive answer
+4. ALWAYS cite the specific source file(s) you used in your response (e.g., "According to tax-guide-2024.pdf...")
+5. If results come from multiple files, mention all sources used`,
   inputSchema: z.object({
     query: z.string().describe('The search query describing what information to find'),
     topK: z.number().optional().default(5).describe('Number of results to return (default: 5)'),
@@ -19,13 +26,13 @@ export const searchKnowledgeTool = createTool({
     success: z.boolean(),
     query: z.string(),
     resultsFound: z.number(),
-    message: z.string().optional(),
-    source: z.string().optional(),
+    message: z.string(),
+    sourceFiles: z.array(z.string()).optional().describe('List of unique source files found'),
     results: z.array(z.object({
       rank: z.number(),
       content: z.string(),
       relevanceScore: z.number(),
-      source: z.string(),
+      source: z.string().describe('Source file name'),
       chunkInfo: z.string()
     }))
   }),
@@ -45,6 +52,7 @@ export const searchKnowledgeTool = createTool({
           query,
           resultsFound: 0,
           message: 'No relevant information found in the knowledge base.',
+          sourceFiles: [],
           results: [],
         };
       }
@@ -58,15 +66,24 @@ export const searchKnowledgeTool = createTool({
         chunkInfo: `Chunk ${result.metadata.chunkIndex + 1} of ${result.metadata.totalChunks}`,
       }));
 
-      console.log(`[SearchKnowledgeTool] Found ${results.length} results`);
+      // Get unique source files
+      const uniqueSources = [...new Set(formattedResults.map(r => r.source))];
+
+      console.log(`[SearchKnowledgeTool] Found ${results.length} results from ${uniqueSources.length} file(s): ${uniqueSources.join(', ')}`);
+
+      // Create detailed message with source files
+      const sourceList = uniqueSources.map(s => `"${s}"`).join(', ');
+      const message = uniqueSources.length === 1
+        ? `Found ${results.length} relevant section(s) from ${sourceList}.`
+        : `Found ${results.length} relevant section(s) from ${uniqueSources.length} files: ${sourceList}.`;
 
       return {
         success: true,
         query,
         resultsFound: results.length,
-        source: formattedResults.sort((a, b) => a.rank - b.rank)[0]?.source,
+        sourceFiles: uniqueSources,
         results: formattedResults,
-        message: `Found ${results.length} relevant section(s) in the knowledge base.`,
+        message: message,
       };
     } catch (error) {
       console.error('[SearchKnowledgeTool] Error searching knowledge base:', error);
@@ -75,7 +92,8 @@ export const searchKnowledgeTool = createTool({
         success: false,
         query,
         resultsFound: 0,
-        error: error instanceof Error ? error.message : 'Unknown error occurred while searching',
+        message: error instanceof Error ? error.message : 'Unknown error occurred while searching',
+        sourceFiles: [],
         results: [],
       };
     }

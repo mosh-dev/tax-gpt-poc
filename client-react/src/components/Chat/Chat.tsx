@@ -385,12 +385,12 @@ export default function Chat({ threadId }: ChatProps) {
         }
         break;
 
-      case TOOL_NAMES.SEARCH_KNOWLEDGE_BASE:
-        if (event.result?.success && event.result?.source) {
-          const source = event.result.downloadUrl;
-          assistantMessage.content += `\n\n${event.result.message}\n\n📄 [According to](${source})`;
-        }
-        break;
+      // case TOOL_NAMES.SEARCH_KNOWLEDGE_BASE:
+      //   if (event.result?.success && event.result?.source) {
+      //     const source = event.result.downloadUrl;
+      //     assistantMessage.content += `\n\n${event.result.message}\n\n📄 [According to](${source})`;
+      //   }
+      //   break;
 
       case TOOL_NAMES.CALCULATE_DEDUCTIONS:
         if (event.result) {
