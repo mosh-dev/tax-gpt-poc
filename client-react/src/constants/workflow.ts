@@ -22,6 +22,7 @@ export const TOOL_NAMES = {
   GET_TAX_DATA: 'getTaxDataTool',
   CALCULATE_DEDUCTIONS: 'calculateDeductionsTool',
   GENERATE_TAX_PDF: 'generateTaxPDFTool',
+  SEARCH_KNOWLEDGE_BASE: 'searchKnowledgeTool',
   PROCESS_DOCUMENTS: 'processDocumentsTool',
   START_WORKFLOW: 'startWorkflowTool',
   RESUME_WORKFLOW: 'resumeWorkflowTool',
