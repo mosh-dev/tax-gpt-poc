@@ -262,9 +262,9 @@ export default function AgentConfig() {
                       </svg>
                       Select Files
                     </label>
-                    <span className="ml-3 text-sm text-gray-500">
+                    <div className="text-sm text-gray-500 mt-2">
                       Accepts: .txt, .md, .pdf (max 50MB each) • Multiple files allowed
-                    </span>
+                    </div>
                   </div>
                 ) : (
                   <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
