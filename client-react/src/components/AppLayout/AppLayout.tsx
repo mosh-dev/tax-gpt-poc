@@ -100,7 +100,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
         />
 
         {/* Main content */}
-        <main className="flex-1 overflow-auto pb-20 md:pb-0">
+        <main className="flex-1 overflow-auto">
           <div className="max-w-6xl mx-auto h-full">
             {children}
           </div>

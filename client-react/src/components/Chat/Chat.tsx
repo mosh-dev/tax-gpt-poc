@@ -695,7 +695,7 @@ export default function Chat({ threadId }: ChatProps) {
           </div>
         )}
 
-        <div ref={messagesEndRef} />
+        <div ref={messagesEndRef} className="pb-20 md:pb-24" />
       </div>
 
       {/* Error Display */}
