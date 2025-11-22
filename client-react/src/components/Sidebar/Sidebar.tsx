@@ -78,7 +78,7 @@ export default function Sidebar({
           ${isOpen ? 'w-64' : 'w-0'}
           ${isMobile && isOpen ? 'translate-x-0' : ''}
           ${isMobile && !isOpen ? '-translate-x-full' : ''}
-          bg-gray-50 dark:bg-gray-900
+          bg-white dark:bg-gray-800
           flex flex-col
           transition-all duration-300 ease-in-out
           overflow-hidden flex-shrink-0
@@ -103,7 +103,7 @@ export default function Sidebar({
           </div>
 
           {/* Conversations List */}
-          <div className="flex-1 overflow-y-auto overscroll-contain">
+          <div className="flex-1 overflow-y-auto overscroll-contain border-b border-gray-200 dark:border-gray-700">
             <div className="p-2">
               <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase px-3 mb-2">CHATS</h2>
 
@@ -150,7 +150,7 @@ export default function Sidebar({
           </div>
 
           {/* Footer */}
-          <div className="p-4 bg-gray-100 dark:bg-gray-800">
+          <div className="p-4">
             {userName && (
               <div className="flex items-center gap-3 px-3 py-2 mb-2">
                 <User className="w-4 h-4 text-slate-500 dark:text-slate-400" />

@@ -35,7 +35,7 @@ export default function Toolbar({ onToggleSidebar, onCloseSidebar, isSidebarOpen
 
   return (
     <header
-      className="fixed top-0 left-0 right-0 h-16 bg-white dark:bg-gray-900 z-50 flex items-center justify-between px-4"
+      className="fixed top-0 left-0 right-0 h-16 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-50 flex items-center justify-between px-4"
       onClick={handleToolbarClick}
     >
       <div className="flex items-center">
