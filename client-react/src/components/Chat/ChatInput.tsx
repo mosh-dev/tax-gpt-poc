@@ -83,7 +83,7 @@ export default function ChatInput({ onSendMessage, disabled, isUploading, placeh
     <div className="absolute bottom-0 left-0 right-0 px-4 md:px-6 py-4 z-30">
       {/* Selected Files */}
       {selectedFiles.length > 0 && (
-        <div className="mb-3 flex flex-wrap gap-2 max-w-4xl mx-auto">
+        <div className="mb-3 flex flex-wrap gap-2 max-w-4xl mx-auto bg-opacity-50 rounded-l-2xl p-8" style={{background: '#101828eb'}}>
           {selectedFiles.map((file, index) => (
             <div key={index} className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded-lg shadow-lg">
               <Paperclip className="w-4 h-4 text-gray-500 dark:text-gray-400" />
