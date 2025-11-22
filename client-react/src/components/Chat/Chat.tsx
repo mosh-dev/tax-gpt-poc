@@ -717,12 +717,14 @@ export default function Chat({ threadId }: ChatProps) {
       />
 
       {/* Chat Input */}
-      <ChatInput
-        onSendMessage={sendMessage}
-        disabled={isStreaming || !!activeWorkflow}
-        isUploading={isUploading}
-        placeholder={activeWorkflow ? "Complete workflow step first..." : "Type your message..."}
-      />
+      <div className="absolute bottom-0 left-0 right-0">
+        <ChatInput
+          onSendMessage={sendMessage}
+          disabled={isStreaming || !!activeWorkflow}
+          isUploading={isUploading}
+          placeholder={activeWorkflow ? "Complete workflow step first..." : "Type your message..."}
+        />
+      </div>
     </div>
   );
 }

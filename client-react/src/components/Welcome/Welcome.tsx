@@ -143,7 +143,7 @@ export default function Welcome({ }: WelcomeProps) {
         )}
 
         {/* Message Input */}
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-4xl mx-auto bottom-0 left-0 right-0">
           <ChatInput
             onSendMessage={handleSendMessage}
             disabled={isSending}
