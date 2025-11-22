@@ -63,21 +63,21 @@ export default function EmployeeData() {
   if (loading) {
     return (
       <div className="h-full flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600 dark:border-primary-400"></div>
       </div>
     );
   }
 
   return (
-    <div className="h-full flex flex-col bg-gray-50">
+    <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
       {/* Content */}
       <div className="flex-1 overflow-y-auto p-6">
         {error ? (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 text-red-700">
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-red-700 dark:text-red-400">
             {error}
           </div>
         ) : employees.length === 0 ? (
-          <div className="text-center text-gray-500 py-8">
+          <div className="text-center text-gray-500 dark:text-gray-400 py-8">
             No employee data found in the database
           </div>
         ) : (
@@ -85,26 +85,26 @@ export default function EmployeeData() {
             {employees.map((employee) => (
               <div
                 key={employee.scenarioId}
-                className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden"
+                className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm overflow-hidden"
               >
                 {/* Employee Header */}
                 <div
-                  className="p-4 cursor-pointer hover:bg-gray-50 transition-colors"
+                  className="p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                   onClick={() => toggleExpand(employee.scenarioId)}
                 >
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
-                        <Users className="w-4 h-4 text-primary-600" />
-                        <h3 className="font-semibold text-gray-900">
+                        <Users className="w-4 h-4 text-primary-600 dark:text-primary-400" />
+                        <h3 className="font-semibold text-gray-900 dark:text-gray-100">
                           {employee.taxData.personalInfo.firstName} {employee.taxData.personalInfo.lastName}
                         </h3>
-                        <span className="px-2 py-0.5 bg-primary-100 text-primary-700 text-xs rounded-full">
+                        <span className="px-2 py-0.5 bg-primary-100 dark:bg-primary-900/30 text-primary-700 dark:text-primary-300 text-xs rounded-full">
                           {employee.scenarioName}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-600 mb-2">{employee.scenarioDescription}</p>
-                      <div className="flex items-center gap-4 text-sm text-gray-500">
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">{employee.scenarioDescription}</p>
+                      <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
                         <span className="flex items-center gap-1">
                           <DollarSign className="w-3.5 h-3.5" />
                           {formatCurrency(calculateTotalIncome(employee.taxData.income))}
@@ -119,7 +119,7 @@ export default function EmployeeData() {
                         </span>
                       </div>
                     </div>
-                    <button className="p-1 text-gray-400">
+                    <button className="p-1 text-gray-400 dark:text-gray-500">
                       {expandedEmployee === employee.scenarioId ? (
                         <ChevronUp className="w-5 h-5" />
                       ) : (
@@ -131,93 +131,93 @@ export default function EmployeeData() {
 
                 {/* Expanded Details */}
                 {expandedEmployee === employee.scenarioId && (
-                  <div className="border-t border-gray-200 p-4 bg-gray-50">
+                  <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-900/50">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                       {/* Personal Info */}
                       <div>
-                        <h4 className="font-medium text-gray-900 mb-2">Personal Information</h4>
+                        <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">Personal Information</h4>
                         <div className="space-y-1 text-sm">
-                          <p><span className="text-gray-500">Date of Birth:</span> {employee.taxData.personalInfo.dateOfBirth}</p>
-                          <p><span className="text-gray-500">Address:</span> {employee.taxData.personalInfo.address}</p>
-                          <p><span className="text-gray-500">Municipality:</span> {employee.taxData.personalInfo.municipality}</p>
-                          <p><span className="text-gray-500">Status:</span> {employee.taxData.personalInfo.maritalStatus}</p>
+                          <p><span className="text-gray-500 dark:text-gray-400">Date of Birth:</span> <span className="dark:text-gray-300">{employee.taxData.personalInfo.dateOfBirth}</span></p>
+                          <p><span className="text-gray-500 dark:text-gray-400">Address:</span> <span className="dark:text-gray-300">{employee.taxData.personalInfo.address}</span></p>
+                          <p><span className="text-gray-500 dark:text-gray-400">Municipality:</span> <span className="dark:text-gray-300">{employee.taxData.personalInfo.municipality}</span></p>
+                          <p><span className="text-gray-500 dark:text-gray-400">Status:</span> <span className="dark:text-gray-300">{employee.taxData.personalInfo.maritalStatus}</span></p>
                         </div>
                       </div>
 
                       {/* Income */}
                       <div>
-                        <h4 className="font-medium text-gray-900 mb-2">Income</h4>
+                        <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">Income</h4>
                         <div className="space-y-1 text-sm">
                           {employee.taxData.income.employment !== undefined && (
-                            <p><span className="text-gray-500">Employment:</span> {formatCurrency(employee.taxData.income.employment)}</p>
+                            <p><span className="text-gray-500 dark:text-gray-400">Employment:</span> <span className="dark:text-gray-300">{formatCurrency(employee.taxData.income.employment)}</span></p>
                           )}
                           {employee.taxData.income.selfEmployment !== undefined && (
-                            <p><span className="text-gray-500">Self-Employment:</span> {formatCurrency(employee.taxData.income.selfEmployment)}</p>
+                            <p><span className="text-gray-500 dark:text-gray-400">Self-Employment:</span> <span className="dark:text-gray-300">{formatCurrency(employee.taxData.income.selfEmployment)}</span></p>
                           )}
                           {employee.taxData.income.investments !== undefined && (
-                            <p><span className="text-gray-500">Investments:</span> {formatCurrency(employee.taxData.income.investments)}</p>
+                            <p><span className="text-gray-500 dark:text-gray-400">Investments:</span> <span className="dark:text-gray-300">{formatCurrency(employee.taxData.income.investments)}</span></p>
                           )}
                           {employee.taxData.income.rental !== undefined && (
-                            <p><span className="text-gray-500">Rental:</span> {formatCurrency(employee.taxData.income.rental)}</p>
+                            <p><span className="text-gray-500 dark:text-gray-400">Rental:</span> <span className="dark:text-gray-300">{formatCurrency(employee.taxData.income.rental)}</span></p>
                           )}
                           {employee.taxData.income.other !== undefined && employee.taxData.income.other > 0 && (
-                            <p><span className="text-gray-500">Other:</span> {formatCurrency(employee.taxData.income.other)}</p>
+                            <p><span className="text-gray-500 dark:text-gray-400">Other:</span> <span className="dark:text-gray-300">{formatCurrency(employee.taxData.income.other)}</span></p>
                           )}
-                          <p className="font-medium pt-1 border-t border-gray-200">
-                            <span className="text-gray-700">Total:</span> {formatCurrency(calculateTotalIncome(employee.taxData.income))}
+                          <p className="font-medium pt-1 border-t border-gray-200 dark:border-gray-700">
+                            <span className="text-gray-700 dark:text-gray-200">Total:</span> <span className="dark:text-gray-300">{formatCurrency(calculateTotalIncome(employee.taxData.income))}</span>
                           </p>
                         </div>
                       </div>
 
                       {/* Deductions */}
                       <div>
-                        <h4 className="font-medium text-gray-900 mb-2">Deductions</h4>
+                        <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">Deductions</h4>
                         <div className="space-y-1 text-sm">
                           {employee.taxData.deductions.professionalExpenses !== undefined && (
-                            <p><span className="text-gray-500">Professional:</span> {formatCurrency(employee.taxData.deductions.professionalExpenses)}</p>
+                            <p><span className="text-gray-500 dark:text-gray-400">Professional:</span> <span className="dark:text-gray-300">{formatCurrency(employee.taxData.deductions.professionalExpenses)}</span></p>
                           )}
                           {employee.taxData.deductions.healthcareExpenses !== undefined && (
-                            <p><span className="text-gray-500">Healthcare:</span> {formatCurrency(employee.taxData.deductions.healthcareExpenses)}</p>
+                            <p><span className="text-gray-500 dark:text-gray-400">Healthcare:</span> <span className="dark:text-gray-300">{formatCurrency(employee.taxData.deductions.healthcareExpenses)}</span></p>
                           )}
                           {employee.taxData.deductions.pillar3a !== undefined && (
-                            <p><span className="text-gray-500">Pillar 3a:</span> {formatCurrency(employee.taxData.deductions.pillar3a)}</p>
+                            <p><span className="text-gray-500 dark:text-gray-400">Pillar 3a:</span> <span className="dark:text-gray-300">{formatCurrency(employee.taxData.deductions.pillar3a)}</span></p>
                           )}
                           {employee.taxData.deductions.childcare !== undefined && (
-                            <p><span className="text-gray-500">Childcare:</span> {formatCurrency(employee.taxData.deductions.childcare)}</p>
+                            <p><span className="text-gray-500 dark:text-gray-400">Childcare:</span> <span className="dark:text-gray-300">{formatCurrency(employee.taxData.deductions.childcare)}</span></p>
                           )}
                           {employee.taxData.deductions.education !== undefined && (
-                            <p><span className="text-gray-500">Education:</span> {formatCurrency(employee.taxData.deductions.education)}</p>
+                            <p><span className="text-gray-500 dark:text-gray-400">Education:</span> <span className="dark:text-gray-300">{formatCurrency(employee.taxData.deductions.education)}</span></p>
                           )}
                           {employee.taxData.deductions.commuting !== undefined && (
-                            <p><span className="text-gray-500">Commuting:</span> {formatCurrency(employee.taxData.deductions.commuting)}</p>
+                            <p><span className="text-gray-500 dark:text-gray-400">Commuting:</span> <span className="dark:text-gray-300">{formatCurrency(employee.taxData.deductions.commuting)}</span></p>
                           )}
                           {employee.taxData.deductions.donations !== undefined && (
-                            <p><span className="text-gray-500">Donations:</span> {formatCurrency(employee.taxData.deductions.donations)}</p>
+                            <p><span className="text-gray-500 dark:text-gray-400">Donations:</span> <span className="dark:text-gray-300">{formatCurrency(employee.taxData.deductions.donations)}</span></p>
                           )}
-                          <p className="font-medium pt-1 border-t border-gray-200">
-                            <span className="text-gray-700">Total:</span> {formatCurrency(calculateTotalDeductions(employee.taxData.deductions))}
+                          <p className="font-medium pt-1 border-t border-gray-200 dark:border-gray-700">
+                            <span className="text-gray-700 dark:text-gray-200">Total:</span> <span className="dark:text-gray-300">{formatCurrency(calculateTotalDeductions(employee.taxData.deductions))}</span>
                           </p>
                         </div>
                       </div>
 
                       {/* Wealth */}
                       <div>
-                        <h4 className="font-medium text-gray-900 mb-2">Wealth</h4>
+                        <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">Wealth</h4>
                         <div className="space-y-1 text-sm">
                           {employee.taxData.wealth.bankAccounts !== undefined && (
-                            <p><span className="text-gray-500">Bank Accounts:</span> {formatCurrency(employee.taxData.wealth.bankAccounts)}</p>
+                            <p><span className="text-gray-500 dark:text-gray-400">Bank Accounts:</span> <span className="dark:text-gray-300">{formatCurrency(employee.taxData.wealth.bankAccounts)}</span></p>
                           )}
                           {employee.taxData.wealth.securities !== undefined && (
-                            <p><span className="text-gray-500">Securities:</span> {formatCurrency(employee.taxData.wealth.securities)}</p>
+                            <p><span className="text-gray-500 dark:text-gray-400">Securities:</span> <span className="dark:text-gray-300">{formatCurrency(employee.taxData.wealth.securities)}</span></p>
                           )}
                           {employee.taxData.wealth.realEstate !== undefined && employee.taxData.wealth.realEstate > 0 && (
-                            <p><span className="text-gray-500">Real Estate:</span> {formatCurrency(employee.taxData.wealth.realEstate)}</p>
+                            <p><span className="text-gray-500 dark:text-gray-400">Real Estate:</span> <span className="dark:text-gray-300">{formatCurrency(employee.taxData.wealth.realEstate)}</span></p>
                           )}
                           {employee.taxData.wealth.other !== undefined && employee.taxData.wealth.other > 0 && (
-                            <p><span className="text-gray-500">Other:</span> {formatCurrency(employee.taxData.wealth.other)}</p>
+                            <p><span className="text-gray-500 dark:text-gray-400">Other:</span> <span className="dark:text-gray-300">{formatCurrency(employee.taxData.wealth.other)}</span></p>
                           )}
-                          <p className="font-medium pt-1 border-t border-gray-200">
-                            <span className="text-gray-700">Total:</span> {formatCurrency(calculateTotalWealth(employee.taxData.wealth))}
+                          <p className="font-medium pt-1 border-t border-gray-200 dark:border-gray-700">
+                            <span className="text-gray-700 dark:text-gray-200">Total:</span> <span className="dark:text-gray-300">{formatCurrency(calculateTotalWealth(employee.taxData.wealth))}</span>
                           </p>
                         </div>
                       </div>

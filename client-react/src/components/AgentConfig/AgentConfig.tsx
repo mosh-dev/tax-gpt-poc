@@ -194,33 +194,33 @@ export default function AgentConfig() {
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-gray-50">
+    <div className="flex-1 flex flex-col h-full bg-gray-50 dark:bg-gray-900">
       {/* Content */}
       <div className="flex-1 overflow-auto p-4 md:p-6">
         <div className="max-w-4xl mx-auto">
           {/* Status messages */}
           {error && (
-            <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700">
+            <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400">
               {error}
             </div>
           )}
           {success && (
-            <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg text-green-700">
+            <div className="mb-4 p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-green-700 dark:text-green-400">
               Configuration saved successfully! Note: Changes will take effect for new conversations.
             </div>
           )}
 
           {/* Knowledge Base Section */}
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm">
-            <div className="px-3 md:px-4 py-3 border-b border-gray-200">
-              <h2 className="text-base md:text-lg font-medium text-gray-900">Knowledge Base</h2>
-              <p className="text-xs md:text-sm text-gray-500 mt-1">
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm">
+            <div className="px-3 md:px-4 py-3 border-b border-gray-200 dark:border-gray-700">
+              <h2 className="text-base md:text-lg font-medium text-gray-900 dark:text-gray-100">Knowledge Base</h2>
+              <p className="text-xs md:text-sm text-gray-500 dark:text-gray-400 mt-1">
                 Upload documents to enhance the agent's knowledge. Files are automatically processed and indexed for semantic search.
               </p>
             </div>
@@ -228,12 +228,12 @@ export default function AgentConfig() {
             {/* KB Status messages */}
             <div className="p-3 md:p-4">
               {kbError && (
-                <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                <div className="mb-4 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-400">
                   {kbError}
                 </div>
               )}
               {kbSuccess && (
-                <div className="mb-4 p-3 bg-green-50 border border-green-200 rounded-lg text-sm text-green-700">
+                <div className="mb-4 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg text-sm text-green-700 dark:text-green-400">
                   {kbSuccess}
                 </div>
               )}
@@ -255,31 +255,31 @@ export default function AgentConfig() {
                   <div>
                     <label
                       htmlFor="kb-file-upload"
-                      className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer transition-colors"
+                      className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 cursor-pointer transition-colors"
                     >
                       <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                       </svg>
                       Select Files
                     </label>
-                    <div className="text-sm text-gray-500 mt-2">
+                    <div className="text-sm text-gray-500 dark:text-gray-400 mt-2">
                       Accepts: .txt, .md, .pdf (max 50MB each) • Multiple files allowed
                     </div>
                   </div>
                 ) : (
-                  <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                  <div className="p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
                     <div className="mb-3">
-                      <div className="text-sm font-medium text-gray-900 mb-2">
+                      <div className="text-sm font-medium text-gray-900 dark:text-gray-100 mb-2">
                         {selectedFiles.length} file(s) selected
                       </div>
                       <div className="space-y-2 max-h-40 overflow-y-auto">
                         {selectedFiles.map((file, index) => (
-                          <div key={index} className="flex items-center gap-2 text-xs text-gray-700 bg-white p-2 rounded">
-                            <svg className="w-4 h-4 text-blue-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div key={index} className="flex items-center gap-2 text-xs text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 p-2 rounded">
+                            <svg className="w-4 h-4 text-blue-600 dark:text-blue-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                             <span className="truncate flex-1">{file.name}</span>
-                            <span className="text-gray-500 flex-shrink-0">
+                            <span className="text-gray-500 dark:text-gray-400 flex-shrink-0">
                               {(file.size / 1024).toFixed(1)} KB
                             </span>
                           </div>
@@ -292,8 +292,8 @@ export default function AgentConfig() {
                         disabled={uploadingKB}
                         className={`px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
                           uploadingKB
-                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                            : 'bg-blue-600 text-white hover:bg-blue-700'
+                            ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                            : 'bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-600'
                         }`}
                       >
                         {uploadingKB ? 'Uploading...' : `Upload ${selectedFiles.length} File(s)`}
@@ -301,7 +301,7 @@ export default function AgentConfig() {
                       <button
                         onClick={handleCancelUpload}
                         disabled={uploadingKB}
-                        className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50"
+                        className="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors disabled:opacity-50"
                       >
                         Cancel
                       </button>
@@ -313,10 +313,10 @@ export default function AgentConfig() {
               {/* Files List */}
               {loadingKB ? (
                 <div className="flex items-center justify-center py-8">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 dark:border-blue-500"></div>
                 </div>
               ) : knowledgeFiles.length === 0 ? (
-                <div className="text-center py-8 text-gray-500 text-sm">
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400 text-sm">
                   No knowledge base files uploaded yet. Upload documents to get started.
                 </div>
               ) : (
@@ -324,12 +324,12 @@ export default function AgentConfig() {
                   {knowledgeFiles.map((file) => (
                     <div
                       key={file.id}
-                      className="flex items-center justify-between p-3 bg-gray-50 rounded-lg border border-gray-200"
+                      className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600"
                     >
                       <div className="flex items-center gap-3 flex-1 min-w-0">
                         <div className="flex-shrink-0">
-                          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <div className="w-10 h-10 bg-blue-100 dark:bg-blue-900/50 rounded-lg flex items-center justify-center">
+                            <svg className="w-5 h-5 text-blue-600 dark:text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                             </svg>
                           </div>
@@ -341,24 +341,24 @@ export default function AgentConfig() {
                               target="_blank"
                               rel="noopener noreferrer"
                               download={file.name}
-                              className="text-sm font-medium text-gray-900 hover:text-blue-600 hover:underline cursor-pointer truncate block"
+                              className="text-sm font-medium text-gray-900 dark:text-gray-100 hover:text-blue-600 dark:hover:text-blue-400 hover:underline cursor-pointer truncate block"
                               title="Click to download"
                             >
                               {file.name}
                             </a>
                           ) : (
-                            <div className="text-sm font-medium text-gray-900 truncate">
+                            <div className="text-sm font-medium text-gray-900 dark:text-gray-100 truncate">
                               {file.name}
                             </div>
                           )}
-                          <div className="text-xs text-gray-500">
+                          <div className="text-xs text-gray-500 dark:text-gray-400">
                             {file.type.toUpperCase()} • {(file.size / 1024).toFixed(1)} KB • {file.chunkCount} chunks
                           </div>
                         </div>
                       </div>
                       <button
                         onClick={() => handleDeleteFile(file.id, file.name)}
-                        className="ml-4 p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                        className="ml-4 p-2 text-red-600 dark:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors"
                         title="Delete file"
                       >
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -373,9 +373,9 @@ export default function AgentConfig() {
           </div>
 
           {/* KB Help text */}
-          <div className="mt-4 p-3 md:p-4 bg-purple-50 border border-purple-200 rounded-lg">
-            <h3 className="text-xs md:text-sm font-medium text-purple-800 mb-2">How Knowledge Base works:</h3>
-            <ul className="text-xs md:text-sm text-purple-700 space-y-1 list-disc list-inside">
+          <div className="mt-4 p-3 md:p-4 bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg">
+            <h3 className="text-xs md:text-sm font-medium text-purple-800 dark:text-purple-400 mb-2">How Knowledge Base works:</h3>
+            <ul className="text-xs md:text-sm text-purple-700 dark:text-purple-300 space-y-1 list-disc list-inside">
               <li>Upload tax regulations, guides, or reference documents (.txt, .md, .pdf)</li>
               <li>Files are automatically chunked and indexed using semantic search</li>
               <li>Agent automatically retrieves relevant content for tax-related questions</li>
@@ -385,22 +385,22 @@ export default function AgentConfig() {
           </div>
 
           {/* Instructions editor */}
-          <div className="bg-white rounded-lg border border-gray-200 shadow-sm mt-8">
+          <div className="bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm mt-8">
             <button
               onClick={() => setInstructionsExpanded(!instructionsExpanded)}
-              className="w-full px-3 md:px-4 py-3 border-b border-gray-200 flex items-center justify-between gap-2"
+              className="w-full px-3 md:px-4 py-3 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between gap-2"
             >
-              <label className="text-sm font-medium text-gray-700 cursor-pointer">
+              <label className="text-sm font-medium text-gray-700 dark:text-gray-300 cursor-pointer">
                 System Instructions
               </label>
               <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
                 {lastUpdated && (
-                  <span className="hidden sm:inline text-xs text-gray-500">
+                  <span className="hidden sm:inline text-xs text-gray-500 dark:text-gray-400">
                     {new Date(lastUpdated).toLocaleDateString()}
                   </span>
                 )}
                 <svg
-                  className={`w-5 h-5 text-gray-500 transition-transform ${instructionsExpanded ? 'rotate-180' : ''}`}
+                  className={`w-5 h-5 text-gray-500 dark:text-gray-400 transition-transform ${instructionsExpanded ? 'rotate-180' : ''}`}
                   fill="none"
                   stroke="currentColor"
                   viewBox="0 0 24 24"
@@ -418,14 +418,14 @@ export default function AgentConfig() {
                 <textarea
                   value={instructions}
                   onChange={(e) => setInstructions(e.target.value)}
-                  className="w-full h-[300px] md:h-[500px] p-3 md:p-4 font-mono text-xs md:text-sm border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
+                  className="w-full h-[300px] md:h-[500px] p-3 md:p-4 font-mono text-xs md:text-sm border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 resize-none"
                   placeholder="Enter the AI agent's system instructions..."
                 />
                   <div className="flex flex-col sm:flex-row justify-end pt-2 gap-2 sm:gap-3">
                       {hasChanges && (
                           <button
                               onClick={handleReset}
-                              className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                              className="w-full sm:w-auto px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-colors"
                           >
                               Reset
                           </button>
@@ -435,8 +435,8 @@ export default function AgentConfig() {
                           disabled={saving || !hasChanges}
                           className={`w-full sm:w-auto px-4 py-2 text-sm font-medium rounded-lg transition-colors ${
                               saving || !hasChanges
-                                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                  : 'bg-blue-600 text-white hover:bg-blue-700'
+                                  ? 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
+                                  : 'bg-blue-600 dark:bg-blue-700 text-white hover:bg-blue-700 dark:hover:bg-blue-600'
                           }`}
                       >
                           {saving ? 'Saving...' : 'Save Changes'}
@@ -447,9 +447,9 @@ export default function AgentConfig() {
           </div>
 
           {/* Help text */}
-          <div className="mt-4 p-3 md:p-4 bg-blue-50 border border-blue-200 rounded-lg">
-            <h3 className="text-xs md:text-sm font-medium text-blue-800 mb-2">Tips for writing good instructions:</h3>
-            <ul className="text-xs md:text-sm text-blue-700 space-y-1 list-disc list-inside">
+          <div className="mt-4 p-3 md:p-4 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg">
+            <h3 className="text-xs md:text-sm font-medium text-blue-800 dark:text-blue-300 mb-2">Tips for writing good instructions:</h3>
+            <ul className="text-xs md:text-sm text-blue-700 dark:text-blue-400 space-y-1 list-disc list-inside">
               <li>Define the agent's role and expertise clearly</li>
               <li>List the tools available and when to use them</li>
               <li>Specify the language and tone to use</li>

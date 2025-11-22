@@ -5,6 +5,29 @@
     <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Tax GPT - Your Personal Tax Assistant</title>
+
+    <!-- FOUC Prevention: Apply dark mode BEFORE any content renders -->
+    <script>
+      (function() {
+        try {
+          // Must match ThemeContext STORAGE_KEY
+          var theme = localStorage.getItem('tax_gpt_theme_preference') || 'system';
+          var resolvedTheme = theme;
+
+          // Resolve 'system' theme
+          if (theme === 'system') {
+            resolvedTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+          }
+
+          // Apply dark class immediately if needed
+          if (resolvedTheme === 'dark') {
+            document.documentElement.classList.add('dark');
+          }
+        } catch (e) {
+          // Fail silently if localStorage is blocked
+        }
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>
