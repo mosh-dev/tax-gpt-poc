@@ -98,7 +98,7 @@ export default function ChatInput({ onSendMessage, disabled, isUploading, placeh
           </div>
         )}
 
-        {/* Input with icons inside */}
+        {/* Input with attachment button inside textarea - Claude Chat style */}
         <div className="relative">
           <input
             ref={fileInputRef}
@@ -117,21 +117,25 @@ export default function ChatInput({ onSendMessage, disabled, isUploading, placeh
             placeholder={placeholder}
             disabled={disabled}
             rows={1}
-            className="w-full bg-white px-4 py-3 pr-24 border border-gray-300 rounded-[10px] focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50 resize-none overflow-hidden leading-6 text-sm"
-            style={{ minHeight: '48px', maxHeight: '200px' }}
+            className="w-full bg-white pl-14 pr-14 py-3 border border-gray-300 rounded-[12px] focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50 resize-none overflow-hidden leading-6 text-sm"
+            style={{ minHeight: '49px', maxHeight: '204px' }}
           />
 
-          {/* Icons inside input on the right */}
-          <div className="absolute right-3 bottom-3 flex items-center gap-2">
+          {/* Buttons inside textarea */}
+          <div className="absolute left-2 bottom-3 flex items-center gap-2" style={{paddingBottom: '1px'}}>
+            {/* Attachment Button - Rounded square with subtle background */}
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={disabled || isUploading}
-              className="p-2 text-gray-500 hover:bg-gray-100 rounded-full disabled:opacity-50 transition-colors flex items-center justify-center"
+              className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
               title="Attach file"
             >
               <Paperclip className="w-5 h-5" />
             </button>
+          </div>
 
+          {/* Send Button inside textarea on the right */}
+          <div className="absolute right-3 bottom-3">
             <button
               onClick={handleSubmit}
               disabled={!message.trim() || disabled || isUploading}
