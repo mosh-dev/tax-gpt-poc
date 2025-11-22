@@ -69,9 +69,7 @@ export default function EmployeeData() {
   }
 
   return (
-    <div className="h-full flex flex-col bg-gray-50 dark:bg-gray-900">
-      {/* Content */}
-      <div className="flex-1 overflow-y-auto p-6">
+    <div className="p-6">
         {error ? (
           <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 text-red-700 dark:text-red-400">
             {error}
@@ -228,7 +226,6 @@ export default function EmployeeData() {
             ))}
           </div>
         )}
-      </div>
     </div>
   );
 }

@@ -78,7 +78,7 @@ export default function Sidebar({
           ${isOpen ? 'w-64' : 'w-0'}
           ${isMobile && isOpen ? 'translate-x-0' : ''}
           ${isMobile && !isOpen ? '-translate-x-full' : ''}
-          bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700
+          bg-gray-50 dark:bg-gray-900
           flex flex-col
           transition-all duration-300 ease-in-out
           overflow-hidden flex-shrink-0
@@ -150,7 +150,7 @@ export default function Sidebar({
           </div>
 
           {/* Footer */}
-          <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+          <div className="p-4 bg-gray-100 dark:bg-gray-800">
             {userName && (
               <div className="flex items-center gap-3 px-3 py-2 mb-2">
                 <User className="w-4 h-4 text-slate-500 dark:text-slate-400" />

@@ -200,10 +200,8 @@ export default function AgentConfig() {
   }
 
   return (
-    <div className="flex-1 flex flex-col h-full bg-gray-50 dark:bg-gray-900">
-      {/* Content */}
-      <div className="flex-1 overflow-auto p-4 md:p-6">
-        <div className="max-w-4xl mx-auto">
+    <div className="p-4 md:p-6">
+      <div className="max-w-4xl mx-auto">
           {/* Status messages */}
           {error && (
             <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg text-red-700 dark:text-red-400">
@@ -457,7 +455,6 @@ export default function AgentConfig() {
               <li>Add guidelines for handling edge cases</li>
             </ul>
           </div>
-        </div>
       </div>
     </div>
   );
