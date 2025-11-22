@@ -80,10 +80,10 @@ export default function ChatInput({ onSendMessage, disabled, isUploading, placeh
   };
 
   return (
-    <div className="absolute bottom-0 left-0 right-0 px-4 md:px-6 py-4 z-30">
+    <>
       {/* Selected Files */}
       {selectedFiles.length > 0 && (
-        <div className="mb-3 flex flex-wrap gap-2 max-w-4xl mx-auto bg-opacity-50 rounded-l-2xl p-8" style={{background: '#101828eb'}}>
+        <div className="mb-3 flex flex-wrap gap-2 max-w-4xl mx-auto bg-opacity-50 rounded-l-2xl p-8 pb-20" style={{background: '#101828eb'}}>
           {selectedFiles.map((file, index) => (
             <div key={index} className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded-lg shadow-lg">
               <Paperclip className="w-4 h-4 text-gray-500 dark:text-gray-400" />
@@ -98,7 +98,7 @@ export default function ChatInput({ onSendMessage, disabled, isUploading, placeh
       )}
 
       {/* Input with attachment button inside textarea - Claude Chat style */}
-      <div className="relative max-w-4xl mx-auto">
+      <div className="absolute bottom-0 left-0 right-0 px-4 py-4 z-30 max-w-4xl mx-auto">
           <input
             ref={fileInputRef}
             type="file"
@@ -116,17 +116,17 @@ export default function ChatInput({ onSendMessage, disabled, isUploading, placeh
             placeholder={placeholder}
             disabled={disabled}
             rows={1}
-            className="w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 pl-14 pr-14 py-3 border border-gray-300 dark:border-gray-600 rounded-[12px] focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 disabled:opacity-50 resize-none overflow-hidden leading-6 text-sm shadow-[0_-20px_60px_-15px_rgba(0,0,0,0.15)] dark:shadow-[0_-20px_60px_-15px_rgba(0,0,0,0.5)]"
+            className="relative w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 pl-14 pr-14 py-3 border border-gray-300 dark:border-gray-600 rounded-[12px] focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 disabled:opacity-50 resize-none overflow-hidden leading-6 text-sm shadow-[0_-20px_60px_-15px_rgba(0,0,0,0.15)] dark:shadow-[0_-20px_60px_-15px_rgba(0,0,0,0.5)]"
             style={{ minHeight: '50px', maxHeight: '204px' }}
           />
 
           {/* Buttons inside textarea */}
-          <div className="absolute left-2 bottom-3 flex items-center gap-2" style={{paddingBottom: '1px'}}>
+          <div className="absolute left-6 bottom-7 inline-block" style={{marginBottom: '1px'}}>
             {/* Attachment Button - Rounded square with subtle background */}
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={disabled || isUploading}
-              className="p-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+              className=" p-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
               title="Attach file"
             >
               <Paperclip className="w-5 h-5" />
@@ -134,7 +134,7 @@ export default function ChatInput({ onSendMessage, disabled, isUploading, placeh
           </div>
 
           {/* Send Button inside textarea on the right */}
-          <div className="absolute right-3 bottom-3">
+          <div className="absolute right-6 bottom-7 inline-block">
             <button
               onClick={handleSubmit}
               disabled={!message.trim() || disabled || isUploading}
@@ -149,6 +149,6 @@ export default function ChatInput({ onSendMessage, disabled, isUploading, placeh
             </button>
           </div>
         </div>
-    </div>
+    </>
   );
 }
