@@ -542,4 +542,37 @@
     border-top: 1px solid rgba(255, 255, 255, 0.3);
     margin: 1.5em 0;
   }
+
+  /* Global scrollbar styling for light and dark modes */
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: #f3f4f6; /* gray-100 */
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background: #d1d5db; /* gray-300 */
+    border-radius: 4px;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background: #9ca3af; /* gray-400 */
+  }
+
+  /* Dark mode scrollbars */
+  .dark *::-webkit-scrollbar-track {
+    background: #1f2937; /* gray-800 */
+  }
+
+  .dark *::-webkit-scrollbar-thumb {
+    background: #4b5563; /* gray-600 */
+    border-radius: 4px;
+  }
+
+  .dark *::-webkit-scrollbar-thumb:hover {
+    background: #6b7280; /* gray-500 */
+  }
 }
