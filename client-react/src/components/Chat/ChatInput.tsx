@@ -86,11 +86,11 @@ export default function ChatInput({ onSendMessage, disabled, isUploading, placeh
         {selectedFiles.length > 0 && (
           <div className="mb-3 flex flex-wrap gap-2">
             {selectedFiles.map((file, index) => (
-              <div key={index} className="flex items-center gap-2 bg-gray-100 px-3 py-2 rounded-lg">
-                <Paperclip className="w-4 h-4 text-gray-500" />
-                <span className="text-sm text-gray-700 truncate max-w-[150px]">{file.name}</span>
-                <span className="text-xs text-gray-500">({formatFileSize(file.size)})</span>
-                <button onClick={() => removeFile(file)} className="text-gray-500 hover:text-red-600">
+              <div key={index} className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded-lg">
+                <Paperclip className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+                <span className="text-sm text-gray-700 dark:text-gray-300 truncate max-w-[150px]">{file.name}</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">({formatFileSize(file.size)})</span>
+                <button onClick={() => removeFile(file)} className="text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500">
                   <X className="w-4 h-4" />
                 </button>
               </div>
@@ -117,8 +117,8 @@ export default function ChatInput({ onSendMessage, disabled, isUploading, placeh
             placeholder={placeholder}
             disabled={disabled}
             rows={1}
-            className="w-full bg-white pl-14 pr-14 py-3 border border-gray-300 rounded-[12px] focus:outline-none focus:ring-2 focus:ring-primary-500 disabled:opacity-50 resize-none overflow-hidden leading-6 text-sm"
-            style={{ minHeight: '49px', maxHeight: '204px' }}
+            className="w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 pl-14 pr-14 py-3 border border-gray-300 dark:border-gray-600 rounded-[12px] focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 disabled:opacity-50 resize-none overflow-hidden leading-6 text-sm"
+            style={{ minHeight: '50px', maxHeight: '204px' }}
           />
 
           {/* Buttons inside textarea */}
@@ -127,7 +127,7 @@ export default function ChatInput({ onSendMessage, disabled, isUploading, placeh
             <button
               onClick={() => fileInputRef.current?.click()}
               disabled={disabled || isUploading}
-              className="p-2 bg-gray-100 hover:bg-gray-200 text-gray-600 rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
+              className="p-2 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-600 dark:text-gray-300 rounded-lg shadow-sm disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center"
               title="Attach file"
             >
               <Paperclip className="w-5 h-5" />
@@ -139,11 +139,11 @@ export default function ChatInput({ onSendMessage, disabled, isUploading, placeh
             <button
               onClick={handleSubmit}
               disabled={!message.trim() || disabled || isUploading}
-              className="p-2 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
+              className="p-2 text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center transition-colors"
               title={selectedFiles.length > 0 && !message.trim() ? "Please add a message to send with your files" : "Send"}
             >
               {isUploading ? (
-                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-600"></div>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-600 dark:border-gray-300"></div>
               ) : (
                 <Send className="w-5 h-5" />
               )}

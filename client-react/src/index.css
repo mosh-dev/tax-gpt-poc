@@ -15,8 +15,16 @@
   --color-primary-900: #1e3a8a;
 }
 
+/* Enable dark mode with .dark class */
+@variant dark (&:where(.dark, .dark *));
+
 /* Custom styles */
 @layer base {
+  /* Smooth transitions for theme switching */
+  * {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+  }
+
   body {
     font-family: 'General Sans', system-ui, -apple-system, sans-serif;
   }
@@ -29,6 +37,32 @@
   input[type="submit"],
   input[type="reset"] {
     cursor: pointer;
+  }
+
+  /* Ensure select elements have proper padding for dropdown arrow */
+  select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+    appearance: none;
+  }
+
+  /* Dark mode select arrow */
+  .dark select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%239ca3af' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  }
+
+  /* Style option elements for dark mode */
+  select option {
+    background-color: white;
+    color: #1f2937;
+  }
+
+  .dark select option {
+    background-color: #374151;
+    color: #f3f4f6;
   }
 }
 
@@ -289,6 +323,98 @@
     font-size: 0.95em;
     font-family: ui-monospace, SFMono-Regular, monospace;
     box-shadow: 0 1px 0 #d1d5db;
+  }
+
+  /* Dark mode styles for assistant messages */
+  .dark .prose-chat {
+    color: #e5e7eb;
+  }
+
+  .dark .prose-chat h1,
+  .dark .prose-chat h2,
+  .dark .prose-chat h3,
+  .dark .prose-chat h4,
+  .dark .prose-chat h5,
+  .dark .prose-chat h6 {
+    color: #f9fafb;
+  }
+
+  .dark .prose-chat a {
+    color: #60a5fa;
+    text-decoration-color: #3b82f6;
+  }
+
+  .dark .prose-chat a:hover {
+    color: #93c5fd;
+    text-decoration-color: #60a5fa;
+  }
+
+  .dark .prose-chat li::marker {
+    color: #9ca3af;
+  }
+
+  .dark .prose-chat code {
+    background-color: #374151;
+    color: #fca5a5;
+  }
+
+  .dark .prose-chat pre {
+    background-color: #111827;
+    color: #f3f4f6;
+  }
+
+  .dark .prose-chat blockquote {
+    border-left-color: #3b82f6;
+    color: #d1d5db;
+    background-color: #1f2937;
+  }
+
+  .dark .prose-chat table {
+    border-color: #374151;
+  }
+
+  .dark .prose-chat thead {
+    background-color: #1f2937;
+  }
+
+  .dark .prose-chat th {
+    color: #f3f4f6;
+    border-bottom-color: #4b5563;
+  }
+
+  .dark .prose-chat td {
+    border-bottom-color: #374151;
+    color: #d1d5db;
+  }
+
+  .dark .prose-chat tbody tr:hover {
+    background-color: #1f2937;
+  }
+
+  .dark .prose-chat hr {
+    border-top-color: #374151;
+  }
+
+  .dark .prose-chat strong {
+    color: #f9fafb;
+  }
+
+  .dark .prose-chat dt {
+    color: #f9fafb;
+  }
+
+  .dark .prose-chat dd {
+    color: #d1d5db;
+  }
+
+  .dark .prose-chat input[type="checkbox"] {
+    accent-color: #60a5fa;
+  }
+
+  .dark .prose-chat kbd {
+    background-color: #374151;
+    border-color: #4b5563;
+    box-shadow: 0 1px 0 #4b5563;
   }
 
   /* User message prose (inverted colors for dark background) */

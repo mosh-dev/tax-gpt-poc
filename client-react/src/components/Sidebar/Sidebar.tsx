@@ -78,7 +78,7 @@ export default function Sidebar({
           ${isOpen ? 'w-64' : 'w-0'}
           ${isMobile && isOpen ? 'translate-x-0' : ''}
           ${isMobile && !isOpen ? '-translate-x-full' : ''}
-          bg-white border-r border-gray-200
+          bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-700
           flex flex-col
           transition-all duration-300 ease-in-out
           overflow-hidden flex-shrink-0
@@ -89,15 +89,15 @@ export default function Sidebar({
         {/* Inner wrapper to prevent content collapse */}
         <div className="min-w-64 flex flex-col h-full">
           {/* Search */}
-          <div className="p-4 border-gray-200 pt-4">
+          <div className="p-4 border-gray-200 dark:border-gray-700 pt-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
               <input
                 type="text"
                 placeholder="Search chat"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
               />
             </div>
           </div>
@@ -105,14 +105,14 @@ export default function Sidebar({
           {/* Conversations List */}
           <div className="flex-1 overflow-y-auto overscroll-contain">
             <div className="p-2">
-              <h2 className="text-xs font-semibold text-gray-500 uppercase px-3 mb-2">CHATS</h2>
+              <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase px-3 mb-2">CHATS</h2>
 
               {loading ? (
                 <div className="flex justify-center py-8">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600 dark:border-primary-500"></div>
                 </div>
               ) : filteredConversations.length === 0 ? (
-                <div className="text-center text-gray-500 text-sm py-8 px-4">
+                <div className="text-center text-gray-500 dark:text-gray-400 text-sm py-8 px-4">
                   {searchQuery ? 'No conversations found' : 'No conversations yet'}
                 </div>
               ) : (
@@ -122,8 +122,8 @@ export default function Sidebar({
                     className={`
                       group relative flex items-center gap-3 px-3 py-2 rounded-lg cursor-pointer mb-1
                       ${currentConversationId === conv.conversationId
-                        ? 'bg-primary-50 text-primary-700'
-                        : 'hover:bg-gray-100 text-gray-700'
+                        ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-700 dark:text-primary-400'
+                        : 'hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300'
                       }
                     `}
                     onClick={() => handleConversationClick(conv.conversationId)}
@@ -139,9 +139,9 @@ export default function Sidebar({
                           onDeleteConversation(conv.conversationId);
                         }
                       }}
-                      className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-100 rounded transition-opacity"
+                      className="opacity-0 group-hover:opacity-100 p-1 hover:bg-red-100 dark:hover:bg-red-900/30 rounded transition-opacity"
                     >
-                      <Trash2 className="w-4 h-4 text-red-600" />
+                      <Trash2 className="w-4 h-4 text-red-600 dark:text-red-500" />
                     </button>
                   </div>
                 ))
@@ -150,46 +150,46 @@ export default function Sidebar({
           </div>
 
           {/* Footer */}
-          <div className="p-4 border-t border-gray-200">
+          <div className="p-4 border-t border-gray-200 dark:border-gray-700">
             {userName && (
               <div className="flex items-center gap-3 px-3 py-2 mb-2">
-                <User className="w-4 h-4 text-slate-500" />
-                <span className="text-sm text-gray-700 truncate">{userName}</span>
+                <User className="w-4 h-4 text-slate-500 dark:text-slate-400" />
+                <span className="text-sm text-gray-700 dark:text-gray-300 truncate">{userName}</span>
               </div>
             )}
-            <h2 className="text-xs font-semibold text-gray-500 uppercase mb-2">INFO</h2>
+            <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">INFO</h2>
             {onOpenConfig && (
               <button
                 onClick={handleConfigClick}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 text-sm group"
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm group"
               >
-                <Settings className="w-4 h-4 text-slate-600" />
+                <Settings className="w-4 h-4 text-slate-600 dark:text-slate-400" />
                 Agent Config
               </button>
             )}
             {onOpenEmployeeData && (
               <button
                 onClick={handleEmployeeDataClick}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 text-sm group"
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm group"
               >
-                <Users className="w-4 h-4 text-emerald-600" />
+                <Users className="w-4 h-4 text-emerald-600 dark:text-emerald-500" />
                 Mock Data
               </button>
             )}
-            <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 text-sm group">
-              <FileText className="w-4 h-4 text-sky-600" />
+            <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm group">
+              <FileText className="w-4 h-4 text-sky-600 dark:text-sky-500" />
               Updates & FAQ
             </button>
-            <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 text-gray-700 text-sm group">
-              <HelpCircle className="w-4 h-4 text-amber-600" />
+            <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm group">
+              <HelpCircle className="w-4 h-4 text-amber-600 dark:text-amber-500" />
               Support
             </button>
             {onLogout && (
               <button
                 onClick={onLogout}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-50 text-red-600 text-sm mt-2"
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 dark:text-red-500 text-sm mt-2"
               >
-                <LogOut className="w-4 h-4 text-red-600" />
+                <LogOut className="w-4 h-4 text-red-600 dark:text-red-500" />
                 Sign out
               </button>
             )}

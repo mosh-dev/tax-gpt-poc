@@ -70,7 +70,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
   };
 
   return (
-    <div className="h-screen flex flex-col overflow-hidden bg-gray-50">
+    <div className="h-screen flex flex-col overflow-hidden bg-gray-50 dark:bg-gray-900">
       {/* Toolbar */}
       <Toolbar
         onToggleSidebar={handleToggleSidebar}

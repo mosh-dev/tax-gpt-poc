@@ -609,15 +609,15 @@ export default function Chat({ threadId }: ChatProps) {
             <div
               className={`relative max-w-full sm:max-w-xl md:max-w-2xl shadow-sm ${
                 message.role === 'user'
-                  ? 'bg-primary-600 text-white rounded-2xl rounded-br-none shadow-primary-600/20'
-                  : 'bg-gray-100 text-gray-900 rounded-2xl rounded-tl-none shadow-gray-300/50'
+                  ? 'bg-primary-600 dark:bg-primary-700 text-white rounded-2xl rounded-br-none shadow-primary-600/20 dark:shadow-primary-700/20'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-2xl rounded-tl-none shadow-gray-300/50 dark:shadow-gray-700/50'
               } px-4 py-3 md:px-6 md:py-4`}
             >
               {/* Icon and title side by side */}
               <div className="flex items-center gap-2 mb-2">
                 {message.role === 'assistant' && (
                   <>
-                    <div className="w-6 h-6 md:w-8 md:h-8 bg-primary-100 rounded-lg flex items-center justify-center text-primary-600 flex-shrink-0">
+                    <div className="w-6 h-6 md:w-8 md:h-8 bg-primary-100 dark:bg-primary-900/50 rounded-lg flex items-center justify-center text-primary-600 dark:text-primary-400 flex-shrink-0">
                       <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 md:w-5 md:h-5">
                         <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" strokeWidth="2"/>
                         <circle cx="9" cy="10" r="1.5" fill="currentColor"/>
@@ -625,12 +625,12 @@ export default function Chat({ threadId }: ChatProps) {
                         <path d="M9 15c.5.5 1.5 1 3 1s2.5-.5 3-1" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                       </svg>
                     </div>
-                    <div className="text-sm font-semibold text-gray-900">Assistant</div>
+                    <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">Assistant</div>
                   </>
                 )}
                 {message.role === 'user' && (
                   <>
-                    <div className="w-6 h-6 md:w-8 md:h-8 bg-white/20 rounded-lg flex items-center justify-center text-white flex-shrink-0">
+                    <div className="w-6 h-6 md:w-8 md:h-8 bg-white/20 dark:bg-white/10 rounded-lg flex items-center justify-center text-white flex-shrink-0">
                       <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 md:w-5 md:h-5">
                         <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2"/>
                         <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
@@ -645,7 +645,7 @@ export default function Chat({ threadId }: ChatProps) {
                 className={message.role === 'user' ? 'prose-chat-user' : 'prose-chat'}
                 dangerouslySetInnerHTML={{ __html: parseMarkdown(message.content) }}
               />
-              <div className={`text-xs mt-2 ${message.role === 'user' ? 'text-primary-100' : 'text-gray-500'}`}>
+              <div className={`text-xs mt-2 ${message.role === 'user' ? 'text-primary-100 dark:text-primary-200' : 'text-gray-500 dark:text-gray-400'}`}>
                 {new Date(message.createdAt).toLocaleTimeString()}
               </div>
             </div>
@@ -654,10 +654,10 @@ export default function Chat({ threadId }: ChatProps) {
 
         {isLoading && (
           <div className="flex mb-4 md:mb-6">
-            <div className="max-w-full sm:max-w-xl md:max-w-2xl bg-gray-100 rounded-2xl rounded-tl-none px-4 py-3 md:px-6 md:py-4 shadow-sm shadow-gray-300/50">
+            <div className="max-w-full sm:max-w-xl md:max-w-2xl bg-gray-100 dark:bg-gray-800 rounded-2xl rounded-tl-none px-4 py-3 md:px-6 md:py-4 shadow-sm shadow-gray-300/50 dark:shadow-gray-700/50">
               {/* Icon and title side by side */}
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-6 h-6 md:w-8 md:h-8 bg-primary-100 rounded-lg flex items-center justify-center text-primary-600 flex-shrink-0">
+                <div className="w-6 h-6 md:w-8 md:h-8 bg-primary-100 dark:bg-primary-900/50 rounded-lg flex items-center justify-center text-primary-600 dark:text-primary-400 flex-shrink-0">
                   <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 md:w-5 md:h-5">
                     <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" strokeWidth="2"/>
                     <circle cx="9" cy="10" r="1.5" fill="currentColor"/>
@@ -665,12 +665,12 @@ export default function Chat({ threadId }: ChatProps) {
                     <path d="M9 15c.5.5 1.5 1 3 1s2.5-.5 3-1" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
                   </svg>
                 </div>
-                <div className="text-sm font-semibold text-gray-900">Assistant</div>
+                <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">Assistant</div>
               </div>
               <div className="flex gap-1">
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
+                <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
+                <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
               </div>
             </div>
           </div>
@@ -679,7 +679,7 @@ export default function Chat({ threadId }: ChatProps) {
         {/* Workflow step form - rendered inline in chat */}
         {activeWorkflow && activeWorkflow.status === 'suspended' && !isWorkflowSubmitting && !isStreaming && (
           <div className="mb-6">
-            <div className="max-w-full sm:max-w-xl md:max-w-2xl bg-gray-100 text-gray-900 rounded-2xl shadow-sm shadow-gray-300/50 px-4 py-3 md:px-6 md:py-4">
+            <div className="max-w-full sm:max-w-xl md:max-w-2xl bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-2xl shadow-sm shadow-gray-300/50 dark:shadow-gray-700/50 px-4 py-3 md:px-6 md:py-4">
               <WorkflowStepMessage
                 workflow={activeWorkflow}
                 onSubmit={handleWorkflowStepSubmit}
@@ -701,7 +701,7 @@ export default function Chat({ threadId }: ChatProps) {
       {/* Error Display */}
       {error && (
         <div className="px-6 py-4">
-          <div className="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-sm max-w-4xl mx-auto">
+          <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-lg text-sm max-w-4xl mx-auto">
             {JSON.stringify(error)}
           </div>
         </div>

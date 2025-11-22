@@ -15,28 +15,28 @@ interface WelcomeProps {
 const starterPrompts = [
   {
     icon: Sparkles,
-    iconColor: 'text-slate-600',
-    iconBgColor: 'bg-slate-100',
-    cardBgColor: 'bg-gray-50',
-    hoverBgColor: 'hover:bg-gray-100',
+    iconColor: 'text-slate-600 dark:text-slate-400',
+    iconBgColor: 'bg-slate-100 dark:bg-slate-800',
+    cardBgColor: 'bg-gray-50 dark:bg-gray-800',
+    hoverBgColor: 'hover:bg-gray-100 dark:hover:bg-gray-700',
     title: 'Explain Tax calculation in simple terms',
     badge: null,
   },
   {
     icon: BarChart3,
-    iconColor: 'text-indigo-600',
-    iconBgColor: 'bg-indigo-100',
-    cardBgColor: 'bg-gray-50',
-    hoverBgColor: 'hover:bg-gray-100',
+    iconColor: 'text-indigo-600 dark:text-indigo-400',
+    iconBgColor: 'bg-indigo-100 dark:bg-indigo-900/50',
+    cardBgColor: 'bg-gray-50 dark:bg-gray-800',
+    hoverBgColor: 'hover:bg-gray-100 dark:hover:bg-gray-700',
     title: 'I want to calculate my taxes for this year with all required documents, Start the Process',
     badge: 'Interactive',
   },
   {
     icon: Lightbulb,
-    iconColor: 'text-teal-600',
-    iconBgColor: 'bg-teal-100',
-    cardBgColor: 'bg-gray-50',
-    hoverBgColor: 'hover:bg-gray-100',
+    iconColor: 'text-teal-600 dark:text-teal-400',
+    iconBgColor: 'bg-teal-100 dark:bg-teal-900/50',
+    cardBgColor: 'bg-gray-50 dark:bg-gray-800',
+    hoverBgColor: 'hover:bg-gray-100 dark:hover:bg-gray-700',
     title: 'Advise me - How can I reduce my taxes effectively?',
     badge: null,
   },
@@ -95,11 +95,11 @@ export default function Welcome({ }: WelcomeProps) {
         {/* Greeting */}
         <div className="mb-8">
           <div className="text-6xl mb-4">👋</div>
-          <h1 className="text-4xl font-bold text-gray-900 mb-2">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-gray-100 mb-2">
             Hey, Mate!
           </h1>
-          <p className="text-2xl text-gray-700">
-            Let's plan your taxes <span className="text-primary-600 font-semibold">together</span>
+          <p className="text-2xl text-gray-700 dark:text-gray-300">
+            Let's plan your taxes <span className="text-primary-600 dark:text-primary-400 font-semibold">together</span>
           </p>
         </div>
 
@@ -119,11 +119,11 @@ export default function Welcome({ }: WelcomeProps) {
                     <Icon className={`w-6 h-6 ${prompt.iconColor}`} />
                   </div>
                   <div className="flex flex-col gap-2">
-                    <p className="text-sm text-gray-700 font-medium leading-relaxed">
+                    <p className="text-sm text-gray-700 dark:text-gray-300 font-medium leading-relaxed">
                       {prompt.title}
                     </p>
                     {prompt.badge && (
-                      <span className="text-xs bg-primary-100 text-primary-700 px-2 py-0.5 rounded self-start">
+                      <span className="text-xs bg-primary-100 dark:bg-primary-900/50 text-primary-700 dark:text-primary-400 px-2 py-0.5 rounded self-start">
                         {prompt.badge}
                       </span>
                     )}
@@ -136,8 +136,8 @@ export default function Welcome({ }: WelcomeProps) {
 
         {/* Loading State */}
         {isSending && (
-          <div className="mb-6 flex items-center justify-center gap-2 text-primary-600">
-            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600"></div>
+          <div className="mb-6 flex items-center justify-center gap-2 text-primary-600 dark:text-primary-400">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-primary-600 dark:border-primary-400"></div>
             <span className="text-sm">Starting conversation...</span>
           </div>
         )}

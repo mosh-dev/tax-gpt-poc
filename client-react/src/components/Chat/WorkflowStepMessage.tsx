@@ -113,27 +113,27 @@ function PersonalInfoForm({
 
   return (
     <div className="space-y-4">
-      <p className="text-gray-700 mb-4">{payload?.reason || 'Please provide your personal information:'}</p>
+      <p className="text-gray-700 dark:text-gray-300 mb-4">{payload?.reason || 'Please provide your personal information:'}</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">First Name</label>
             <input
               type="text"
               value={formData.firstName}
               onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               required
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Last Name</label>
             <input
               type="text"
               value={formData.lastName}
               onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
               required
             />
           </div>
@@ -141,11 +141,11 @@ function PersonalInfoForm({
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Marital Status</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Marital Status</label>
             <select
               value={formData.maritalStatus}
               onChange={(e) => setFormData({ ...formData, maritalStatus: e.target.value as PersonalInfo['maritalStatus'] })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full pl-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="single">Single</option>
               <option value="married">Married</option>
@@ -154,24 +154,24 @@ function PersonalInfoForm({
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Number of Children</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Number of Children</label>
             <input
               type="number"
               min="0"
               value={formData.numberOfChildren}
               onChange={(e) => setFormData({ ...formData, numberOfChildren: parseInt(e.target.value) || 0 })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             />
           </div>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Canton</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Canton</label>
             <select
               value={formData.canton}
               onChange={(e) => setFormData({ ...formData, canton: e.target.value })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full pl-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="zurich">Zürich</option>
               <option value="bern">Bern</option>
@@ -180,12 +180,12 @@ function PersonalInfoForm({
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Tax Year</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tax Year</label>
             <input
               type="number"
               value={formData.taxYear}
               onChange={(e) => setFormData({ ...formData, taxYear: parseInt(e.target.value) })}
-              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
+              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             />
           </div>
         </div>
@@ -196,7 +196,7 @@ function PersonalInfoForm({
               type="button"
               onClick={onCancel}
               disabled={isSubmitting}
-              className="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               Skip Workflow
             </button>
@@ -204,7 +204,7 @@ function PersonalInfoForm({
           <button
             type="submit"
             disabled={isSubmitting || !formData.firstName || !formData.lastName}
-            className={`${onCancel ? 'flex-1' : 'w-full'} bg-primary-600 text-white py-2 px-4 rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2`}
+            className={`${onCancel ? 'flex-1' : 'w-full'} bg-primary-600 dark:bg-primary-700 text-white py-2 px-4 rounded-lg hover:bg-primary-700 dark:hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2`}
           >
             {isSubmitting ? (
               <>
@@ -267,10 +267,10 @@ function DocumentUploadForm({
 
   return (
     <div className="space-y-4">
-      <p className="text-gray-700 mb-2">{payload?.reason || 'Please upload your tax documents:'}</p>
+      <p className="text-gray-700 dark:text-gray-300 mb-2">{payload?.reason || 'Please upload your tax documents:'}</p>
 
       {payload?.suggestedDocuments && (
-        <div className="text-sm text-gray-600 mb-4">
+        <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
           <p className="font-medium mb-1">Suggested documents:</p>
           <ul className="list-disc list-inside space-y-1">
             {payload.suggestedDocuments.map((doc: string, idx: number) => (
@@ -286,13 +286,13 @@ function DocumentUploadForm({
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
         className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
-          dragOver ? 'border-primary-500 bg-primary-50' : 'border-gray-300 hover:border-gray-400'
+          dragOver ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
         }`}
       >
-        <Upload className="w-8 h-8 mx-auto text-gray-400 mb-2" />
-        <p className="text-sm text-gray-600 mb-2">Drag & drop files here, or</p>
+        <Upload className="w-8 h-8 mx-auto text-gray-400 dark:text-gray-500 mb-2" />
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Drag & drop files here, or</p>
         <label className="cursor-pointer">
-          <span className="text-primary-600 hover:text-primary-700 font-medium">browse files</span>
+          <span className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium">browse files</span>
           <input
             type="file"
             multiple
@@ -301,15 +301,15 @@ function DocumentUploadForm({
             className="hidden"
           />
         </label>
-        <p className="text-xs text-gray-500 mt-2">PDF, JPG, PNG up to 20MB</p>
+        <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">PDF, JPG, PNG up to 20MB</p>
       </div>
 
       {/* Uploaded files list */}
       {uploadedDocs.length > 0 && (
         <div className="space-y-2">
-          <p className="text-sm font-medium text-gray-700">Uploaded files:</p>
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Uploaded files:</p>
           {uploadedDocs.map((doc, idx) => (
-            <div key={idx} className="flex items-center gap-2 bg-green-50 text-green-700 px-3 py-2 rounded-lg text-sm">
+            <div key={idx} className="flex items-center gap-2 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 px-3 py-2 rounded-lg text-sm">
               <FileText className="w-4 h-4" />
               <span>{doc.fileName}</span>
               <Check className="w-4 h-4 ml-auto" />
@@ -319,8 +319,8 @@ function DocumentUploadForm({
       )}
 
       {uploading && (
-        <div className="flex items-center gap-2 text-sm text-gray-600">
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600"></div>
+        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600 dark:border-primary-400"></div>
           Uploading...
         </div>
       )}
@@ -330,7 +330,7 @@ function DocumentUploadForm({
           <button
             onClick={onCancel}
             disabled={isSubmitting || uploading}
-            className="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Skip Workflow
           </button>
@@ -338,7 +338,7 @@ function DocumentUploadForm({
         <button
           onClick={handleSubmit}
           disabled={isSubmitting || uploading || uploadedDocs.length === 0}
-          className={`${onCancel ? 'flex-1' : 'w-full'} bg-primary-600 text-white py-2 px-4 rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2`}
+          className={`${onCancel ? 'flex-1' : 'w-full'} bg-primary-600 dark:bg-primary-700 text-white py-2 px-4 rounded-lg hover:bg-primary-700 dark:hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2`}
         >
           {isSubmitting ? (
             <>
@@ -394,20 +394,20 @@ function ReviewDataForm({
 
   return (
     <div className="space-y-4">
-      <p className="text-gray-700 mb-4">{payload?.reason || 'Please review your extracted data:'}</p>
+      <p className="text-gray-700 dark:text-gray-300 mb-4">{payload?.reason || 'Please review your extracted data:'}</p>
 
       {/* Income */}
       <div>
-        <h4 className="font-medium text-gray-900 mb-2">Income</h4>
+        <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">Income</h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {Object.entries(formData.income).map(([key, value]) => (
             <div key={key}>
-              <label className="block text-xs text-gray-600 mb-1 capitalize">{key.replace(/([A-Z])/g, ' $1')}</label>
+              <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1 capitalize">{key.replace(/([A-Z])/g, ' $1')}</label>
               <input
                 type="number"
                 value={value}
                 onChange={(e) => updateField('income', key, parseFloat(e.target.value) || 0)}
-                className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-primary-500"
+                className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded focus:ring-1 focus:ring-primary-500"
               />
             </div>
           ))}
@@ -416,16 +416,16 @@ function ReviewDataForm({
 
       {/* Deductions */}
       <div>
-        <h4 className="font-medium text-gray-900 mb-2">Deductions</h4>
+        <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">Deductions</h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {Object.entries(formData.deductions).map(([key, value]) => (
             <div key={key}>
-              <label className="block text-xs text-gray-600 mb-1 capitalize">{key.replace(/([A-Z])/g, ' $1')}</label>
+              <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1 capitalize">{key.replace(/([A-Z])/g, ' $1')}</label>
               <input
                 type="number"
                 value={value}
                 onChange={(e) => updateField('deductions', key, parseFloat(e.target.value) || 0)}
-                className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-primary-500"
+                className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded focus:ring-1 focus:ring-primary-500"
               />
             </div>
           ))}
@@ -434,16 +434,16 @@ function ReviewDataForm({
 
       {/* Wealth */}
       <div>
-        <h4 className="font-medium text-gray-900 mb-2">Wealth</h4>
+        <h4 className="font-medium text-gray-900 dark:text-gray-100 mb-2">Wealth</h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {Object.entries(formData.wealth).map(([key, value]) => (
             <div key={key}>
-              <label className="block text-xs text-gray-600 mb-1 capitalize">{key.replace(/([A-Z])/g, ' $1')}</label>
+              <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1 capitalize">{key.replace(/([A-Z])/g, ' $1')}</label>
               <input
                 type="number"
                 value={value}
                 onChange={(e) => updateField('wealth', key, parseFloat(e.target.value) || 0)}
-                className="w-full px-2 py-1 text-sm border border-gray-300 rounded focus:ring-1 focus:ring-primary-500"
+                className="w-full px-2 py-1 text-sm border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded focus:ring-1 focus:ring-primary-500"
               />
             </div>
           ))}
@@ -456,7 +456,7 @@ function ReviewDataForm({
             type="button"
             onClick={onCancel}
             disabled={isSubmitting}
-            className="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             Skip Workflow
           </button>
@@ -464,7 +464,7 @@ function ReviewDataForm({
         <button
           onClick={handleSubmit}
           disabled={isSubmitting}
-          className={`${onCancel ? 'flex-1' : 'w-full'} bg-primary-600 text-white py-2 px-4 rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2`}
+          className={`${onCancel ? 'flex-1' : 'w-full'} bg-primary-600 dark:bg-primary-700 text-white py-2 px-4 rounded-lg hover:bg-primary-700 dark:hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2`}
         >
           {isSubmitting ? (
             <>
@@ -501,37 +501,37 @@ function SummaryForm({
 
   return (
     <div className="space-y-4">
-      <p className="text-gray-700 mb-4">{payload?.reason || 'Your tax calculation summary:'}</p>
+      <p className="text-gray-700 dark:text-gray-300 mb-4">{payload?.reason || 'Your tax calculation summary:'}</p>
 
       {/* Summary stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div className="bg-gray-50 p-3 rounded-lg">
-          <p className="text-xs text-gray-600">Gross Income</p>
-          <p className="text-lg font-semibold text-gray-900">CHF {calculation.grossIncome?.toLocaleString()}</p>
+        <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+          <p className="text-xs text-gray-600 dark:text-gray-400">Gross Income</p>
+          <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">CHF {calculation.grossIncome?.toLocaleString()}</p>
         </div>
-        <div className="bg-gray-50 p-3 rounded-lg">
-          <p className="text-xs text-gray-600">Total Deductions</p>
-          <p className="text-lg font-semibold text-gray-900">CHF {calculation.totalDeductions?.toLocaleString()}</p>
+        <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+          <p className="text-xs text-gray-600 dark:text-gray-400">Total Deductions</p>
+          <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">CHF {calculation.totalDeductions?.toLocaleString()}</p>
         </div>
-        <div className="bg-gray-50 p-3 rounded-lg">
-          <p className="text-xs text-gray-600">Taxable Income</p>
-          <p className="text-lg font-semibold text-gray-900">CHF {calculation.taxableIncome?.toLocaleString()}</p>
+        <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
+          <p className="text-xs text-gray-600 dark:text-gray-400">Taxable Income</p>
+          <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">CHF {calculation.taxableIncome?.toLocaleString()}</p>
         </div>
-        <div className="bg-primary-50 p-3 rounded-lg">
-          <p className="text-xs text-primary-600">Estimated Tax</p>
-          <p className="text-lg font-semibold text-primary-700">CHF {calculation.estimatedTax?.toLocaleString()}</p>
+        <div className="bg-primary-50 dark:bg-primary-900/30 p-3 rounded-lg">
+          <p className="text-xs text-primary-600 dark:text-primary-400">Estimated Tax</p>
+          <p className="text-lg font-semibold text-primary-700 dark:text-primary-300">CHF {calculation.estimatedTax?.toLocaleString()}</p>
         </div>
       </div>
 
-      <div className="text-sm text-gray-600">
+      <div className="text-sm text-gray-600 dark:text-gray-400">
         Effective tax rate: <span className="font-medium">{calculation.taxRate}%</span>
       </div>
 
       {/* Recommendations */}
       {calculation.recommendations && calculation.recommendations.length > 0 && (
-        <div className="bg-yellow-50 p-3 rounded-lg">
-          <p className="text-sm font-medium text-yellow-800 mb-2">Recommendations:</p>
-          <ul className="text-sm text-yellow-700 space-y-1">
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-lg">
+          <p className="text-sm font-medium text-yellow-800 dark:text-yellow-400 mb-2">Recommendations:</p>
+          <ul className="text-sm text-yellow-700 dark:text-yellow-300 space-y-1">
             {calculation.recommendations.map((rec: string, idx: number) => (
               <li key={idx}>• {rec}</li>
             ))}
@@ -544,14 +544,14 @@ function SummaryForm({
         <button
           onClick={() => onSubmit({ generatePdf: false })}
           disabled={isSubmitting}
-          className="flex-1 bg-gray-200 text-gray-700 py-2 px-4 rounded-lg hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 py-2 px-4 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           Finish
         </button>
         <button
           onClick={() => onSubmit({ generatePdf: true })}
           disabled={isSubmitting}
-          className="flex-1 bg-primary-600 text-white py-2 px-4 rounded-lg hover:bg-primary-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+          className="flex-1 bg-primary-600 dark:bg-primary-700 text-white py-2 px-4 rounded-lg hover:bg-primary-700 dark:hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
         >
           {isSubmitting ? (
             <>
