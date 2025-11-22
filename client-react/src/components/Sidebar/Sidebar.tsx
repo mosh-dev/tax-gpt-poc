@@ -75,9 +75,8 @@ export default function Sidebar({
       <aside
         className={`
           ${isMobile ? 'fixed top-16 left-0 bottom-0 z-50' : 'relative'}
-          ${isOpen ? 'w-64' : 'w-0'}
-          ${isMobile && isOpen ? 'translate-x-0' : ''}
-          ${isMobile && !isOpen ? '-translate-x-full' : ''}
+          w-64
+          ${isOpen ? 'translate-x-0 mr-0' : '-translate-x-full -mr-64'}
           bg-white dark:bg-gray-800
           flex flex-col
           transition-all duration-300 ease-in-out
@@ -86,8 +85,8 @@ export default function Sidebar({
         `}
         style={isMobile ? { touchAction: 'pan-y' } : undefined}
       >
-        {/* Inner wrapper to prevent content collapse */}
-        <div className="min-w-64 flex flex-col h-full">
+        {/* Inner wrapper - content always at full width */}
+        <div className="w-full flex flex-col h-full">
           {/* Search */}
           <div className="p-4 border-gray-200 dark:border-gray-700 pt-4">
             <div className="relative">

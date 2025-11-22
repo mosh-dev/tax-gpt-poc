@@ -81,25 +81,24 @@ export default function ChatInput({ onSendMessage, disabled, isUploading, placeh
 
   return (
     <div className="absolute bottom-0 left-0 right-0 px-4 md:px-6 py-4 z-30">
-      <div className="max-w-4xl mx-auto">
-        {/* Selected Files */}
-        {selectedFiles.length > 0 && (
-          <div className="mb-3 flex flex-wrap gap-2">
-            {selectedFiles.map((file, index) => (
-              <div key={index} className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded-lg">
-                <Paperclip className="w-4 h-4 text-gray-500 dark:text-gray-400" />
-                <span className="text-sm text-gray-700 dark:text-gray-300 truncate max-w-[150px]">{file.name}</span>
-                <span className="text-xs text-gray-500 dark:text-gray-400">({formatFileSize(file.size)})</span>
-                <button onClick={() => removeFile(file)} className="text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500">
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
+      {/* Selected Files */}
+      {selectedFiles.length > 0 && (
+        <div className="mb-3 flex flex-wrap gap-2 max-w-4xl mx-auto">
+          {selectedFiles.map((file, index) => (
+            <div key={index} className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded-lg shadow-lg">
+              <Paperclip className="w-4 h-4 text-gray-500 dark:text-gray-400" />
+              <span className="text-sm text-gray-700 dark:text-gray-300 truncate max-w-[150px]">{file.name}</span>
+              <span className="text-xs text-gray-500 dark:text-gray-400">({formatFileSize(file.size)})</span>
+              <button onClick={() => removeFile(file)} className="text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-500">
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
 
-        {/* Input with attachment button inside textarea - Claude Chat style */}
-        <div className="relative">
+      {/* Input with attachment button inside textarea - Claude Chat style */}
+      <div className="relative max-w-4xl mx-auto">
           <input
             ref={fileInputRef}
             type="file"
@@ -117,7 +116,7 @@ export default function ChatInput({ onSendMessage, disabled, isUploading, placeh
             placeholder={placeholder}
             disabled={disabled}
             rows={1}
-            className="w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 pl-14 pr-14 py-3 border border-gray-300 dark:border-gray-600 rounded-[12px] focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 disabled:opacity-50 resize-none overflow-hidden leading-6 text-sm"
+            className="w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 pl-14 pr-14 py-3 border border-gray-300 dark:border-gray-600 rounded-[12px] focus:outline-none focus:ring-2 focus:ring-primary-500 dark:focus:ring-primary-400 disabled:opacity-50 resize-none overflow-hidden leading-6 text-sm shadow-[0_-20px_60px_-15px_rgba(0,0,0,0.15)] dark:shadow-[0_-20px_60px_-15px_rgba(0,0,0,0.5)]"
             style={{ minHeight: '50px', maxHeight: '204px' }}
           />
 
@@ -150,7 +149,6 @@ export default function ChatInput({ onSendMessage, disabled, isUploading, placeh
             </button>
           </div>
         </div>
-      </div>
     </div>
   );
 }
