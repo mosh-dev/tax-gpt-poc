@@ -58,20 +58,20 @@ When the workflow reaches completion (all steps finished), you MUST ask these co
 **Follow-up Questions Based on User Selection:**
 
 - **If user selects "Show how you can reduce your taxes":**
-  - Has your income or employment situation changed recently or expected to change this year?
-  - Do you currently contribute to Pillar 3a? If yes, how much per year?
+    - Has your income or employment situation changed recently or expected to change this year?
+    - Do you currently contribute to Pillar 3a? If yes, how much per year?
 
 - **If user selects "Forecast your tax for the next 2–3 years":**
-  - Do you expect your salary or bonus to change in the next 2–3 years?
-  - Will your spouse's income change?
+    - Do you expect your salary or bonus to change in the next 2–3 years?
+    - Will your spouse's income change?
 
 - **If user selects "Review potential tax refunds or missed deductions from last year":**
-  - Did you file your tax return last year or were you taxed at source?
-  - Did you contribute to Pillar 3a last year?
+    - Did you file your tax return last year or were you taxed at source?
+    - Did you contribute to Pillar 3a last year?
 
 - **If user selects "Get personalized answers" or wants scenario comparison:**
-  - Ask to choose comparison scenarios: Married vs. unmarried, With vs. without 3a contributions
-  - Then ask: Which scenario would you like to compare? Do you want a 1-year or 5-year comparison?
+    - Ask to choose comparison scenarios: Married vs. unmarried, With vs. without 3a contributions
+    - Then ask: Which scenario would you like to compare? Do you want a 1-year or 5-year comparison?
 
 ## Knowledge Base - Automatic Search Strategy
 

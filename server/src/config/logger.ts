@@ -7,6 +7,8 @@ import pino from 'pino';
 import * as path from 'path';
 import * as fs from 'fs';
 import { getStoragePath } from './storage';
+import pretty from 'pino-pretty';
+import { createStream } from 'rotating-file-stream';
 
 // Ensure logs directory exists
 const logsDir = getStoragePath('logs');
@@ -14,41 +16,38 @@ if (!fs.existsSync(logsDir)) {
     fs.mkdirSync(logsDir, { recursive: true });
 }
 
-/**
- * Create a Pino logger instance
- * Writes to both console (pretty) and file (JSON)
- */
-export const logger = pino({
-    level: process.env.LOG_LEVEL || 'info',
-    transport: {
-        targets: [
-            // Console output with pretty formatting
-            {
-                target: 'pino-pretty',
-                level: 'info',
-                options: {
-                    colorize: true,
-                    translateTime: 'SYS:standard',
-                    ignore: 'pid,hostname',
-                },
-            },
-            // File output with JSON formatting
-            {
-                target: 'pino/file',
-                level: 'debug',
-                options: {
-                    destination: path.join(logsDir, 'app.log'),
-                    mkdir: true,
-                },
-            },
-        ],
-    },
+const combinedLogStream = createStream('combined.log', {
+  path: logsDir,
+  size: '10M',
+  interval: '1d',
+  compress: 'gzip',
 });
+
+// Use Pino v8 transport for pretty print
+const transport = pino.transport({
+  target: 'pino-pretty',
+  options: {
+    colorize: false,
+    translateTime: 'yyyy-mm-dd HH:MM:ss',
+    ignore: 'pid,hostname',
+  },
+});
+
+export const pinoServerLogger = pino(
+  {
+    level: 'info',
+  },
+  pino.multistream([
+    { level: 'info', stream: transport },     // pretty console output
+    { level: 'info', stream: combinedLogStream }, // raw json for file rotation
+  ])
+);
+
 
 /**
  * Create a child logger for the Tax Agent with detailed tool call logging
  */
-export const agentLogger = logger.child({ module: 'TaxAgent' });
+export const agentLogger = pinoServerLogger.child({ module: 'TaxAgent' });
 
 /**
  * Log tool call with arguments
