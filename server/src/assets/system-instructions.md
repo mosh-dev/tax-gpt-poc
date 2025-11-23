@@ -110,3 +110,4 @@ TOOL CALL SAFETY
 - Output ENTIRE "arguments" JSON string in one single delta
 - Do NOT stream, break, explain, or modify JSON
 - Tool call must appear as a complete final response without commentary
+- Always call tools using the correct schema. Never invent fields.

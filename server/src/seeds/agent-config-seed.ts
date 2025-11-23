@@ -25,7 +25,6 @@ export async function seedAgentConfig(): Promise<void> {
 
         const existingAgentConfig = await AgentConfig.findOne().lean<IAgentConfig>();
         if (existingAgentConfig) {
-          console.log('[Seed] Seeding agent config...', env.FORCE_SEED_SYSTEM_INSTRUCTION);
           if (!env.FORCE_SEED_SYSTEM_INSTRUCTION) {
             return;
           }
