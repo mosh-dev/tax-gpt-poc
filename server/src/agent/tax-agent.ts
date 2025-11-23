@@ -11,6 +11,7 @@ import { AgentConfig } from '../models';
 import { encode } from 'gpt-tokenizer';
 import { getCollection } from '../config/database-utils';
 import { MASTRA_COLLECTIONS } from '../config/database-collections';
+import { agentLogger, logToolCall, logToolResult, logStreamError, logLLMResponse } from '../config/logger';
 
 /**
  * Tax Agent powered by Mastra and LMStudio
@@ -135,10 +136,40 @@ export class TaxAgent {
 
         try {
             for await (const event of stream.fullStream) {
+                // Log all LLM events to file for debugging JSON parsing issues
+                logLLMResponse(event);
+
+                // Cast once for cleaner access
+                const eventAny = event as any;
+
+                // Log important events to console and file
+                if (event.type === 'tool-call') {
+                    const toolName = eventAny.payload?.toolName || eventAny.toolName;
+                    const toolCallId = eventAny.payload?.toolCallId || eventAny.toolCallId;
+                    const args = eventAny.payload?.args || eventAny.args;
+
+                    // Log the raw event if toolName is missing (debugging)
+                    if (!toolName) {
+                        agentLogger.warn({ rawEvent: event }, 'Tool call event missing toolName');
+                    }
+                    logToolCall(toolName, toolCallId, args);
+                } else if (event.type === 'tool-result') {
+                    const toolName = eventAny.payload?.toolName || eventAny.toolName;
+                    const toolCallId = eventAny.payload?.toolCallId || eventAny.toolCallId;
+                    const result = eventAny.payload?.result || eventAny.result;
+
+                    if (!toolName) {
+                        agentLogger.warn({ rawEvent: event }, 'Tool result event missing toolName');
+                    }
+                    logToolResult(toolName, toolCallId, result);
+                } else if (event.type === 'error') {
+                    agentLogger.error({ event }, 'Stream Error Event');
+                }
+
                 yield event as any;
             }
         } catch (error: any) {
-            console.error('Tax Agent Tool Streaming Error:', error);
+            logStreamError(error);
             throw error;
         }
     }

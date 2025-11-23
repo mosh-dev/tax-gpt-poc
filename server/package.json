@@ -28,6 +28,8 @@
     "multer": "^2.0.2",
     "pdf-parse": "~2.4.5",
     "pdfkit": "~0.17.2",
+    "pino": "^10.1.0",
+    "pino-pretty": "^13.1.2",
     "safe-stable-stringify": "^2.5.0",
     "sharp": "~0.34.5",
     "tesseract.js": "~6.0.1"
@@ -41,6 +43,7 @@
     "@types/node": "^24.10.0",
     "@types/pdf-parse": "^1.1.5",
     "@types/pdfkit": "^0.17.3",
+    "@types/pino": "^7.0.4",
     "@typescript-eslint/eslint-plugin": "^8.46.4",
     "@typescript-eslint/parser": "^8.46.4",
     "copyfiles": "^2.4.1",
