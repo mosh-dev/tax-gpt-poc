@@ -6,6 +6,7 @@
 import {AgentConfig, IAgentConfig} from '../models';
 import * as fs from 'fs';
 import * as path from 'path';
+import { env } from '../config/env';
 
 // Load default system instructions from assets folder
 // This makes it easier to edit and maintain the instructions
@@ -24,7 +25,10 @@ export async function seedAgentConfig(): Promise<void> {
 
         const existingAgentConfig = await AgentConfig.findOne().lean<IAgentConfig>();
         if (existingAgentConfig) {
+          console.log('[Seed] Seeding agent config...', env.FORCE_SEED_SYSTEM_INSTRUCTION);
+          if (!env.FORCE_SEED_SYSTEM_INSTRUCTION) {
             return;
+          }
         }
 
         // Delete existing config first
