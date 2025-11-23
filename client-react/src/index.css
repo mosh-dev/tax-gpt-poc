@@ -182,7 +182,6 @@
 
   /* Code - inline */
   .prose-chat code {
-    background-color: #f3f4f6;
     color: #dc2626;
     padding: 0.2em 0.4em;
     border-radius: 0.25rem;
@@ -354,7 +353,6 @@
   }
 
   .dark .prose-chat code {
-    background-color: #374151;
     color: #fca5a5;
   }
 
