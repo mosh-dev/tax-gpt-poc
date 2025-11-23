@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/tax-gpt.iml" filepath="$PROJECT_DIR$/.idea/tax-gpt.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/tax-gpt-poc.iml" filepath="$PROJECT_DIR$/.idea/tax-gpt-poc.iml" />
     </modules>
   </component>
 </project>
