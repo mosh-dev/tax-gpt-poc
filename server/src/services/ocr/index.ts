@@ -20,20 +20,10 @@ export type {
   TaxDocumentResult
 } from './types';
 
-// Configuration
+// Configuration (only public API - internal constants removed)
 export {
   DEFAULT_OCR_CONFIG,
   DEFAULT_PREPROCESSING_OPTIONS,
-  SWISS_LANGUAGE_CONFIGS,
-  PSM_MODES,
-  SUPPORTED_IMAGE_EXTENSIONS,
-  SUPPORTED_DOCUMENT_EXTENSIONS,
-  ALL_SUPPORTED_EXTENSIONS,
-  FILE_SIZE_LIMITS,
-  OCR_QUALITY_PRESETS,
   getOCRConfig,
   getSwissCantonLanguage
 } from './config';
-
-// Processors
-export { BaseDocumentProcessor, ImageProcessor, PDFProcessor } from './processors';
