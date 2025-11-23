@@ -4,10 +4,8 @@
  */
 
 import pino from 'pino';
-import * as path from 'path';
 import * as fs from 'fs';
 import { getStoragePath } from './storage';
-import pretty from 'pino-pretty';
 import { createStream } from 'rotating-file-stream';
 
 // Ensure logs directory exists
@@ -113,4 +111,3 @@ export function logLLMResponse(event: any) {
 
 console.log(`[Logger] Pino logger initialized`);
 console.log(`[Logger] Logs directory: ${logsDir}`);
-console.log(`[Logger] Log file: ${path.join(logsDir, 'app.log')}`);
