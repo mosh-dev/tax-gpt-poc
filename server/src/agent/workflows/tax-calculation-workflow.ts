@@ -97,6 +97,7 @@ const collectPersonalInfoStep = createStep({
     requiredFields: z.array(z.string()),
   }),
   execute: async ({ inputData, resumeData, suspend }) => {
+    console.log("============= Inside collectPersonalInfoStep.");
     // Check if we have resume data with personal info
     if (resumeData) {
       console.log('[Workflow] Personal info received:', resumeData);
@@ -136,6 +137,7 @@ const uploadDocumentsStep = createStep({
     suggestedDocuments: z.array(z.string()),
   }),
   execute: async ({ inputData, resumeData, suspend }) => {
+    console.log("============= Inside uploadDocumentsStep.");
     if (resumeData && resumeData.documents.length > 0) {
       console.log('[Workflow] Documents received:', resumeData.documents.length);
       return {
@@ -182,6 +184,7 @@ const reviewExtractedDataStep = createStep({
     canEdit: z.boolean(),
   }),
   execute: async ({ inputData, resumeData, suspend }) => {
+    console.log("============= Inside reviewExtractedDataStep.");
     if (resumeData && resumeData.confirmed) {
       console.log('[Workflow] Extracted data confirmed by user');
       return {
@@ -244,6 +247,7 @@ const calculateTaxStep = createStep({
     calculation: calculationResultSchema,
   }),
   execute: async ({ inputData }) => {
+    console.log("============= Inside calculateTaxStep.");
     const { personalInfo, taxData } = inputData;
 
     // Calculate totals
@@ -331,6 +335,7 @@ const generateSummaryStep = createStep({
     canGeneratePdf: z.boolean(),
   }),
   execute: async ({ inputData, resumeData, suspend }) => {
+    console.log("============= Inside generateSummaryStep.");
     if (resumeData) {
       const { calculation, personalInfo } = inputData;
 
