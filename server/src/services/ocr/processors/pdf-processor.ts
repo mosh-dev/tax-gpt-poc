@@ -13,6 +13,7 @@ import { DEFAULT_OCR_CONFIG } from '../config';
 import path from 'path';
 import fs from 'fs/promises';
 import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
+import type { TextItem } from 'pdfjs-dist/types/src/display/api';
 import { createCanvas } from 'canvas';
 import { PDFParse } from 'pdf-parse';
 
@@ -153,7 +154,7 @@ export class PDFProcessor extends BaseDocumentProcessor {
             // Try alternative approach: get text content directly
             const textContent = await page.getTextContent();
             const pageText = textContent.items
-              .map((item: any) => item.str)
+              .map((item) => (item as TextItem).str)
               .join(' ');
 
             if (pageText.trim().length > 0) {
