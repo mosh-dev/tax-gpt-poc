@@ -20,7 +20,7 @@ export default function MessageBubble({ message, onButtonClick }: MessageBubbleP
   };
 
   const handleCopy = () => {
-    navigator.clipboard.writeText(message.content);
+    navigator.clipboard.writeText(message.content).then();
   };
 
   return (

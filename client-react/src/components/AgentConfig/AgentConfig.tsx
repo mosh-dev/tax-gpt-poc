@@ -57,8 +57,8 @@ export default function AgentConfig() {
     if (hasLoadedRef.current) return;
     hasLoadedRef.current = true;
 
-    loadConfig();
-    loadKnowledgeFiles();
+    loadConfig().then();
+    loadKnowledgeFiles().then();
   }, [loadConfig, loadKnowledgeFiles]);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {

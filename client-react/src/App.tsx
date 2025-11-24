@@ -30,7 +30,7 @@ function App() {
 
   const handleLoginSuccess = () => {
     setIsAuthenticated(true);
-    refreshConversations();
+    refreshConversations().then();
   };
 
   // Show login page if not authenticated

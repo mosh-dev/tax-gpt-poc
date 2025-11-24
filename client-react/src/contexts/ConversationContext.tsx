@@ -111,7 +111,7 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
       }
     };
 
-    fetchConversations();
+    fetchConversations().then();
 
     // Cleanup function for StrictMode
     return () => {

@@ -10,7 +10,7 @@ export default function EmployeeData() {
   const [expandedEmployee, setExpandedEmployee] = useState<string | null>(null);
 
   useEffect(() => {
-    fetchEmployees();
+    fetchEmployees().then();
   }, []);
 
   const fetchEmployees = async () => {

@@ -146,25 +146,6 @@ export interface ExtractedTaxData {
   confirmed: boolean;
 }
 
-export interface TaxCalculationResult {
-  grossIncome: number;
-  totalDeductions: number;
-  taxableIncome: number;
-  estimatedTax: number;
-  taxRate: number;
-  recommendations: string[];
-}
-
-// Employee/Mock Data types
-export interface EmployeeScenario {
-  scenarioId: string;
-  scenarioName: string;
-  scenarioDescription: string;
-  personName: string;
-  totalIncome: number;
-  taxYear: number;
-}
-
 export interface SwissTaxData {
   personalInfo: {
     firstName: string;

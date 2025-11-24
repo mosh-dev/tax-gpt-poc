@@ -74,7 +74,7 @@ export default function Welcome({ }: WelcomeProps) {
       });
 
       // Refresh sidebar (will show the thread after first message is sent)
-      loadConversations();
+      loadConversations().then();
     } catch (error) {
       console.error('Failed to start chat:', error);
       setIsSending(false);
@@ -83,11 +83,11 @@ export default function Welcome({ }: WelcomeProps) {
 
   const handlePromptClick = (prompt: typeof starterPrompts[0]) => {
     // All prompts go through normal chat - agent will ask about interactive mode
-    handleStartNewChat(prompt.title);
+    handleStartNewChat(prompt.title).then();
   };
 
   const handleSendMessage = (message: string, files: File[]) => {
-    handleStartNewChat(message, files);
+    handleStartNewChat(message, files).then();
   };
   return (
     <div className="flex-1 flex items-center justify-center px-4 py-12">

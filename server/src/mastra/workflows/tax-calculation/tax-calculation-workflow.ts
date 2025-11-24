@@ -3,7 +3,7 @@
  * Multi-step workflow that suspends for user input at each stage
  */
 
-import { createWorkflow, createStep } from '@mastra/core/workflows';
+import { createStep, createWorkflow } from '@mastra/core/workflows';
 import { z } from 'zod';
 import { fileService } from '@services/file-service';
 import { generateTaxReturnPDF } from '@services/pdf-generator';
@@ -96,7 +96,7 @@ const collectPersonalInfoStep = createStep({
     reason: z.string(),
     requiredFields: z.array(z.string()),
   }),
-  execute: async ({ inputData, resumeData, suspend }) => {
+  execute: async ({ resumeData, suspend }) => {
     console.log("============= Inside collectPersonalInfoStep.");
     // Check if we have resume data with personal info
     if (resumeData) {
@@ -432,10 +432,3 @@ export const taxCalculationWorkflow = createWorkflow({
   .then(calculateTaxStep)
   .then(generateSummaryStep)
   .commit();
-
-// Export types for use in routes
-export type PersonalInfo = z.infer<typeof personalInfoSchema>;
-export type DocumentData = z.infer<typeof documentSchema>;
-export type ExtractedData = z.infer<typeof extractedDataSchema>;
-export type CalculationResult = z.infer<typeof calculationResultSchema>;
-export type WorkflowSummary = z.infer<typeof summarySchema>;

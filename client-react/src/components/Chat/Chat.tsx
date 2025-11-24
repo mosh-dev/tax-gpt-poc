@@ -82,7 +82,7 @@ export default function Chat({threadId}: ChatProps) {
       window.history.replaceState({}, document.title);
       setMessages([]);
       // Start the workflow and integrate into chat
-      startWorkflowInChat(threadId);
+      startWorkflowInChat(threadId).then();
       return;
     }
 
@@ -100,13 +100,13 @@ export default function Chat({threadId}: ChatProps) {
       setActiveWorkflow(null);
 
       // Send the initial message
-      sendInitialMessage(state.initialMessage, state.fileIds || [], state.fileNames || []);
+      sendInitialMessage(state.initialMessage, state.fileIds || [], state.fileNames || []).then();
     } else if (!state?.initialMessage && !state?.startWorkflow && loadedThreadIdRef.current !== threadId) {
       // Normal conversation load (no initial message)
       // Use ref to prevent double execution in React StrictMode
       loadedThreadIdRef.current = threadId;
       setActiveWorkflow(null);
-      loadConversation();
+      loadConversation().then();
     }
   }, [threadId]);
 
@@ -130,7 +130,7 @@ export default function Chat({threadId}: ChatProps) {
       // Check last message for active workflow state from tool calls
       const lastMessage = data.messages[data.messages.length - 1];
       updateWorkflowState(lastMessage);
-    } catch (_) {
+    } catch (error) {
       // Conversation not found (404) - this is expected for new conversations
       // The conversation will be created when the first message is sent
       // Just start with empty messages, no need to show an error

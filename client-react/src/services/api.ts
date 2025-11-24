@@ -3,7 +3,7 @@
  * Handles all communication with the backend server
  */
 
-import type { Conversation, Message, FileMetadata, StreamEvent, WorkflowStatus, EmployeeScenario, Employee } from '../types/common.types.ts';
+import type { Conversation, Message, FileMetadata, StreamEvent, Employee } from '../types/common.types.ts';
 import { authService } from './auth';
 
 // Get API base URL from environment variable
@@ -92,26 +92,6 @@ class ApiService {
     await handleAuthResponse(response);
     if (!response.ok) {
       throw new Error('Failed to delete conversation');
-    }
-  }
-
-  /**
-   * Save messages to a conversation (for workflow steps)
-   */
-  async saveMessages(threadId: string, messages: Array<{ role: string; content: string }>): Promise<void> {
-    const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/chat/messages`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        threadId,
-        messages,
-      }),
-    });
-    await handleAuthResponse(response);
-    if (!response.ok) {
-      throw new Error('Failed to save messages');
     }
   }
 
@@ -229,6 +209,7 @@ class ApiService {
   /**
    * Get file metadata
    */
+  // noinspection JSUnusedGlobalSymbols
   async getFile(fileId: string): Promise<FileMetadata> {
     const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/files/${fileId}`);
     await handleAuthResponse(response);
@@ -241,6 +222,7 @@ class ApiService {
   /**
    * Delete a file
    */
+  // noinspection JSUnusedGlobalSymbols
   async deleteFile(fileId: string): Promise<void> {
     const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/files/${fileId}`, {
       method: 'DELETE',
@@ -249,99 +231,6 @@ class ApiService {
     if (!response.ok) {
       throw new Error('Failed to delete file');
     }
-  }
-
-  // === Workflow API Methods ===
-
-  /**
-   * Start a tax calculation workflow
-   */
-  async startTaxCalculationWorkflow(threadId: string, message?: string): Promise<WorkflowStatus> {
-    const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/workflows/tax-calculation/start`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ threadId, message }),
-    });
-
-    await handleAuthResponse(response);
-
-    if (!response.ok) {
-      throw new Error('Failed to start workflow');
-    }
-
-    const data = await response.json();
-    return data.workflow;
-  }
-
-  /**
-   * Resume a suspended workflow with user data
-   */
-  async resumeWorkflow(runId: string, stepId: string, data: any): Promise<WorkflowStatus> {
-    const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/workflows/${runId}/resume`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ stepId, data }),
-    });
-
-    await handleAuthResponse(response);
-
-    if (!response.ok) {
-      throw new Error('Failed to resume workflow');
-    }
-
-    const result = await response.json();
-    return result.workflow;
-  }
-
-  /**
-   * Get workflow status
-   */
-  async getWorkflowStatus(runId: string): Promise<WorkflowStatus> {
-    const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/workflows/${runId}/status`);
-
-    await handleAuthResponse(response);
-
-    if (!response.ok) {
-      throw new Error('Failed to get workflow status');
-    }
-
-    const data = await response.json();
-    return data.workflow;
-  }
-
-  /**
-   * Cancel a workflow
-   */
-  async cancelWorkflow(runId: string): Promise<void> {
-    const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/workflows/${runId}`, {
-      method: 'DELETE',
-    });
-
-    await handleAuthResponse(response);
-
-    if (!response.ok) {
-      throw new Error('Failed to cancel workflow');
-    }
-  }
-
-  /**
-   * Get active workflows for a thread
-   */
-  async getActiveWorkflows(threadId: string): Promise<WorkflowStatus[]> {
-    const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/workflows/thread/${threadId}`);
-
-    await handleAuthResponse(response);
-
-    if (!response.ok) {
-      throw new Error('Failed to get active workflows');
-    }
-
-    const data = await response.json();
-    return data.workflows;
   }
 
   // === Agent Config API Methods ===
@@ -378,21 +267,6 @@ class ApiService {
     return data.config;
   }
 
-  // === Employee/Mock Data API Methods ===
-
-  /**
-   * Get all employee scenarios (summary view)
-   */
-  async getEmployeeScenarios(): Promise<EmployeeScenario[]> {
-    const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/employees/scenarios`);
-    await handleAuthResponse(response);
-    if (!response.ok) {
-      throw new Error('Failed to fetch employee scenarios');
-    }
-    const data = await response.json();
-    return data.scenarios || [];
-  }
-
   /**
    * Get all employees with full tax data
    */
@@ -406,18 +280,6 @@ class ApiService {
     return data.employees || [];
   }
 
-  /**
-   * Get a specific employee by scenario ID
-   */
-  async getEmployee(scenarioId: string): Promise<Employee> {
-    const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/employees/${scenarioId}`);
-    await handleAuthResponse(response);
-    if (!response.ok) {
-      throw new Error('Failed to fetch employee');
-    }
-    const data = await response.json();
-    return data.employee;
-  }
 }
 
 export const apiService = new ApiService();

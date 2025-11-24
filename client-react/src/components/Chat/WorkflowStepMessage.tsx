@@ -258,7 +258,7 @@ function DocumentUploadForm({
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    handleFiles(e.dataTransfer.files);
+    handleFiles(e.dataTransfer.files).then();
   };
 
   const handleSubmit = () => {

@@ -8,7 +8,6 @@ import cors from 'cors';
 import { getStoragePath } from '@config/storage';
 import { env } from '@config/env';
 import { initializeApp } from '@config/initialize';
-import { workflowRoutes } from '@api/routes/workflow.routes';
 import { agentConfigRoutes } from '@api/routes/agent-config.routes';
 import { authRoutes } from '@api/routes/auth.routes';
 import { employeeRoutes } from '@api/routes/employee.routes';
@@ -119,7 +118,6 @@ export async function createExpressApp(): Promise<Express> {
   app.use('/api/chat/conversations', authMiddleware, conversationRoutes);
   app.use('/api/chat', authMiddleware, chatRoutes);
   app.use('/api/files', authMiddleware, fileRoutes);
-  app.use('/api/workflows', authMiddleware, workflowRoutes);
   app.use('/api/agent-config', authMiddleware, agentConfigRoutes);
   app.use('/api/employees', authMiddleware, employeeRoutes);
   app.use('/api/knowledge', knowledgeRoutes); // Knowledge routes have auth middleware built-in

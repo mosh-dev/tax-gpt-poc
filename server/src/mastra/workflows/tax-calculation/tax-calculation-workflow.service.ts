@@ -1,15 +1,13 @@
 /**
  * Workflow Service
  * Manages workflow runs and their state
+ * All workflow state is persisted to MongoDB via Mastra's workflowStorage
  */
 import { getCollection } from '@config/database-utils';
 import { MASTRA_COLLECTIONS } from '@config/database-collections';
 import { getErrorMessage } from '@utils/error-handler';
 import { WORKFLOW_IDS } from '@/constants/workflow';
 import { getMastra } from '@/mastra/mastra-instance';
-
-// Store active workflow run IDs mapped to their internal Mastra run IDs
-const workflowRuns = new Map<string, any>();
 
 export interface WorkflowStatus {
   runId: string;
@@ -27,28 +25,19 @@ export interface WorkflowStatus {
 export class TaxCalculationWorkflowService {
   /**
    * Start a new tax calculation workflow
+   * Workflow state is automatically persisted to MongoDB by Mastra
    */
   async startTaxCalculation(threadId: string, message?: string): Promise<WorkflowStatus> {
     console.log(`[WorkflowService] Starting tax calculation workflow for thread: ${threadId}`);
 
     try {
-      // Get workflow from Mastra instance (via getter to avoid circular dependency)
       const mastra = getMastra();
       const workflow = mastra.getWorkflow('taxCalculation');
 
-      // Create workflow run
+      // Create workflow run (automatically persisted to MongoDB)
       const run = await workflow.createRun();
-
-      // Store the run with its internal ID for later resume
       const runId = run.runId;
-      workflowRuns.set(runId, {
-        run,
-        threadId,
-        workflowId: WORKFLOW_IDS.TAX_CALCULATION,
-        createdAt: new Date(),
-      });
-      console.log(`[WorkflowService] Stored workflow run in memory. Active runs: ${workflowRuns.size}`);
-      console.log(`[WorkflowService] RunId: ${runId}`);
+      console.log(`[WorkflowService] Created workflow run: ${runId}`);
 
       // Start the workflow
       const result = await run.start({
@@ -75,7 +64,6 @@ export class TaxCalculationWorkflowService {
         const suspendedStepId = result.suspended[0][0];
         status.currentStep = suspendedStepId;
 
-        // Get suspend payload from the step
         const stepResult = result.steps?.[suspendedStepId];
         if (stepResult?.suspendPayload) {
           status.suspendPayload = stepResult.suspendPayload;
@@ -87,8 +75,6 @@ export class TaxCalculationWorkflowService {
         status.status = 'completed';
         status.result = result.result;
         console.log(`[WorkflowService] Workflow completed on start`);
-
-        // Delete workflow snapshot from MongoDB to prevent conflicts with future workflows
         await this.deleteWorkflowSnapshot(runId);
       }
 
@@ -96,16 +82,8 @@ export class TaxCalculationWorkflowService {
       if (result.status === 'failed') {
         status.error = result.error?.message || 'Unknown error';
         console.log(`[WorkflowService] Workflow failed on start:`, status.error);
-
-        // Delete workflow snapshot from MongoDB to prevent conflicts with future workflows
         await this.deleteWorkflowSnapshot(runId);
       }
-
-      console.log(`[WorkflowService] Returning initial status:`, {
-        runId: status.runId,
-        status: status.status,
-        currentStep: status.currentStep
-      });
 
       return status;
     } catch (error: unknown) {
@@ -117,48 +95,51 @@ export class TaxCalculationWorkflowService {
 
   /**
    * Resume a suspended workflow with user data
+   * Loads workflow from MongoDB storage (survives server restarts)
    */
   async resumeWorkflow(runId: string, stepId: string, resumeData: any): Promise<WorkflowStatus> {
     console.log(`[WorkflowService] Resuming workflow ${runId} at step ${stepId}`);
-    console.log(`[WorkflowService] Currently active runs: ${workflowRuns.size}`);
-    console.log(`[WorkflowService] Active runIds:`, Array.from(workflowRuns.keys()));
-
-    const runData = workflowRuns.get(runId);
-    if (!runData) {
-      console.error(`[WorkflowService] RunId ${runId} not found in memory!`);
-      console.error(`[WorkflowService] Available runIds:`, Array.from(workflowRuns.keys()));
-      throw new Error(`Workflow run not found: ${runId}. The server may have restarted or the workflow session expired.`);
-    }
 
     try {
-      const { run, threadId, workflowId } = runData;
+      const mastra = getMastra();
+      const workflow = mastra.getWorkflow('taxCalculation');
 
-      // Log resume data for debugging
+      // Load workflow run from MongoDB
+      const workflowRunSnapshot = await workflow.getWorkflowRunById(runId);
+
+      if (!workflowRunSnapshot) {
+        throw new Error(`Workflow run not found in storage: ${runId}. The workflow may have been completed or cancelled.`);
+      }
+
+      console.log(`[WorkflowService] Found workflow snapshot in MongoDB, restoring run...`);
+
+      // Create a new Run instance from the existing runId (Mastra loads from storage)
+      const run = await workflow.createRun({ runId });
+
+      // Extract metadata from snapshot
+      const snapshot = typeof workflowRunSnapshot.snapshot === 'string'
+        ? JSON.parse(workflowRunSnapshot.snapshot)
+        : workflowRunSnapshot.snapshot;
+
+      const threadId = snapshot?.context?.input?.threadId || '';
+
       console.log(`[WorkflowService] Resume data:`, JSON.stringify(resumeData, null, 2));
-      console.log(`[WorkflowService] Resuming at step: ${stepId}`);
 
-      // Resume the workflow with the provided step
-      // The client validates stepId matches workflow.currentStep before calling
+      // Resume the workflow
       const result = await run.resume({
         step: stepId,
         resumeData,
       });
 
       console.log(`[WorkflowService] Workflow resumed, status: ${result.status}`);
-      console.log(`[WorkflowService] Full result object:`, JSON.stringify({
-        status: result.status,
-        suspended: result.suspended,
-        error: result.error,
-        steps: Object.keys(result.steps || {})
-      }, null, 2));
 
       // Build status response
       const status: WorkflowStatus = {
         runId,
         threadId,
-        workflowId,
+        workflowId: WORKFLOW_IDS.TAX_CALCULATION,
         status: result.status as WorkflowStatus['status'],
-        createdAt: runData.createdAt || new Date(),
+        createdAt: workflowRunSnapshot.createdAt,
         updatedAt: new Date(),
       };
 
@@ -167,14 +148,9 @@ export class TaxCalculationWorkflowService {
         const suspendedStepId = result.suspended[0][0];
         status.currentStep = suspendedStepId;
 
-        console.log(`[WorkflowService] After resume - suspended at step: ${suspendedStepId}`);
-        console.log(`[WorkflowService] Suspended steps array:`, result.suspended);
-
-        // Get suspend payload from the step
         const stepResult = result.steps?.[suspendedStepId];
         if (stepResult?.suspendPayload) {
           status.suspendPayload = stepResult.suspendPayload;
-          console.log(`[WorkflowService] Suspend payload for step ${suspendedStepId}:`, status.suspendPayload.reason);
         }
       }
 
@@ -182,30 +158,16 @@ export class TaxCalculationWorkflowService {
       if (result.status === 'success') {
         status.status = 'completed';
         status.result = result.result;
-
-        // Clean up completed run
-        workflowRuns.delete(runId);
-        console.log(`[WorkflowService] Deleted completed workflow from memory. Active runs: ${workflowRuns.size}`);
-
-        // Delete workflow snapshot from MongoDB to prevent conflicts with future workflows
+        console.log(`[WorkflowService] Workflow completed`);
         await this.deleteWorkflowSnapshot(runId);
       }
 
       // Handle error state
       if (result.status === 'failed') {
         status.error = result.error?.message || 'Unknown error';
-        workflowRuns.delete(runId);
-        console.log(`[WorkflowService] Deleted failed workflow from memory. Active runs: ${workflowRuns.size}`);
-
-        // Delete workflow snapshot from MongoDB to prevent conflicts with future workflows
+        console.log(`[WorkflowService] Workflow failed:`, status.error);
         await this.deleteWorkflowSnapshot(runId);
       }
-
-      console.log(`[WorkflowService] Returning resume status:`, {
-        runId: status.runId,
-        status: status.status,
-        currentStep: status.currentStep
-      });
 
       return status;
     } catch (error: unknown) {
@@ -216,59 +178,93 @@ export class TaxCalculationWorkflowService {
   }
 
   /**
-   * Get the status of a workflow run
+   * Get the status of a workflow run from MongoDB
    */
-  getWorkflowStatus(runId: string): WorkflowStatus | null {
-    const runData = workflowRuns.get(runId);
-    if (!runData) {
+  async getWorkflowStatus(runId: string): Promise<WorkflowStatus | null> {
+    try {
+      const mastra = getMastra();
+      const workflow = mastra.getWorkflow('taxCalculation');
+
+      const workflowRunSnapshot = await workflow.getWorkflowRunById(runId);
+
+      if (!workflowRunSnapshot) {
+        return null;
+      }
+
+      const snapshot = typeof workflowRunSnapshot.snapshot === 'string'
+        ? JSON.parse(workflowRunSnapshot.snapshot)
+        : workflowRunSnapshot.snapshot;
+
+      const threadId = snapshot?.context?.input?.threadId || '';
+
+      return {
+        runId,
+        threadId,
+        workflowId: WORKFLOW_IDS.TAX_CALCULATION,
+        status: snapshot?.status || 'suspended',
+        currentStep: snapshot?.suspended?.[0]?.[0],
+        createdAt: workflowRunSnapshot.createdAt,
+        updatedAt: workflowRunSnapshot.updatedAt,
+      };
+    } catch (error: unknown) {
+      const errorMsg = getErrorMessage(error);
+      console.error('[WorkflowService] Error getting workflow status:', errorMsg);
       return null;
     }
-
-    return {
-      runId,
-      threadId: runData.threadId,
-      workflowId: runData.workflowId,
-      status: 'suspended', // If it's in the map, it's still active
-      currentStep: runData.currentStep,
-      suspendPayload: runData.suspendPayload,
-      createdAt: runData.createdAt || new Date(),
-      updatedAt: new Date(),
-    };
   }
 
   /**
    * Cancel a workflow run
    */
-  cancelWorkflow(runId: string): boolean {
-    if (workflowRuns.has(runId)) {
-      workflowRuns.delete(runId);
+  async cancelWorkflow(runId: string): Promise<boolean> {
+    try {
+      await this.deleteWorkflowSnapshot(runId);
       console.log(`[WorkflowService] Workflow ${runId} cancelled`);
       return true;
+    } catch (error: unknown) {
+      const errorMsg = getErrorMessage(error);
+      console.error('[WorkflowService] Error cancelling workflow:', errorMsg);
+      return false;
     }
-    return false;
   }
 
   /**
-   * Get all active workflow runs for a thread
+   * Get all active workflow runs for a thread from MongoDB
    */
-  getActiveWorkflows(threadId: string): WorkflowStatus[] {
-    const active: WorkflowStatus[] = [];
+  async getActiveWorkflows(threadId: string): Promise<WorkflowStatus[]> {
+    try {
+      const mastra = getMastra();
+      const workflow = mastra.getWorkflow('taxCalculation');
 
-    workflowRuns.forEach((runData, runId) => {
-      if (runData.threadId === threadId) {
-        active.push({
-          runId,
-          threadId: runData.threadId,
-          workflowId: runData.workflowId,
-          status: 'suspended',
-          currentStep: runData.currentStep,
-          createdAt: runData.createdAt || new Date(),
-          updatedAt: new Date(),
-        });
+      const runs = await workflow.listActiveWorkflowRuns();
+      const active: WorkflowStatus[] = [];
+
+      for (const run of runs.runs) {
+        const snapshot = typeof run.snapshot === 'string'
+          ? JSON.parse(run.snapshot)
+          : run.snapshot;
+
+        const runThreadId = snapshot?.context?.input?.threadId || '';
+
+        if (runThreadId === threadId) {
+          active.push({
+            runId: run.runId,
+            threadId: runThreadId,
+            workflowId: WORKFLOW_IDS.TAX_CALCULATION,
+            status: 'suspended',
+            currentStep: snapshot?.suspended?.[0]?.[0],
+            createdAt: run.createdAt,
+            updatedAt: run.updatedAt,
+          });
+        }
       }
-    });
 
-    return active;
+      return active;
+    } catch (error: unknown) {
+      const errorMsg = getErrorMessage(error);
+      console.error('[WorkflowService] Error getting active workflows:', errorMsg);
+      return [];
+    }
   }
 
   /**
