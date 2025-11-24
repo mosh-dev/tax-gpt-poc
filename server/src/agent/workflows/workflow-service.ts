@@ -6,10 +6,11 @@
 import { Mastra } from '@mastra/core';
 import { MongoDBStore } from '@mastra/mongodb';
 import { taxCalculationWorkflow } from './tax-calculation-workflow';
-import { env } from '../../config/env';
-import { WORKFLOW_IDS, WORKFLOW_STATUS } from '../../constants';
-import { getCollection } from '../../config/database-utils';
-import { MASTRA_COLLECTIONS } from '../../config/database-collections';
+import { env } from '@config/env';
+import { WORKFLOW_IDS, WORKFLOW_STATUS } from '@/constants';
+import { getCollection } from '@config/database-utils';
+import { MASTRA_COLLECTIONS } from '@config/database-collections';
+import { getErrorMessage } from '@utils/error-handler';
 
 // Create MongoDB storage for workflow snapshots
 const workflowStorage = new MongoDBStore({
@@ -125,9 +126,10 @@ export class WorkflowService {
       });
 
       return status;
-    } catch (error: any) {
-      console.error('[WorkflowService] Error starting workflow:', error);
-      throw new Error(`Failed to start workflow: ${error.message}`);
+    } catch (error: unknown) {
+      const errorMsg = getErrorMessage(error);
+      console.error('[WorkflowService] Error starting workflow:', errorMsg);
+      throw new Error(`Failed to start workflow: ${errorMsg}`);
     }
   }
 
@@ -224,9 +226,10 @@ export class WorkflowService {
       });
 
       return status;
-    } catch (error: any) {
-      console.error('[WorkflowService] Error resuming workflow:', error);
-      throw new Error(`Failed to resume workflow: ${error.message}`);
+    } catch (error: unknown) {
+      const errorMsg = getErrorMessage(error);
+      console.error('[WorkflowService] Error resuming workflow:', errorMsg);
+      throw new Error(`Failed to resume workflow: ${errorMsg}`);
     }
   }
 
@@ -300,8 +303,9 @@ export class WorkflowService {
       } else {
         console.warn('[WorkflowService] MongoDB connection not available for workflow snapshot cleanup');
       }
-    } catch (error) {
-      console.error('[WorkflowService] Error deleting workflow snapshot:', error);
+    } catch (error: unknown) {
+      const errorMsg = getErrorMessage(error);
+      console.error('[WorkflowService] Error deleting workflow snapshot:', errorMsg);
       // Don't throw - snapshot cleanup failure shouldn't break the main flow
     }
   }

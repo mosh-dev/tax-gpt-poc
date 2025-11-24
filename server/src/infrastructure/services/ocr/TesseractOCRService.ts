@@ -3,8 +3,8 @@
  * Implements IOCRService using the existing OCRService
  */
 
-import {IOCRService, OCROptions, OCRResult} from '../../../core/application';
-import {ocrService} from '../../../services/ocr';
+import {IOCRService, OCROptions, OCRResult} from '@core/application';
+import {ocrService} from '@services/ocr';
 
 export class TesseractOCRService implements IOCRService {
   private ocrService = ocrService;

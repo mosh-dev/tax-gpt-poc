@@ -5,8 +5,8 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import { IFileStorageService, StorageOptions, StoredFileInfo } from '../../../core/application/services';
-import { getStoragePath } from '../../../config/storage';
+import { IFileStorageService, StorageOptions, StoredFileInfo } from '@core/application/services';
+import { getStoragePath } from '@config/storage';
 
 export class LocalFileStorageService implements IFileStorageService {
   private readonly baseUrl: string;
@@ -51,8 +51,8 @@ export class LocalFileStorageService implements IFileStorageService {
   async deleteFile(filePath: string): Promise<void> {
     try {
       await fs.unlink(filePath);
-    } catch (error: any) {
-      if (error.code !== 'ENOENT') {
+    } catch (error: unknown) {
+      if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
         throw error;
       }
       // File doesn't exist, ignore

@@ -4,7 +4,8 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { workflowService, type WorkflowStatus } from '../../agent/workflows';
+import { workflowService, type WorkflowStatus } from '@agent/workflows';
+import { getErrorMessage } from '@utils/error-handler';
 
 const router = Router();
 
@@ -31,11 +32,12 @@ router.post('/tax-calculation/start', async (req: Request, res: Response) => {
       success: true,
       workflow: status,
     });
-  } catch (error: any) {
-    console.error('[WorkflowRoutes] Error starting workflow:', error);
+  } catch (error: unknown) {
+    const errorMsg = getErrorMessage(error);
+    console.error('[WorkflowRoutes] Error starting workflow:', errorMsg);
     res.status(500).json({
       error: 'Internal Server Error',
-      message: error.message,
+      message: errorMsg,
     });
   }
 });
@@ -71,19 +73,20 @@ router.post('/:runId/resume', async (req: Request, res: Response) => {
       success: true,
       workflow: status,
     });
-  } catch (error: any) {
-    console.error('[WorkflowRoutes] Error resuming workflow:', error);
+  } catch (error: unknown) {
+    const errorMsg = getErrorMessage(error);
+    console.error('[WorkflowRoutes] Error resuming workflow:', errorMsg);
 
-    if (error.message.includes('not found')) {
+    if (errorMsg.includes('not found')) {
       return res.status(404).json({
         error: 'Not Found',
-        message: error.message,
+        message: errorMsg,
       });
     }
 
     res.status(500).json({
       error: 'Internal Server Error',
-      message: error.message,
+      message: errorMsg,
     });
   }
 });
@@ -109,11 +112,12 @@ router.get('/:runId/status', async (req: Request, res: Response) => {
       success: true,
       workflow: status,
     });
-  } catch (error: any) {
-    console.error('[WorkflowRoutes] Error getting workflow status:', error);
+  } catch (error: unknown) {
+    const errorMsg = getErrorMessage(error);
+    console.error('[WorkflowRoutes] Error getting workflow status:', errorMsg);
     res.status(500).json({
       error: 'Internal Server Error',
-      message: error.message,
+      message: errorMsg,
     });
   }
 });
@@ -139,11 +143,12 @@ router.delete('/:runId', async (req: Request, res: Response) => {
       success: true,
       message: 'Workflow cancelled',
     });
-  } catch (error: any) {
-    console.error('[WorkflowRoutes] Error cancelling workflow:', error);
+  } catch (error: unknown) {
+    const errorMsg = getErrorMessage(error);
+    console.error('[WorkflowRoutes] Error cancelling workflow:', errorMsg);
     res.status(500).json({
       error: 'Internal Server Error',
-      message: error.message,
+      message: errorMsg,
     });
   }
 });
@@ -162,11 +167,12 @@ router.get('/thread/:threadId', async (req: Request, res: Response) => {
       success: true,
       workflows,
     });
-  } catch (error: any) {
-    console.error('[WorkflowRoutes] Error getting thread workflows:', error);
+  } catch (error: unknown) {
+    const errorMsg = getErrorMessage(error);
+    console.error('[WorkflowRoutes] Error getting thread workflows:', errorMsg);
     res.status(500).json({
       error: 'Internal Server Error',
-      message: error.message,
+      message: errorMsg,
     });
   }
 });

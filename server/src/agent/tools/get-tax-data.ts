@@ -1,6 +1,6 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
-import { Employee } from '../../models';
+import { Employee } from '@models/employee.model';
 
 /**
  * Tool to retrieve Swiss tax data by searching employee name

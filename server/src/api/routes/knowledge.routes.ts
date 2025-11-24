@@ -8,12 +8,13 @@ import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
 import { randomUUID } from 'crypto';
-import { getStoragePath } from '../../config/storage';
-import { getRAGService } from '../../services/rag';
+import { getStoragePath } from '@config/storage';
+import { getRAGService } from '@services/rag';
 import { authMiddleware } from '../middleware/auth.middleware';
-import { fileService } from '../../services/file-service';
-import { env } from '../../config/env';
+import { fileService } from '@services/file-service';
+import { env } from '@config/env';
 import fs from 'fs/promises';
+import { getErrorMessage } from '@utils/error-handler';
 
 const router = Router();
 
@@ -94,12 +95,13 @@ router.post('/upload', authMiddleware, upload.single('file'), async (req: Reques
       }
     });
 
-  } catch (error) {
-    console.error('[Knowledge API] Upload error:', error);
+  } catch (error: unknown) {
+    const errorMsg = getErrorMessage(error);
+    console.error('[Knowledge API] Upload error:', errorMsg);
 
     res.status(500).json({
       error: 'Failed to upload and process file',
-      message: error instanceof Error ? error.message : 'Unknown error'
+      message: errorMsg
     });
   }
 });
@@ -136,12 +138,13 @@ router.get('/files', authMiddleware, async (req: Request, res: Response) => {
       files: filesWithUrls,
     });
 
-  } catch (error) {
-    console.error('[Knowledge API] List error:', error);
+  } catch (error: unknown) {
+    const errorMsg = getErrorMessage(error);
+    console.error('[Knowledge API] List error:', errorMsg);
 
     res.status(500).json({
       error: 'Failed to list files',
-      message: error instanceof Error ? error.message : 'Unknown error'
+      message: errorMsg
     });
   }
 });
@@ -175,12 +178,13 @@ router.delete('/files/:id', authMiddleware, async (req: Request, res: Response) 
       message: 'File deleted successfully'
     });
 
-  } catch (error) {
-    console.error('[Knowledge API] Delete error:', error);
+  } catch (error: unknown) {
+    const errorMsg = getErrorMessage(error);
+    console.error('[Knowledge API] Delete error:', errorMsg);
 
     res.status(500).json({
       error: 'Failed to delete file',
-      message: error instanceof Error ? error.message : 'Unknown error'
+      message: errorMsg
     });
   }
 });

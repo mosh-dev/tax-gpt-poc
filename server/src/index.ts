@@ -5,15 +5,16 @@
 
 import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import { connectDatabase } from './config/database';
-import { getStoragePath } from './config/storage';
-import { env } from './config/env';
-import { initializeLLMClient } from './config/llm';
-import { initializeTaxAgent } from './agent';
-import { initializeContainer } from './di';
-import { createConversationRoutes, createChatRoutes, createFileRoutes, workflowRoutes, authRoutes, agentConfigRoutes, employeeRoutes, knowledgeRoutes, authMiddleware } from './api';
-import { MastraAIAgentService, TesseractOCRService } from './infrastructure';
-import { runAllSeeds } from './seeds';
+import { connectDatabase } from '@config/database';
+import { getStoragePath } from '@config/storage';
+import { env } from '@config/env';
+import { initializeLLMClient } from '@config/llm';
+import { initializeTaxAgent } from '@agent';
+import { initializeContainer } from '@/di';
+import { createConversationRoutes, createChatRoutes, createFileRoutes, workflowRoutes, authRoutes, agentConfigRoutes, employeeRoutes, knowledgeRoutes, authMiddleware } from '@api';
+import { MastraAIAgentService, TesseractOCRService } from '@infrastructure';
+import { runAllSeeds } from '@/seeds';
+import { getErrorMessage } from '@utils/error-handler';
 
 const app: Express = express();
 
@@ -132,8 +133,9 @@ async function startServer() {
       console.log(`[Server] Health: ${env.BASE_URL}/api/health`);
       console.log(`[Server] Files: ${env.BASE_URL}/files\n`);
     });
-  } catch (error) {
-    console.error('[Server] Failed to start:', error);
+  } catch (error: unknown) {
+    const errorMsg = getErrorMessage(error);
+    console.error('[Server] Failed to start:', errorMsg);
     process.exit(1);
   }
 }

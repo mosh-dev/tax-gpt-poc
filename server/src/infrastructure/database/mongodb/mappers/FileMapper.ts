@@ -3,9 +3,9 @@
  * Maps between domain entities and MongoDB models
  */
 
-import { File as FileEntity } from '../../../../core/domain/entities';
-import { FileId, ConversationId, FileMetadata } from '../../../../core/domain/value-objects';
-import { FileData } from '../../../../models';
+import { File as FileEntity } from '@core/domain/entities';
+import { FileId, ConversationId, FileMetadata } from '@core/domain/value-objects';
+import { FileData } from '@models/file.model';
 
 export class FileMapper {
   /**

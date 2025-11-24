@@ -3,8 +3,9 @@
  * Manages retrieval and caching of secrets from the database
  */
 
-import { Secret } from '../models';
-import { isDatabaseConnected } from '../config/database';
+import { Secret } from '@models/secret.model';
+import { isDatabaseConnected } from '@config/database';
+import { getErrorMessage } from '@utils/error-handler';
 
 /**
  * In-memory cache for secrets to avoid repeated database queries
@@ -56,8 +57,9 @@ export async function getSecret(key: string): Promise<string | undefined> {
       console.warn(`[Secrets] Secret not found in database: ${key}`);
       return undefined;
     }
-  } catch (error) {
-    console.error(`[Secrets] Error fetching secret ${key}:`, error);
+  } catch (error: unknown) {
+    const errorMsg = getErrorMessage(error);
+    console.error(`[Secrets] Error fetching secret ${key}:`, errorMsg);
     throw error;
   }
 }
@@ -103,8 +105,9 @@ export async function setSecret(key: string, value: string): Promise<void> {
     cacheTimestamps.set(key, Date.now());
 
     console.log(`[Secrets] Secret updated: ${key}`);
-  } catch (error) {
-    console.error(`[Secrets] Error setting secret ${key}:`, error);
+  } catch (error: unknown) {
+    const errorMsg = getErrorMessage(error);
+    console.error(`[Secrets] Error setting secret ${key}:`, errorMsg);
     throw error;
   }
 }

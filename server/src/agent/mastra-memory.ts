@@ -8,7 +8,7 @@ import { Memory } from '@mastra/memory';
 import { MongoDBStore } from '@mastra/mongodb';
 import { LibSQLVector } from '@mastra/libsql';
 import { fastembed } from '@mastra/fastembed';
-import { STORAGE_PATHS } from '../config/storage';
+import { STORAGE_PATHS } from '@config/storage';
 
 /**
  * Memory configuration options
@@ -78,7 +78,7 @@ export function createMastraMemory(config: MemoryConfig): Memory {
  */
 export function createMemoryConfigFromEnv(): MemoryConfig {
   // Import env here to avoid circular dependency
-  const { env } = require('../config/env');
+  const { env } = require('@config/env');
 
   const mongoUri = env.MONGODB_URI;
   const dbName = env.MONGODB_DB_NAME;

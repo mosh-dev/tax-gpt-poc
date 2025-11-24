@@ -8,7 +8,8 @@ import {
   GetAllConversationsUseCase,
   GetConversationHistoryUseCase,
   DeleteConversationUseCase,
-} from '../../core/application/use-cases';
+} from '@core/application/use-cases';
+import { getErrorMessage } from '@utils/error-handler';
 
 export class ConversationController {
   constructor(
@@ -34,11 +35,12 @@ export class ConversationController {
         success: true,
         conversations,
       });
-    } catch (error: any) {
-      console.error('[ConversationController] Failed to get conversations:', error);
+    } catch (error: unknown) {
+      const errorMsg = getErrorMessage(error);
+      console.error('[ConversationController] Failed to get conversations:', errorMsg);
       res.status(500).json({
         success: false,
-        error: error.message || 'Failed to retrieve conversations',
+        error: errorMsg,
       });
     }
   }
@@ -61,18 +63,19 @@ export class ConversationController {
         success: true,
         ...result,
       });
-    } catch (error: any) {
-      console.error('[ConversationController] Failed to get conversation:', error);
+    } catch (error: unknown) {
+      const errorMsg = getErrorMessage(error);
+      console.error('[ConversationController] Failed to get conversation:', errorMsg);
 
-      if (error.message.includes('not found')) {
+      if (errorMsg.includes('not found')) {
         res.status(404).json({
           success: false,
-          error: error.message,
+          error: errorMsg,
         });
       } else {
         res.status(500).json({
           success: false,
-          error: error.message || 'Failed to retrieve conversation',
+          error: errorMsg,
         });
       }
     }
@@ -92,18 +95,19 @@ export class ConversationController {
         success: true,
         message: 'Conversation deleted',
       });
-    } catch (error: any) {
-      console.error('[ConversationController] Failed to delete conversation:', error);
+    } catch (error: unknown) {
+      const errorMsg = getErrorMessage(error);
+      console.error('[ConversationController] Failed to delete conversation:', errorMsg);
 
-      if (error.message.includes('not found')) {
+      if (errorMsg.includes('not found')) {
         res.status(404).json({
           success: false,
-          error: error.message,
+          error: errorMsg,
         });
       } else {
         res.status(500).json({
           success: false,
-          error: error.message || 'Failed to delete conversation',
+          error: errorMsg,
         });
       }
     }

@@ -9,8 +9,9 @@ import {
   ProcessDocumentUseCase,
   GetFileUseCase,
   DeleteFileUseCase,
-} from '../../core/application/use-cases';
-import { UploadFileDTO, ProcessDocumentDTO } from '../../core/application/dtos';
+} from '@core/application/use-cases';
+import { UploadFileDTO, ProcessDocumentDTO } from '@core/application/dtos';
+import { getErrorMessage } from '@utils/error-handler';
 
 export class FileController {
   constructor(
@@ -58,11 +59,12 @@ export class FileController {
         success: true,
         files: uploadedFiles,
       });
-    } catch (error: any) {
-      console.error('[FileController] Upload error:', error);
+    } catch (error: unknown) {
+      const errorMsg = getErrorMessage(error);
+      console.error('[FileController] Upload error:', errorMsg);
       res.status(500).json({
         success: false,
-        error: error.message || 'Failed to upload files',
+        error: errorMsg,
       });
     }
   }
@@ -97,11 +99,12 @@ export class FileController {
         success: true,
         results,
       });
-    } catch (error: any) {
-      console.error('[FileController] Process documents error:', error);
+    } catch (error: unknown) {
+      const errorMsg = getErrorMessage(error);
+      console.error('[FileController] Process documents error:', errorMsg);
       res.status(500).json({
         success: false,
-        error: error.message || 'Failed to process documents',
+        error: errorMsg,
       });
     }
   }
@@ -120,18 +123,19 @@ export class FileController {
         success: true,
         file,
       });
-    } catch (error: any) {
-      console.error('[FileController] Get file error:', error);
+    } catch (error: unknown) {
+      const errorMsg = getErrorMessage(error);
+      console.error('[FileController] Get file error:', errorMsg);
 
-      if (error.message.includes('not found')) {
+      if (errorMsg.includes('not found')) {
         res.status(404).json({
           success: false,
-          error: error.message,
+          error: errorMsg,
         });
       } else {
         res.status(500).json({
           success: false,
-          error: error.message || 'Failed to retrieve file',
+          error: errorMsg,
         });
       }
     }
@@ -151,18 +155,19 @@ export class FileController {
         success: true,
         message: 'File deleted',
       });
-    } catch (error: any) {
-      console.error('[FileController] Delete file error:', error);
+    } catch (error: unknown) {
+      const errorMsg = getErrorMessage(error);
+      console.error('[FileController] Delete file error:', errorMsg);
 
-      if (error.message.includes('not found')) {
+      if (errorMsg.includes('not found')) {
         res.status(404).json({
           success: false,
-          error: error.message,
+          error: errorMsg,
         });
       } else {
         res.status(500).json({
           success: false,
-          error: error.message || 'Failed to delete file',
+          error: errorMsg,
         });
       }
     }

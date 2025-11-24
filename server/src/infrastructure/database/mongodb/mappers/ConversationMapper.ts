@@ -3,9 +3,9 @@
  * Maps between domain entities and MongoDB models
  */
 
-import { Conversation } from '../../../../core/domain/entities';
-import { ConversationId } from '../../../../core/domain/value-objects';
-import { ConversationData } from '../../../../models';
+import { Conversation } from '@core/domain/entities';
+import { ConversationId } from '@core/domain/value-objects';
+import { ConversationData } from '@models/conversation.model';
 
 export class ConversationMapper {
   /**

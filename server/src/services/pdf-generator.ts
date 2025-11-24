@@ -1,5 +1,5 @@
 import PDFDocument from 'pdfkit';
-import { SwissTaxData } from '../types';
+import { SwissTaxData } from '@/types';
 
 interface Message {
   role: 'user' | 'assistant' | 'system';

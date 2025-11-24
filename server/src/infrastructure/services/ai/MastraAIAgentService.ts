@@ -3,8 +3,8 @@
  * Implements IAIAgentService using the existing TaxAgent
  */
 
-import { IAIAgentService, StreamEvent, ChatMessage } from '../../../core/application';
-import { getOrCreateTaxAgent } from '../../../agent';
+import { IAIAgentService, StreamEvent, ChatMessage } from '@core/application';
+import { getOrCreateTaxAgent } from '@agent';
 
 export class MastraAIAgentService implements IAIAgentService {
   async *streamChat(

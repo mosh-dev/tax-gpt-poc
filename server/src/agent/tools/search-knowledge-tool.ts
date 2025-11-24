@@ -6,7 +6,7 @@
 
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
-import { getRAGService } from '../../services/rag';
+import { getRAGService } from '@services/rag';
 
 export const searchKnowledgeTool = createTool({
   id: 'search-knowledge',

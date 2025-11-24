@@ -3,10 +3,10 @@
  * Implements IMessageRepository using MongoDB
  */
 
-import { IMessageRepository } from '../../../../core/domain';
-import { Message } from '../../../../core/domain';
-import { MessageId, ConversationId } from '../../../../core/domain';
-import { Message as MessageModel } from '../../../../models';
+import { IMessageRepository } from '@core/domain';
+import { Message } from '@core/domain';
+import { MessageId, ConversationId } from '@core/domain';
+import { Message as MessageModel } from '@models/message.model';
 import { MessageMapper } from '../mappers';
 
 export class MongoMessageRepository implements IMessageRepository {

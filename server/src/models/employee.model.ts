@@ -4,7 +4,7 @@
  */
 
 import mongoose, { Document, Schema } from 'mongoose';
-import { SwissTaxData } from '../types';
+import { SwissTaxData } from '@/types';
 
 export interface IEmployee extends Document {
   scenarioId: string; // 'single', 'married', 'freelancer', etc.

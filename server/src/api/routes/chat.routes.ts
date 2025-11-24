@@ -5,7 +5,8 @@
 
 import { Router } from 'express';
 import { ChatController } from '../controllers';
-import { mongoMemory } from '../../services/mongodb-memory';
+import { mongoMemory } from '@services/mongodb-memory';
+import { getErrorMessage } from '@utils/error-handler';
 
 export function createChatRoutes(controller: ChatController): Router {
   const router = Router();
@@ -51,11 +52,12 @@ export function createChatRoutes(controller: ChatController): Router {
         threadId,
         savedCount: messages.length,
       });
-    } catch (error: any) {
-      console.error('[Chat] Failed to save messages:', error);
+    } catch (error: unknown) {
+      const errorMsg = getErrorMessage(error);
+      console.error('[Chat] Failed to save messages:', errorMsg);
       res.status(500).json({
         success: false,
-        error: error.message || 'Failed to save messages',
+        error: errorMsg,
       });
     }
   });

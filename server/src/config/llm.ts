@@ -1,6 +1,6 @@
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { env } from './env';
-import { getLLMApiKey } from '../services/secrets.service';
+import { getLLMApiKey } from '@services/secrets.service';
 
 /**
  * LLM client instance (initialized after database connection)

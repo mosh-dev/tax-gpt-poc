@@ -4,8 +4,9 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { AgentConfig } from '../../models';
-import { invalidateTaxAgent } from '../../agent';
+import { AgentConfig } from '@models/agent-config.model';
+import { invalidateTaxAgent } from '@agent';
+import { getErrorMessage } from '@utils/error-handler';
 
 const router = Router();
 
@@ -32,11 +33,12 @@ router.get('/', async (req: Request, res: Response) => {
         updatedAt: config.updatedAt,
       },
     });
-  } catch (error: any) {
-    console.error('[AgentConfig] Failed to get config:', error);
+  } catch (error: unknown) {
+    const errorMsg = getErrorMessage(error);
+    console.error('[AgentConfig] Failed to get config:', errorMsg);
     res.status(500).json({
       success: false,
-      error: error.message || 'Failed to retrieve agent configuration',
+      error: errorMsg,
     });
   }
 });
@@ -77,11 +79,12 @@ router.put('/', async (req: Request, res: Response) => {
         updatedAt: config.updatedAt,
       },
     });
-  } catch (error: any) {
-    console.error('[AgentConfig] Failed to update config:', error);
+  } catch (error: unknown) {
+    const errorMsg = getErrorMessage(error);
+    console.error('[AgentConfig] Failed to update config:', errorMsg);
     res.status(500).json({
       success: false,
-      error: error.message || 'Failed to update agent configuration',
+      error: errorMsg,
     });
   }
 });

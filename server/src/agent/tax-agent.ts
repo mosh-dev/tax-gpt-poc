@@ -1,6 +1,6 @@
 import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
-import { getOpenAiModel } from '../config/llm';
+import { getOpenAiModel } from '@config/llm';
 import {
   calculateDeductionsTool,
   generateTaxPDFTool,
@@ -11,11 +11,12 @@ import {
   startWorkflowTool
 } from './tools';
 import { createMastraMemory, createMemoryConfigFromEnv } from './mastra-memory';
-import { AgentConfig } from '../models';
+import { AgentConfig } from '@models/agent-config.model';
 import { encode } from 'gpt-tokenizer';
-import { getCollection } from '../config/database-utils';
-import { MASTRA_COLLECTIONS } from '../config/database-collections';
-import { agentLogger, logLLMResponse, logStreamError, logToolCall, logToolResult } from '../config/logger';
+import { getCollection } from '@config/database-utils';
+import { MASTRA_COLLECTIONS } from '@config/database-collections';
+import { agentLogger, logLLMResponse, logStreamError, logToolCall, logToolResult } from '@config/logger';
+import { getErrorMessage } from '@utils/error-handler';
 
 /**
  * Tax Agent powered by Mastra and LMStudio
@@ -33,8 +34,9 @@ export class TaxAgent {
       this.memory = createMastraMemory(memoryConfig);
       console.log('[TaxAgent] Mastra Memory initialized successfully');
       console.log(`[TaxAgent] Vector storage: ${memoryConfig.enableVectorStorage ? 'enabled' : 'disabled'}`);
-    } catch (error: any) {
-      console.warn('[TaxAgent] Failed to initialize Mastra Memory:', error.message);
+    } catch (error: unknown) {
+      const errorMsg = getErrorMessage(error);
+      console.warn('[TaxAgent] Failed to initialize Mastra Memory:', errorMsg);
       console.warn('[TaxAgent] Agent will run without persistent memory');
       this.memory = undefined;
     }
@@ -116,17 +118,18 @@ export class TaxAgent {
 
     try {
       stream = await createStream();
-    } catch (error: any) {
+    } catch (error: unknown) {
       // If first attempt fails (e.g., thread not found), retry once
       // This allows Mastra to create the thread on second attempt
-      const errorMessage = error.message?.toLowerCase() || '';
+      const errorMessage = getErrorMessage(error).toLowerCase();
       if (errorMessage.includes('thread') || errorMessage.includes('not found') || errorMessage.includes('does not exist')) {
         console.log(`[TaxAgent] First attempt failed with thread error, retrying...`);
         retried = true;
         try {
           stream = await createStream();
-        } catch (retryError: any) {
-          console.error('[TaxAgent] Retry also failed:', retryError);
+        } catch (retryError: unknown) {
+          const retryErrorMsg = getErrorMessage(retryError);
+          console.error('[TaxAgent] Retry also failed:', retryErrorMsg);
           throw retryError;
         }
       } else {
@@ -172,7 +175,7 @@ export class TaxAgent {
 
         yield event as any;
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       logStreamError(error);
       throw error;
     }
@@ -195,16 +198,18 @@ export class TaxAgent {
       // Use Mastra's official Memory API to delete thread and messages
       await this.memory.deleteThread(threadId);
       console.log(`[TaxAgent] Successfully deleted Mastra thread via official API: ${threadId}`);
-    } catch (error) {
-      console.error('[TaxAgent] Error deleting Mastra thread:', error);
+    } catch (error: unknown) {
+      const errorMsg = getErrorMessage(error);
+      console.error('[TaxAgent] Error deleting Mastra thread:', errorMsg);
       // Log error but don't throw - deletion failure shouldn't break the main flow
     }
 
     // Also delete workflow snapshots (Mastra doesn't provide API for this yet)
     try {
       await this.deleteWorkflowSnapshots(threadId);
-    } catch (error) {
-      console.error('[TaxAgent] Error deleting workflow snapshots:', error);
+    } catch (error: unknown) {
+      const errorMsg = getErrorMessage(error);
+      console.error('[TaxAgent] Error deleting workflow snapshots:', errorMsg);
     }
   }
 
@@ -241,8 +246,9 @@ export class TaxAgent {
       } else {
         console.warn('[TaxAgent] MongoDB connection not available for workflow snapshot cleanup');
       }
-    } catch (error) {
-      console.error('[TaxAgent] Error deleting workflow snapshots:', error);
+    } catch (error: unknown) {
+      const errorMsg = getErrorMessage(error);
+      console.error('[TaxAgent] Error deleting workflow snapshots:', errorMsg);
       throw error;
     }
   }

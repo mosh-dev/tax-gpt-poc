@@ -3,9 +3,9 @@
  * Maps between domain entities and MongoDB models
  */
 
-import { Message } from '../../../../core/domain';
-import { MessageId, ConversationId, MessageRole, FileId } from '../../../../core/domain';
-import { MessageData } from '../../../../models';
+import { Message } from '@core/domain';
+import { MessageId, ConversationId, MessageRole, FileId } from '@core/domain';
+import { MessageData } from '@models/message.model';
 
 export class MessageMapper {
   /**

@@ -3,10 +3,10 @@
  * Implements IConversationRepository using MongoDB
  */
 
-import { IConversationRepository } from '../../../../core/domain/repositories';
-import { Conversation } from '../../../../core/domain/entities';
-import { ConversationId } from '../../../../core/domain/value-objects';
-import { Conversation as ConversationModel } from '../../../../models';
+import { IConversationRepository } from '@core/domain/repositories';
+import { Conversation } from '@core/domain/entities';
+import { ConversationId } from '@core/domain/value-objects';
+import { Conversation as ConversationModel } from '@models/conversation.model';
 import { ConversationMapper } from '../mappers';
 
 export class MongoConversationRepository implements IConversationRepository {

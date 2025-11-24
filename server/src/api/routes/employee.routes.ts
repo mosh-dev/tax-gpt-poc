@@ -4,7 +4,8 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { Employee } from '../../models';
+import { Employee } from '@models/employee.model';
+import { getErrorMessage } from '@utils/error-handler';
 
 const router = Router();
 
@@ -31,8 +32,9 @@ router.get('/', async (req: Request, res: Response) => {
         updatedAt: emp.updatedAt,
       })),
     });
-  } catch (error) {
-    console.error('[Employees] Error fetching employees:', error);
+  } catch (error: unknown) {
+    const errorMsg = getErrorMessage(error);
+    console.error('[Employees] Error fetching employees:', errorMsg);
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to fetch employees',
@@ -74,8 +76,9 @@ router.get('/scenarios', async (req: Request, res: Response) => {
       count: scenarios.length,
       scenarios,
     });
-  } catch (error) {
-    console.error('[Employees] Error fetching scenarios:', error);
+  } catch (error: unknown) {
+    const errorMsg = getErrorMessage(error);
+    console.error('[Employees] Error fetching scenarios:', errorMsg);
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to fetch scenarios',
@@ -116,8 +119,9 @@ router.get('/:scenarioId', async (req: Request, res: Response) => {
         updatedAt: employee.updatedAt,
       },
     });
-  } catch (error) {
-    console.error('[Employees] Error fetching employee:', error);
+  } catch (error: unknown) {
+    const errorMsg = getErrorMessage(error);
+    console.error('[Employees] Error fetching employee:', errorMsg);
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to fetch employee',

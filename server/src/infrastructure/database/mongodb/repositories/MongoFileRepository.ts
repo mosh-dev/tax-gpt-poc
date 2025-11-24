@@ -3,10 +3,10 @@
  * Implements IFileRepository using MongoDB
  */
 
-import { IFileRepository } from '../../../../core/domain/repositories';
-import { File as FileEntity } from '../../../../core/domain/entities';
-import { FileId, ConversationId } from '../../../../core/domain/value-objects';
-import { File as FileModel } from '../../../../models';
+import { IFileRepository } from '@core/domain/repositories';
+import { File as FileEntity } from '@core/domain/entities';
+import { FileId, ConversationId } from '@core/domain/value-objects';
+import { File as FileModel } from '@models/file.model';
 import { FileMapper } from '../mappers';
 
 export class MongoFileRepository implements IFileRepository {

@@ -4,12 +4,13 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { User } from '../../models';
+import { User } from '@models/user.model';
 import {
   generateAccessToken,
   generateRefreshToken,
   verifyRefreshToken
 } from '../middleware/auth.middleware';
+import { getErrorMessage } from '@utils/error-handler';
 
 const router = Router();
 
@@ -63,8 +64,9 @@ router.post('/login', async (req: Request, res: Response) => {
         userName: user.userName
       }
     });
-  } catch (error) {
-    console.error('[Auth] Login error:', error);
+  } catch (error: unknown) {
+    const errorMsg = getErrorMessage(error);
+    console.error('[Auth] Login error:', errorMsg);
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Login failed'
@@ -120,8 +122,9 @@ router.post('/refresh', async (req: Request, res: Response) => {
       accessToken: newAccessToken,
       refreshToken: newRefreshToken
     });
-  } catch (error) {
-    console.error('[Auth] Refresh error:', error);
+  } catch (error: unknown) {
+    const errorMsg = getErrorMessage(error);
+    console.error('[Auth] Refresh error:', errorMsg);
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Token refresh failed'
@@ -150,7 +153,7 @@ router.get('/me', async (req: Request, res: Response) => {
 
   try {
     const jwt = await import('jsonwebtoken');
-    const { env } = await import('../../config/env');
+    const { env } = await import('@config/env');
 
     const decoded = jwt.default.verify(token, env.JWT_SECRET) as { userId: string; userName: string };
 

@@ -4,8 +4,9 @@
  */
 
 import { Request, Response } from 'express';
-import { StreamChatUseCase } from '../../core/application/use-cases';
-import { StreamChatRequestDTO } from '../../core/application/dtos';
+import { StreamChatUseCase } from '@core/application/use-cases';
+import { StreamChatRequestDTO } from '@core/application/dtos';
+import { getErrorMessage } from '@utils/error-handler';
 
 export class ChatController {
   constructor(private streamChatUseCase: StreamChatUseCase) {}
@@ -56,22 +57,24 @@ export class ChatController {
         }
 
         res.end();
-      } catch (streamError: any) {
-        console.error('[ChatController] Streaming error:', streamError);
+      } catch (streamError: unknown) {
+        const streamErrorMsg = getErrorMessage(streamError);
+        console.error('[ChatController] Streaming error:', streamErrorMsg);
         res.write(`data: ${JSON.stringify({
           type: 'error',
-          error: streamError.message || 'Streaming error occurred',
+          error: streamErrorMsg,
           timestamp: new Date().toISOString(),
         })}\n\n`);
         res.end();
       }
-    } catch (error: any) {
-      console.error('[ChatController] Chat stream error:', error);
+    } catch (error: unknown) {
+      const errorMsg = getErrorMessage(error);
+      console.error('[ChatController] Chat stream error:', errorMsg);
 
       if (!res.headersSent) {
         res.status(500).json({
           success: false,
-          error: error.message || 'Failed to start chat stream',
+          error: errorMsg,
           timestamp: new Date().toISOString(),
         });
       }
