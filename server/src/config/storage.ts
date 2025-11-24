@@ -6,8 +6,8 @@
 import path from 'path';
 import { getPathInfo } from '@config/path-utils';
 
-const { __dirname } = getPathInfo(import.meta.url);
-export const STORAGE_ROOT = path.join(__dirname, '../../storage');
+const { __dirname: storageDir } = getPathInfo(import.meta.url);
+export const STORAGE_ROOT = path.join(storageDir, '../../storage');
 
 // Storage subdirectories
 export const STORAGE_PATHS = {

@@ -6,7 +6,7 @@ import { getCollection } from '@config/database-utils';
 import { MASTRA_COLLECTIONS } from '@config/database-collections';
 import { getErrorMessage } from '@utils/error-handler';
 import { WORKFLOW_IDS } from '@/constants/workflow';
-import { mastra } from '@/mastra';
+import { getMastra } from '@/mastra/mastra-instance';
 
 // Store active workflow run IDs mapped to their internal Mastra run IDs
 const workflowRuns = new Map<string, any>();
@@ -32,7 +32,8 @@ export class TaxCalculationWorkflowService {
     console.log(`[WorkflowService] Starting tax calculation workflow for thread: ${threadId}`);
 
     try {
-      // Get workflow from Mastra instance (already initialized at import time)
+      // Get workflow from Mastra instance (via getter to avoid circular dependency)
+      const mastra = getMastra();
       const workflow = mastra.getWorkflow('taxCalculation');
 
       // Create workflow run

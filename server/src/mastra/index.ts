@@ -7,6 +7,7 @@ import { Observability } from '@mastra/observability';
 import { connectDatabase } from '@config/database';
 import { initializeLLMClient } from '@config/llm';
 import { runAllSeeds } from '@/seeds/run-seed';
+import { setMastra } from '@/mastra/mastra-instance';
 
 console.log('[Mastra] Initializing Mastra module...');
 
@@ -32,5 +33,8 @@ export const mastra = new Mastra({
     default: { enabled: true },
   }),
 });
+
+// Register the mastra instance for use elsewhere (breaks circular dependencies)
+setMastra(mastra);
 
 console.log('[Mastra] Mastra instance initialized successfully');

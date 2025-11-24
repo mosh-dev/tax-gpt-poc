@@ -10,12 +10,30 @@ import { env } from '@config/env';
 import { AgentConfig, IAgentConfig } from '@models/agent-config.model';
 import { getPathInfo } from '@config/path-utils';
 
-// Load default system instructions from assets folder
-// This makes it easier to edit and maintain the instructions
-// Works in both dev (src/assets) and production (dist/assets)
-const { __dirname } = getPathInfo(import.meta.url);
-const instructionsPath = path.join(__dirname, '../assets/system-instructions.md');
-const defaultInstructions = fs.readFileSync(instructionsPath, 'utf-8');
+/**
+ * Load default system instructions from assets folder
+ * This makes it easier to edit and maintain the instructions
+ * Works in both dev (src/assets) and production (dist/assets)
+ * Returns null if file doesn't exist (e.g., in Mastra playground)
+ */
+function loadDefaultInstructions(): string | null {
+  try {
+    const { __dirname: seedDir } = getPathInfo(import.meta.url);
+    const instructionsPath = path.join(seedDir, '../assets/system-instructions.md');
+
+    // Check if file exists before reading
+    if (!fs.existsSync(instructionsPath)) {
+      console.log(`[Seed] System instructions file not found at: ${instructionsPath}`);
+      console.log(`[Seed] This is expected in Mastra playground environment`);
+      return null;
+    }
+
+    return fs.readFileSync(instructionsPath, 'utf-8');
+  } catch (error) {
+    console.warn('[Seed] Could not load default instructions:', error);
+    return null;
+  }
+}
 
 /**
  * Seed agent config to database
@@ -39,6 +57,15 @@ export async function seedAgentConfig(): Promise<void> {
             console.log(`[Seed] Deleted ${deleteResult.deletedCount} existing agent config(s)`);
         }
 
+        // Load instructions at runtime (not at module import time)
+        const defaultInstructions = loadDefaultInstructions();
+
+        // Skip seeding if instructions file is not available (e.g., Mastra playground)
+        if (!defaultInstructions) {
+            console.log('[Seed] Skipping agent config seed - instructions file not available');
+            return;
+        }
+
         // Create default config
         const config = new AgentConfig({
             instructions: defaultInstructions,
@@ -46,11 +73,8 @@ export async function seedAgentConfig(): Promise<void> {
 
         await config.save();
         console.log('[Seed] Agent config created with default instructions');
-        console.log(`[Seed] Instructions loaded from: ${instructionsPath}`);
     } catch (error) {
         console.error('[Seed] Error seeding agent config:', error);
         throw error;
     }
 }
-
-export {defaultInstructions};
