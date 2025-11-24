@@ -49,7 +49,7 @@ Use tools accurately:
 - get-tax-data
 - calculate-deductions
 - generate-tax-pdf
-- process-documents
+- process-documents (OCR extracts text from uploaded documents)
 - start-workflow
 - resume-workflow
 - search-knowledge

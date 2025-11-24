@@ -8,6 +8,8 @@ import { z } from 'zod';
 import { fileService } from '@services/file-service';
 import { generateTaxReturnPDF } from '@services/pdf-generator';
 import { WORKFLOW_IDS, WORKFLOW_STEPS } from '@/constants/workflow';
+import { extractTaxData, type DocumentWithText } from '@services/tax-data-extraction/tax-data-extraction.service';
+import { mongoRepository } from '@services/mongo-repository';
 
 // === SCHEMA DEFINITIONS ===
 
@@ -165,7 +167,10 @@ const uploadDocumentsStep = createStep({
 
 /**
  * Step 3: Review Extracted Data
- * Shows extracted data from documents and suspends for user confirmation
+ * Expects documents to have been OCR'd by the process-documents tool (extractedText field populated).
+ * This step internally uses AI to extract structured tax data from the OCR'd text.
+ * No separate tool call needed - extraction happens within the workflow step itself.
+ * Suspends to show extracted data and wait for user confirmation/corrections.
  */
 const reviewExtractedDataStep = createStep({
   id: WORKFLOW_STEPS.REVIEW_EXTRACTED_DATA,
@@ -193,36 +198,68 @@ const reviewExtractedDataStep = createStep({
       };
     }
 
-    // Process documents and extract data (simulated for now)
-    // In real implementation, this would call OCR and AI extraction
+    // Extract structured tax data from documents using AI
+    // This happens internally in the workflow step - no separate tool call needed
+    // The AI agent should have already called process-documents tool to OCR the files
+    console.log('[Workflow] Extracting tax data from documents using AI...');
+
+    // Fetch latest OCR data from MongoDB (in case process-documents was called after workflow started)
+    const documentsWithText: DocumentWithText[] = [];
+    for (const doc of inputData.documents) {
+      // Try to get from workflow data first
+      if (doc.extractedText && doc.extractedText.trim().length > 0) {
+        documentsWithText.push({
+          fileName: doc.fileName,
+          extractedText: doc.extractedText,
+        });
+      } else {
+        // Fetch from MongoDB in case it was processed after workflow started
+        const fileMetadata = await mongoRepository.findFileById(doc.fileId);
+        if (fileMetadata?.ocrResult?.text && fileMetadata.ocrResult.text.trim().length > 0) {
+          console.log(`[Workflow] Fetched OCR text from DB for: ${doc.fileName}`);
+          documentsWithText.push({
+            fileName: doc.fileName,
+            extractedText: fileMetadata.ocrResult.text,
+          });
+        }
+      }
+    }
+
+    if (documentsWithText.length === 0) {
+      console.error('[Workflow] No documents with extracted text found. Documents must be processed with OCR first.');
+
+      // Return error payload that tells user/agent to process documents first
+      const emptyData: z.infer<typeof extractedDataSchema> = {
+        income: { employment: 0, selfEmployment: 0, investments: 0, rental: 0, other: 0 },
+        deductions: { professionalExpenses: 0, insurance: 0, pillar3a: 0, childcare: 0, education: 0, donations: 0, other: 0 },
+        wealth: { bankAccounts: 0, securities: 0, realEstate: 0, vehicles: 0, other: 0 },
+        confirmed: false,
+      };
+
+      return await suspend({
+        reason: 'Documents have not been processed with OCR yet. Please call process-documents tool on the uploaded files first, then resume the workflow. Cannot extract tax data without OCR text.',
+        extractedData: emptyData,
+        canEdit: true,
+      });
+    }
+
+    console.log(`[Workflow] Found ${documentsWithText.length} documents with text for extraction`);
+
+    // Extract structured data using AI with personal info context
+    // This uses the shared tax-data-extraction service internally
+    const taxData = await extractTaxData(documentsWithText, {
+      canton: inputData.personalInfo.canton,
+      taxYear: inputData.personalInfo.taxYear,
+      numberOfChildren: inputData.personalInfo.numberOfChildren,
+      maritalStatus: inputData.personalInfo.maritalStatus,
+    });
+
     const extractedData: z.infer<typeof extractedDataSchema> = {
-      income: {
-        employment: 85000,
-        selfEmployment: 0,
-        investments: 2500,
-        rental: 0,
-        other: 0,
-      },
-      deductions: {
-        professionalExpenses: 3000,
-        insurance: 2400,
-        pillar3a: 7056,
-        childcare: 0,
-        education: 500,
-        donations: 200,
-        other: 0,
-      },
-      wealth: {
-        bankAccounts: 45000,
-        securities: 15000,
-        realEstate: 0,
-        vehicles: 8000,
-        other: 0,
-      },
+      ...taxData,
       confirmed: false,
     };
 
-    console.log('[Workflow] Suspending for data review');
+    console.log('[Workflow] AI extraction completed, suspending for user review');
     return await suspend({
       reason: 'Please review the extracted data and make any corrections',
       extractedData,

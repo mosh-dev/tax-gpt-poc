@@ -464,7 +464,14 @@ export default function Chat({threadId}: ChatProps) {
         docs.forEach((d: TaxDocument) => {
           content += `- ${d.fileName} (ID: ${d.fileId})\n`;
         });
-        content += `\n**IMPORTANT: Call resume-workflow with this EXACT data:**\n`;
+
+        // Add contextual instruction for OCR processing before resuming workflow
+        content += `\n**CRITICAL - Before resuming workflow:**\n`;
+        content += `1. Call process-documents tool with fileIds: [${docs.map(d => `"${d.fileId}"`).join(', ')}]\n`;
+        content += `2. Wait for OCR to complete successfully\n`;
+        content += `3. Then call resume-workflow with the EXACT data below:\n\n`;
+
+        content += `**Call resume-workflow with:**\n`;
         content += `- stepId: "${WORKFLOW_STEPS.UPLOAD_DOCUMENTS}"\n`;
         content += `- data: ${JSON.stringify(data)}\n`;
         content += `\nDo NOT modify the stepId or data structure. Pass them exactly as shown above.\n`;
