@@ -33,7 +33,7 @@ export async function getOrCreateTaxAgent(): Promise<TaxAgent> {
   // If agent is currently being created, wait briefly and retry
   if (isCreating) {
     console.log('[TaxAgent] Agent creation in progress, waiting...');
-    await new Promise(resolve => setTimeout(resolve, 100));
+    await new Promise(resolve => setTimeout(resolve, 10));
     return getOrCreateTaxAgent(); // Retry
   }
 
