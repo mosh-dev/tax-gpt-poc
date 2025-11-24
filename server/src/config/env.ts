@@ -34,6 +34,7 @@ function getOptionalEnv(key: string): string | undefined {
 export const env = {
   // Server Configuration
   PORT: parseInt(getRequiredEnv('PORT'), 10),
+  SERVER_PORT: parseInt(getOptionalEnv('SERVER_PORT') || getRequiredEnv('PORT'), 10),
   NODE_ENV: getRequiredEnv('NODE_ENV'),
   BASE_URL: getRequiredEnv('BASE_URL'),
 
@@ -58,7 +59,8 @@ export const env = {
   JWT_REFRESH_SECRET: getRequiredEnv('JWT_REFRESH_SECRET'),
   JWT_EXPIRES_IN: getOptionalEnv('JWT_EXPIRES_IN') || '15m',
   JWT_REFRESH_EXPIRES_IN: getOptionalEnv('JWT_REFRESH_EXPIRES_IN') || '7d',
-  FORCE_SEED_SYSTEM_INSTRUCTION: getOptionalEnv('FORCE_SEED_SYSTEM_INSTRUCTION') == 'true' || false
+  FORCE_SEED_SYSTEM_INSTRUCTION: getOptionalEnv('FORCE_SEED_SYSTEM_INSTRUCTION') == 'true',
+  MASTRA_START_SERVER: getOptionalEnv('MASTRA_START_SERVER') == 'true',
 } as const;
 
 // Validate configuration at startup

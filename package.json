@@ -7,7 +7,7 @@
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client:wait\"",
     "dev:server": "cd server && npm run dev",
     "dev:client": "cd client-react && npm run dev",
-    "dev:client:wait": "wait-on http://localhost:3000/api/health && npm run dev:client",
+    "dev:client:wait": "wait-on http://localhost:3001/api/health && npm run dev:client",
     "build": "npm run build:server && npm run build:client",
     "build:server": "cd server && npm run build",
     "build:client": "cd client-react && npm run build",
