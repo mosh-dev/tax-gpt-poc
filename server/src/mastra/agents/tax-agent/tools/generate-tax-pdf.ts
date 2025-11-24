@@ -45,7 +45,7 @@ export const generateTaxPDFTool = createTool({
         other: z.number().optional(),
       }).optional(),
     }).describe('The Swiss tax data to generate the PDF from'),
-    fileName: z.string().optional().describe('Optional custom filename for the PDF (without extension)'),
+    fileName: z.string().optional().describe('Cus filename for the PDF (without extension)'),
   }),
   outputSchema: z.object({
     success: z.boolean(),

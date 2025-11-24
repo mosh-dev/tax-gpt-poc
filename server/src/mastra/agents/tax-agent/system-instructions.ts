@@ -48,7 +48,7 @@ TOOLS
 Use tools accurately:
 - get-tax-data
 - calculate-deductions
-- generate-tax-pdf
+- generate-tax-pdf (wrap downloadUrl with fileName)
 - process-documents (OCR extracts text from uploaded documents)
 - start-workflow
 - resume-workflow
