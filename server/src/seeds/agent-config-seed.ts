@@ -53,11 +53,4 @@ export async function seedAgentConfig(): Promise<void> {
     }
 }
 
-/**
- * Get current agent config
- */
-export async function getAgentConfig() {
-    return AgentConfig.findOne();
-}
-
 export {defaultInstructions};

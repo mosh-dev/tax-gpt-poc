@@ -30,42 +30,42 @@ let isCreating: boolean = false;
  * @returns Promise<TaxAgent> - Singleton agent instance
  */
 export async function getOrCreateTaxAgent(): Promise<TaxAgent> {
-    // If agent is currently being created, wait briefly and retry
-    if (isCreating) {
-        console.log('[TaxAgent] Agent creation in progress, waiting...');
-        await new Promise(resolve => setTimeout(resolve, 100));
-        return getOrCreateTaxAgent(); // Retry
-    }
+  // If agent is currently being created, wait briefly and retry
+  if (isCreating) {
+    console.log('[TaxAgent] Agent creation in progress, waiting...');
+    await new Promise(resolve => setTimeout(resolve, 100));
+    return getOrCreateTaxAgent(); // Retry
+  }
 
-    // If agent exists and doesn't need refresh, return immediately (no DB query)
-    if (taxAgentInstance && !needsRefresh) {
-        return taxAgentInstance;
-    }
+  // If agent exists and doesn't need refresh, return immediately (no DB query)
+  if (taxAgentInstance && !needsRefresh) {
+    return taxAgentInstance;
+  }
 
-    // Agent needs to be created or refreshed - query DB for latest instructions
-    console.log('[TaxAgent] Fetching instructions from database', {
-        reason: !taxAgentInstance ? 'no instance' : 'refresh requested'
+  // Agent needs to be created or refreshed - query DB for latest instructions
+  console.log('[TaxAgent] Fetching instructions from database', {
+    reason: !taxAgentInstance ? 'no instance' : 'refresh requested'
+  });
+
+  isCreating = true;
+  try {
+    const instructions = await TaxAgent.getInstructionsFromDb();
+    const agent = new TaxAgent(instructions);
+
+    taxAgentInstance = agent;
+    needsRefresh = false; // Clear refresh flag
+
+    console.log('[TaxAgent] Agent instance created successfully', {
+      instructionsLength: instructions.length
     });
 
-    isCreating = true;
-    try {
-        const instructions = await TaxAgent.getInstructionsFromDb();
-        const agent = new TaxAgent(instructions);
-
-        taxAgentInstance = agent;
-        needsRefresh = false; // Clear refresh flag
-
-        console.log('[TaxAgent] Agent instance created successfully', {
-            instructionsLength: instructions.length
-        });
-
-        return agent;
-    } catch (error) {
-        console.error('[TaxAgent] Error creating agent instance:', error);
-        throw error;
-    } finally {
-        isCreating = false;
-    }
+    return agent;
+  } catch (error) {
+    console.error('[TaxAgent] Error creating agent instance:', error);
+    throw error;
+  } finally {
+    isCreating = false;
+  }
 }
 
 /**
@@ -74,9 +74,9 @@ export async function getOrCreateTaxAgent(): Promise<TaxAgent> {
  * Sets the needsRefresh flag so next request will fetch fresh instructions
  */
 export async function invalidateTaxAgent(): Promise<void> {
-    console.log('[TaxAgent] Invalidating agent - next request will fetch fresh instructions from DB');
-    taxAgentInstance = null;
-    needsRefresh = true;
+  console.log('[TaxAgent] Invalidating agent - next request will fetch fresh instructions from DB');
+  taxAgentInstance = null;
+  needsRefresh = true;
 }
 
 /**
@@ -84,6 +84,6 @@ export async function invalidateTaxAgent(): Promise<void> {
  * Creates the singleton instance with instructions from DB
  */
 export async function initializeTaxAgent(): Promise<void> {
-    await getOrCreateTaxAgent();
-    console.log('[TaxAgent] Agent initialized successfully');
+  await getOrCreateTaxAgent();
+  console.log('[TaxAgent] Agent initialized successfully');
 }

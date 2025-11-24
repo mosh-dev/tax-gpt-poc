@@ -21,7 +21,7 @@ import { getOpenAiModel } from '@config/llm';
  * Tax Agent powered by Mastra and LMStudio
  */
 export class TaxAgent {
-  private agent: Agent;
+  public readonly agent: Agent;
   public readonly memory?: Memory;
 
   constructor(instructions: string) {
