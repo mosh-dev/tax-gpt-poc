@@ -60,4 +60,4 @@ const ConversationSchema = new Schema<IConversation>(
 ConversationSchema.index({ createdAt: -1 });
 ConversationSchema.index({ userId: 1, createdAt: -1 });
 
-export const Conversation = mongoose.model<IConversation>('Conversation', ConversationSchema);
+export const ConversationModel = mongoose.model<IConversation>('Conversation', ConversationSchema);

@@ -3,9 +3,10 @@
  * Abstract base class for document processors
  */
 
-import { DocumentProcessor, FileType, OCRConfig, OCRResult, ProcessingStatus } from '../types';
+import { DocumentProcessor, FileType, OCRConfig, ProcessingStatus } from '../types';
 import path from 'path';
 import fs from 'fs/promises';
+import { OCRResult, OCRResultWithMeta } from '@/types/ocr-result.types';
 
 export abstract class BaseDocumentProcessor implements DocumentProcessor {
   /**
@@ -51,7 +52,7 @@ export abstract class BaseDocumentProcessor implements DocumentProcessor {
   /**
    * Create base OCR result structure
    */
-  protected createBaseResult(filename: string, fileType: FileType, fileSize: number): Partial<OCRResult> {
+  protected createBaseResult(filename: string, fileType: FileType, fileSize: number): OCRResultWithMeta {
     return {
       text: '',
       status: 'pending' as ProcessingStatus,
@@ -64,7 +65,7 @@ export abstract class BaseDocumentProcessor implements DocumentProcessor {
         preprocessed: false,
         timestamp: new Date().toISOString()
       }
-    };
+    } as OCRResultWithMeta;
   }
 
   /**
@@ -77,7 +78,7 @@ export abstract class BaseDocumentProcessor implements DocumentProcessor {
   /**
    * Update processing time in result
    */
-  protected updateProcessingTime(result: OCRResult, startTime: number): OCRResult {
+  protected updateProcessingTime(result: OCRResultWithMeta, startTime: number): OCRResultWithMeta {
     result.metadata.processingTime = Date.now() - startTime;
     return result;
   }

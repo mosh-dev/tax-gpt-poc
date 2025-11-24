@@ -2,11 +2,10 @@
  * Process Document Use Case
  * Handles OCR processing of uploaded documents
  */
-
-import { IFileRepository } from '../../../domain/repositories';
-import { FileId } from '../../../domain/value-objects';
-import { ProcessDocumentDTO, ProcessDocumentResultDTO } from '../../dtos';
-import { IOCRService } from '../../services';
+import { IFileRepository } from '@core/domain/repositories/IFileRepository';
+import { IOCRService } from '@core/application/services/IOCRService';
+import { ProcessDocumentDTO, ProcessDocumentResultDTO } from '@core/application/dtos/FileDTO';
+import { FileId } from '@core/domain/value-objects/FileId';
 
 export class ProcessDocumentUseCase {
   constructor(

@@ -7,7 +7,7 @@
  */
 
 import { BaseDocumentProcessor } from './base-processor';
-import { FileType, OCRConfig, OCRResult } from '../types';
+import { FileType, OCRConfig } from '../types';
 import { ImageProcessor } from './image-processor';
 import { DEFAULT_OCR_CONFIG } from '../config';
 import path from 'path';
@@ -16,6 +16,7 @@ import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
 import type { TextItem } from 'pdfjs-dist/types/src/display/api';
 import { createCanvas } from 'canvas';
 import { PDFParse } from 'pdf-parse';
+import { OCRResult } from '@/types/ocr-result.types';
 
 // Configure PDF.js worker to use the bundled version (matches API version)
 pdfjsLib.GlobalWorkerOptions.workerSrc = require.resolve('pdfjs-dist/legacy/build/pdf.worker.mjs');
@@ -40,7 +41,7 @@ export class PDFProcessor extends BaseDocumentProcessor {
     const fileSize = await this.getFileSize(filePath);
 
     // Create base result
-    const result = this.createBaseResult(filename, 'pdf', fileSize) as OCRResult;
+    const result = this.createBaseResult(filename, 'pdf', fileSize);
     result.status = 'processing';
     result.language = config.language || DEFAULT_OCR_CONFIG.language;
 
@@ -58,7 +59,7 @@ export class PDFProcessor extends BaseDocumentProcessor {
         result.text = digitalText;
         result.wordCount = digitalWordCount;
         result.status = 'completed';
-        result.metadata.preprocessed = false;
+        (result.metadata).preprocessed = false;
 
         console.log(`[PDFProcessor] Using digital extraction (${digitalWordCount} words)`);
       } else {

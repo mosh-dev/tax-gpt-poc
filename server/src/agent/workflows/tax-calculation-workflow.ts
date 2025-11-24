@@ -5,9 +5,9 @@
 
 import { createWorkflow, createStep } from '@mastra/core/workflows';
 import { z } from 'zod';
-import { WORKFLOW_IDS, WORKFLOW_STEPS } from '@/constants';
 import { fileService } from '@services/file-service';
 import { generateTaxReturnPDF } from '@services/pdf-generator';
+import { WORKFLOW_IDS, WORKFLOW_STEPS } from '@/constants/workflow';
 
 // === SCHEMA DEFINITIONS ===
 

@@ -2,30 +2,29 @@
  * Conversation Repository Interface
  * Contract for conversation data access
  */
-
-import { Conversation } from '../entities';
-import { ConversationId } from '../value-objects';
+import { TaxGptConversation } from '@core/domain/entities/TaxGptConversation';
+import { ConversationId } from '@core/domain/value-objects/ConversationId';
 
 export interface IConversationRepository {
   /**
    * Create a new conversation
    */
-  create(conversation: Conversation): Promise<Conversation>;
+  create(conversation: TaxGptConversation): Promise<TaxGptConversation>;
 
   /**
    * Find conversation by ID
    */
-  findById(id: ConversationId): Promise<Conversation | null>;
+  findById(id: ConversationId): Promise<TaxGptConversation | null>;
 
   /**
    * Find all conversations
    */
-  findAll(userId?: string, limit?: number): Promise<Conversation[]>;
+  findAll(userId?: string, limit?: number): Promise<TaxGptConversation[]>;
 
   /**
    * Update conversation
    */
-  update(conversation: Conversation): Promise<void>;
+  update(conversation: TaxGptConversation): Promise<void>;
 
   /**
    * Delete conversation
@@ -35,7 +34,7 @@ export interface IConversationRepository {
   /**
    * Search conversations by title or metadata
    */
-  search(query: string, userId?: string, limit?: number): Promise<Conversation[]>;
+  search(query: string, userId?: string, limit?: number): Promise<TaxGptConversation[]>;
 
   /**
    * Check if conversation exists
@@ -45,5 +44,5 @@ export interface IConversationRepository {
   /**
    * Find or create conversation (atomic operation)
    */
-  findOrCreate(conversation: Conversation): Promise<Conversation>;
+  findOrCreate(conversation: TaxGptConversation): Promise<TaxGptConversation>;
 }

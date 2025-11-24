@@ -4,10 +4,10 @@
  * - Custom MongoDB collections (messages, conversations)
  * - Mastra data (threads, messages, workflow snapshots)
  */
-
-import { IConversationRepository, IMessageRepository } from '../../../domain';
-import { ConversationId } from '../../../domain';
-import { IAIAgentService } from '../../services';
+import { IConversationRepository } from '@core/domain/repositories/IConversationRepository';
+import { IMessageRepository } from '@core/domain/repositories/IMessageRepository';
+import { IAIAgentService } from '@core/application/services/IAIAgentService';
+import { ConversationId } from '@core/domain/value-objects/ConversationId';
 
 export class DeleteConversationUseCase {
   constructor(

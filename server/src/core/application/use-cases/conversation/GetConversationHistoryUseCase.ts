@@ -2,10 +2,11 @@
  * Get Conversation History Use Case
  * Retrieves conversation with all messages
  */
+import { IConversationRepository } from "@/core/domain/repositories/IConversationRepository";
+import { ConversationHistoryDTO } from '@core/application/dtos/MessageDTO';
+import { IMessageRepository } from '@core/domain/repositories/IMessageRepository';
+import { ConversationId } from '@core/domain/value-objects/ConversationId';
 
-import { IConversationRepository, IMessageRepository } from '../../../domain/repositories';
-import { ConversationId } from '../../../domain/value-objects';
-import { ConversationHistoryDTO, MessageDTO } from '../../dtos';
 
 export class GetConversationHistoryUseCase {
   constructor(

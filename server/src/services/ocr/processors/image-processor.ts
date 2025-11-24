@@ -8,9 +8,10 @@ import sharp from 'sharp';
 import fs from 'fs/promises';
 import path from 'path';
 import { BaseDocumentProcessor } from './base-processor';
-import { FileType, OCRConfig, OCRResult, PreprocessingOptions } from '../types';
+import { FileType, OCRConfig, PreprocessingOptions } from '../types';
 import { DEFAULT_OCR_CONFIG, DEFAULT_PREPROCESSING_OPTIONS } from '../config';
-import { getStoragePath } from '../../../config/storage';
+import { OCRResult, OCRResultWithMeta } from '@/types/ocr-result.types';
+import { getStoragePath } from '@config/storage';
 
 export class ImageProcessor extends BaseDocumentProcessor {
   protected supportedTypes: FileType[] = ['image'];
@@ -62,13 +63,13 @@ export class ImageProcessor extends BaseDocumentProcessor {
   /**
    * Extract text from image using Tesseract.js (standalone)
    */
-  async process(filePath: string, config: OCRConfig = DEFAULT_OCR_CONFIG): Promise<OCRResult> {
+  async process(filePath: string, config: OCRConfig = DEFAULT_OCR_CONFIG): Promise<OCRResultWithMeta> {
     const startTime = Date.now();
     const filename = path.basename(filePath);
     const fileSize = await this.getFileSize(filePath);
 
     // Create base result
-    const result = this.createBaseResult(filename, 'image', fileSize) as OCRResult;
+    const result = this.createBaseResult(filename, 'image', fileSize);
     result.status = 'processing';
 
     let processedImagePath = filePath;

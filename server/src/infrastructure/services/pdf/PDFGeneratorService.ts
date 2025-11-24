@@ -5,9 +5,14 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import { IPDFGeneratorService, PDFGenerationOptions, PDFGenerationResult } from '../../../core/application/services';
-import { generateTaxReturnPDF } from '../../../services/pdf-generator';
-import { getStoragePath } from '../../../config/storage';
+import { generateTaxReturnPDF } from '@services/pdf-generator';
+import { getStoragePath } from '@config/storage';
+import {
+  IPDFGeneratorService,
+  PDFGenerationOptions,
+  PDFGenerationResult
+} from '@core/application/services/IPDFGeneratorService';
+import { env } from '@config/env';
 
 export class PDFGeneratorService implements IPDFGeneratorService {
   async generateTaxPDF(
@@ -28,9 +33,6 @@ export class PDFGeneratorService implements IPDFGeneratorService {
 
     // Get file stats
     const stats = await fs.stat(filePath);
-
-    // Import env here
-    const { env } = require('../../../config/env');
 
     return {
       filePath,

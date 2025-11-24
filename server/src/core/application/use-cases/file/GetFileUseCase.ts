@@ -2,10 +2,9 @@
  * Get File Use Case
  * Retrieves file metadata
  */
-
-import { IFileRepository } from '../../../domain';
-import { FileId } from '../../../domain';
-import { FileDTO } from '../../dtos';
+import { IFileRepository } from '@core/domain/repositories/IFileRepository';
+import { FileDTO } from '@core/application/dtos/FileDTO';
+import { FileId } from '@core/domain/value-objects/FileId';
 
 export class GetFileUseCase {
   constructor(private fileRepository: IFileRepository) {}

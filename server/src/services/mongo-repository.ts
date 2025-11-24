@@ -6,7 +6,7 @@
 
 import { randomUUID } from 'crypto';
 import mongoose from 'mongoose';
-import { Conversation, ConversationData } from '@models/conversation.model';
+import { ConversationModel, ConversationData } from '@models/conversation.model';
 import { env } from '@config/env';
 import { MessageData, MessageModel } from '@models/message.model';
 import { FileData, FileModel } from '@models/file.model';
@@ -111,7 +111,7 @@ export class MongoRepository {
     }
 
     const doc = await this.execute(
-      async () => await Conversation.findOneAndUpdate(
+      async () => await ConversationModel.findOneAndUpdate(
         { conversationId },
         updateOp,
         {
@@ -133,7 +133,7 @@ export class MongoRepository {
    */
   async findConversationById(conversationId: string): Promise<ConversationData | null> {
     const result = await this.execute(
-      async () => await Conversation.findOne({ conversationId }).lean()
+      async () => await ConversationModel.findOne({ conversationId }).lean()
     );
     return result as ConversationData | null;
   }
@@ -144,7 +144,7 @@ export class MongoRepository {
   async getAllConversations(userId?: string, limit: number = 50): Promise<ConversationData[]> {
     const query = userId ? { userId } : {};
     const results = await this.execute(
-      async () => await Conversation.find(query)
+      async () => await ConversationModel.find(query)
         .sort({ updatedAt: -1 })
         .limit(limit)
         .lean()
@@ -161,7 +161,7 @@ export class MongoRepository {
   ): Promise<void> {
     await this.execute(
       async () => {
-        await Conversation.updateOne({ conversationId }, { $set: updates });
+        await ConversationModel.updateOne({ conversationId }, { $set: updates });
       }
     );
   }
@@ -172,7 +172,7 @@ export class MongoRepository {
   async deleteConversation(conversationId: string): Promise<void> {
     await this.execute(
       async () => {
-        await Conversation.deleteOne({ conversationId });
+        await ConversationModel.deleteOne({ conversationId });
       }
     );
   }
@@ -197,7 +197,7 @@ export class MongoRepository {
     }
 
     const results = await this.execute(
-      async () => await Conversation.find(searchQuery)
+      async () => await ConversationModel.find(searchQuery)
         .sort({ updatedAt: -1 })
         .limit(limit)
         .lean()

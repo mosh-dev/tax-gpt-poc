@@ -2,26 +2,26 @@
  * MongoDB Message Repository Implementation
  * Implements IMessageRepository using MongoDB
  */
-
-import { IMessageRepository } from '@core/domain';
-import { Message } from '@core/domain';
-import { MessageId, ConversationId } from '@core/domain';
-import { MessageModel as MessageModel } from '@models/message.model';
-import { MessageMapper } from '../mappers';
+import { IMessageRepository } from '@core/domain/repositories/IMessageRepository';
+import { TaxGptMessage } from '@core/domain/entities/TaxGptMessage';
+import { MessageMapper } from '@infrastructure/database/mongodb/mappers/MessageMapper';
+import { MessageModel } from '@models/message.model';
+import { MessageId } from '@core/domain/value-objects/MessageId';
+import { ConversationId } from '@core/domain/value-objects/ConversationId';
 
 export class MongoMessageRepository implements IMessageRepository {
-  async create(message: Message): Promise<Message> {
+  async create(message: TaxGptMessage): Promise<TaxGptMessage> {
     const data = MessageMapper.toPersistence(message);
     const doc = await MessageModel.create(data);
     return MessageMapper.toDomain(doc.toObject());
   }
 
-  async findById(id: MessageId): Promise<Message | null> {
+  async findById(id: MessageId): Promise<TaxGptMessage | null> {
     const doc = await MessageModel.findOne({ messageId: id.value }).lean();
     return doc ? MessageMapper.toDomain(doc) : null;
   }
 
-  async findByConversationId(conversationId: ConversationId, limit: number = 200): Promise<Message[]> {
+  async findByConversationId(conversationId: ConversationId, limit: number = 200): Promise<TaxGptMessage[]> {
     const docs = await MessageModel.find({ conversationId: conversationId.value })
       .sort({ createdAt: 1 })
       .limit(limit)
@@ -42,7 +42,7 @@ export class MongoMessageRepository implements IMessageRepository {
     return MessageModel.countDocuments({conversationId: conversationId.value});
   }
 
-  async getLatestByConversationId(conversationId: ConversationId): Promise<Message | null> {
+  async getLatestByConversationId(conversationId: ConversationId): Promise<TaxGptMessage | null> {
     const doc = await MessageModel.findOne({ conversationId: conversationId.value })
       .sort({ createdAt: -1 })
       .lean();

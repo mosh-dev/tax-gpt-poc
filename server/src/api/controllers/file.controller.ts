@@ -4,14 +4,12 @@
  */
 
 import { Request, Response } from 'express';
-import {
-  UploadFileUseCase,
-  ProcessDocumentUseCase,
-  GetFileUseCase,
-  DeleteFileUseCase,
-} from '@core/application/use-cases';
-import { UploadFileDTO, ProcessDocumentDTO } from '@core/application/dtos';
 import { getErrorMessage } from '@utils/error-handler';
+import { UploadFileUseCase } from '@core/application/use-cases/file/UploadFileUseCase';
+import { ProcessDocumentUseCase } from '@core/application/use-cases/file/ProcessDocumentUseCase';
+import { GetFileUseCase } from '@core/application/use-cases/file/GetFileUseCase';
+import { DeleteFileUseCase } from '@core/application/use-cases/file/DeleteFileUseCase';
+import { ProcessDocumentDTO, UploadFileDTO } from '@core/application/dtos/FileDTO';
 
 export class FileController {
   constructor(

@@ -2,21 +2,12 @@
  * OCR Service Interface
  * Contract for document OCR processing
  */
-import { OCRService } from '@services/ocr/ocr-service';
+import { OCRResult } from '@/types/ocr-result.types';
 
 export interface OCROptions {
   language?: string;
   canton?: string;
   quality?: 'fast' | 'balanced' | 'accurate';
-}
-
-export interface OCRResult {
-  text: string;
-  confidence?: number;
-  language?: string;
-  wordCount?: number;
-  processingTime?: number;
-  metadata?: Record<string, any>;
 }
 
 export interface IOCRService {

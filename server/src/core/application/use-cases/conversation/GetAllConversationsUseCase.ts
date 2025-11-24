@@ -2,9 +2,9 @@
  * Get All Conversations Use Case
  * Retrieves list of conversations for a user
  */
+import { IConversationRepository } from '@core/domain/repositories/IConversationRepository';
+import { ConversationListDTO } from '@core/application/dtos/ConversationDTO';
 
-import { IConversationRepository } from '../../../domain/repositories';
-import { ConversationListDTO } from '../../dtos';
 
 export class GetAllConversationsUseCase {
   constructor(private conversationRepository: IConversationRepository) {}

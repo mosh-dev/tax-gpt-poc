@@ -5,8 +5,8 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import { IFileStorageService, StorageOptions, StoredFileInfo } from '@core/application/services';
 import { getStoragePath } from '@config/storage';
+import { IFileStorageService, StorageOptions, StoredFileInfo } from '@core/application/services/IFileStorageService';
 
 export class LocalFileStorageService implements IFileStorageService {
   private readonly baseUrl: string;

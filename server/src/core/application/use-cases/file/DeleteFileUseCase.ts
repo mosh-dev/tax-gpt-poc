@@ -2,10 +2,9 @@
  * Delete File Use Case
  * Deletes file from storage and database
  */
-
-import { IFileRepository } from '../../../domain';
-import { FileId } from '../../../domain';
-import { IFileStorageService } from '../../services';
+import { IFileRepository } from '@core/domain/repositories/IFileRepository';
+import { IFileStorageService } from '@core/application/services/IFileStorageService';
+import { FileId } from '@core/domain/value-objects/FileId';
 
 export class DeleteFileUseCase {
   constructor(

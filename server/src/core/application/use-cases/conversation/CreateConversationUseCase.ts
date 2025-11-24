@@ -2,18 +2,17 @@
  * Create Conversation Use Case
  * Creates a new conversation
  */
-
-import { IConversationRepository } from '../../../domain/repositories';
-import { Conversation } from '../../../domain/entities';
-import { ConversationId } from '../../../domain/value-objects';
-import { CreateConversationDTO, ConversationDTO } from '../../dtos';
+import { IConversationRepository } from '@core/domain/repositories/IConversationRepository';
+import { ConversationDTO, CreateConversationDTO } from '@core/application/dtos/ConversationDTO';
+import { TaxGptConversation } from '@core/domain/entities/TaxGptConversation';
+import { ConversationId } from '@core/domain/value-objects/ConversationId';
 
 export class CreateConversationUseCase {
   constructor(private conversationRepository: IConversationRepository) {}
 
   async execute(data: CreateConversationDTO): Promise<ConversationDTO> {
     // Create domain entity
-    const conversation = new Conversation(
+    const conversation = new TaxGptConversation(
       data.conversationId ? ConversationId.create(data.conversationId) : ConversationId.generate(),
       data.title,
       data.taxYear,

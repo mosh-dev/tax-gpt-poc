@@ -7,7 +7,7 @@ import { IMessageRepository } from '@core/domain/repositories/IMessageRepository
 import { IAIAgentService } from '@core/application/services/IAIAgentService';
 import { ChatMessageDTO, StreamChatRequestDTO, StreamEventDTO } from '@core/application/dtos/ChatDTO';
 import { ConversationId } from '@core/domain/value-objects/ConversationId';
-import { Conversation } from '@models/conversation.model';
+import { ConversationModel } from '@models/conversation.model';
 import { MessageId } from '@core/domain/value-objects/MessageId';
 import { MessageRole } from '@core/domain/value-objects/MessageRole';
 import { TaxGptMessage } from '@core/domain/entities/TaxGptMessage';
@@ -51,7 +51,7 @@ export class StreamChatUseCase {
     // Generate title from first message (first 3 words)
     const title = this.generateTitleFromMessage(request.message);
 
-    const conversation = new Conversation(
+    const conversation = new ConversationModel(
       conversationId,
       title
     );

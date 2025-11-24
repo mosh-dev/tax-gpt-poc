@@ -5,10 +5,11 @@
  */
 
 import path from 'path';
-import { DocumentProcessor, FileType, OCRConfig, OCRResult, SupportedLanguage } from './types';
+import { DocumentProcessor, FileType, OCRConfig, SupportedLanguage } from './types';
 import { DEFAULT_OCR_CONFIG, getOCRConfig, getSwissCantonLanguage } from './config';
 import { ImageProcessor } from '@services/ocr/processors/image-processor';
 import { PDFProcessor } from '@services/ocr/processors/pdf-processor';
+import { OCRResult, OCRResultWithMeta } from '@/types/ocr-result.types';
 
 export class OCRService {
   private processors: Map<FileType, DocumentProcessor>;
@@ -66,7 +67,7 @@ export class OCRService {
       quality?: 'fast' | 'balanced' | 'accurate';
       config?: Partial<OCRConfig>;
     }
-  ): Promise<OCRResult> {
+  ): Promise<OCRResultWithMeta> {
     const startTime = Date.now();
 
     try {

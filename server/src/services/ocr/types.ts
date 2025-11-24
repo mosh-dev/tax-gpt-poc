@@ -2,6 +2,7 @@
  * OCR Service Type Definitions
  * Centralized type definitions for the OCR system
  */
+import { OCRResult, OCRResultWithMeta } from '@/types/ocr-result.types';
 
 export type SupportedLanguage = 'eng' | 'deu' | 'fra' | 'ita';
 export type FileType = 'image' | 'pdf' | 'unknown';
@@ -23,26 +24,6 @@ export interface OCRConfig {
   maxImageSize?: number;
   /** Enable confidence scoring */
   enableConfidence?: boolean;
-}
-
-/**
- * Result from OCR processing
- */
-export interface OCRResult {
-  /** Extracted text content */
-  text: string;
-  /** Language used for OCR */
-  language: string;
-  /** Processing status */
-  status: ProcessingStatus;
-  /** Confidence score (0-100) if available */
-  confidence?: number;
-  /** Word count in extracted text */
-  wordCount: number;
-  /** Processing metadata */
-  metadata: OCRMetadata;
-  /** Any errors that occurred */
-  error?: string;
 }
 
 /**

@@ -5,15 +5,8 @@
 import { FileId } from '@core/domain/value-objects/FileId';
 import { FileMetadata } from '@core/domain/value-objects/FileMetadata';
 import { ConversationId } from '@core/domain/value-objects/ConversationId';
+import { OCRResult } from '@/types/ocr-result.types';
 
-export interface OCRResult {
-  text: string;
-  confidence?: number;
-  language?: string;
-  wordCount?: number;
-  processingTime?: number;
-  [key: string]: any;
-}
 
 export class TaxGptFile {
   constructor(

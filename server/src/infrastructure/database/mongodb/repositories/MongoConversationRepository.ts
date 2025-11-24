@@ -2,26 +2,25 @@
  * MongoDB Conversation Repository Implementation
  * Implements IConversationRepository using MongoDB
  */
-
-import { IConversationRepository } from '@core/domain/repositories';
-import { Conversation } from '@core/domain/entities';
-import { ConversationId } from '@core/domain/value-objects';
-import { Conversation as ConversationModel } from '@models/conversation.model';
-import { ConversationMapper } from '../mappers';
+import { IConversationRepository } from '@core/domain/repositories/IConversationRepository';
+import { TaxGptConversation } from '@core/domain/entities/TaxGptConversation';
+import { ConversationMapper } from '@infrastructure/database/mongodb/mappers/ConversationMapper';
+import { ConversationId } from '@core/domain/value-objects/ConversationId';
+import { ConversationModel } from '@models/conversation.model';
 
 export class MongoConversationRepository implements IConversationRepository {
-  async create(conversation: Conversation): Promise<Conversation> {
+  async create(conversation: TaxGptConversation): Promise<TaxGptConversation> {
     const data = ConversationMapper.toPersistence(conversation);
     const doc = await ConversationModel.create(data);
     return ConversationMapper.toDomain(doc.toObject());
   }
 
-  async findById(id: ConversationId): Promise<Conversation | null> {
+  async findById(id: ConversationId): Promise<TaxGptConversation | null> {
     const doc = await ConversationModel.findOne({ conversationId: id.value }).lean();
     return doc ? ConversationMapper.toDomain(doc) : null;
   }
 
-  async findAll(userId?: string, limit: number = 50): Promise<Conversation[]> {
+  async findAll(userId?: string, limit: number = 50): Promise<TaxGptConversation[]> {
     const query = userId ? { userId } : {};
     const docs = await ConversationModel.find(query)
       .sort({ updatedAt: -1 })
@@ -31,7 +30,7 @@ export class MongoConversationRepository implements IConversationRepository {
     return ConversationMapper.toDomainArray(docs);
   }
 
-  async update(conversation: Conversation): Promise<void> {
+  async update(conversation: TaxGptConversation): Promise<void> {
     const data = ConversationMapper.toPersistence(conversation);
     await ConversationModel.updateOne(
       { conversationId: conversation.id.value },
@@ -43,7 +42,7 @@ export class MongoConversationRepository implements IConversationRepository {
     await ConversationModel.deleteOne({ conversationId: id.value });
   }
 
-  async search(query: string, userId?: string, limit: number = 20): Promise<Conversation[]> {
+  async search(query: string, userId?: string, limit: number = 20): Promise<TaxGptConversation[]> {
     const searchQuery: any = {
       $or: [
         { title: { $regex: query, $options: 'i' } },
@@ -68,7 +67,7 @@ export class MongoConversationRepository implements IConversationRepository {
     return count > 0;
   }
 
-  async findOrCreate(conversation: Conversation): Promise<Conversation> {
+  async findOrCreate(conversation: TaxGptConversation): Promise<TaxGptConversation> {
     const data = ConversationMapper.toPersistence(conversation);
 
     // Use findOneAndUpdate with upsert for atomic operation
