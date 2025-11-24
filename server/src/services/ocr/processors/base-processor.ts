@@ -6,7 +6,7 @@
 import { DocumentProcessor, FileType, OCRConfig, ProcessingStatus } from '../types';
 import path from 'path';
 import fs from 'fs/promises';
-import { OCRResult, OCRResultWithMeta } from '@/types/ocr-result.types';
+import { OCRResultThree } from '@/types/ocr-result.types';
 
 export abstract class BaseDocumentProcessor implements DocumentProcessor {
   /**
@@ -24,7 +24,7 @@ export abstract class BaseDocumentProcessor implements DocumentProcessor {
   /**
    * Abstract method to process document
    */
-  abstract process(filePath: string, config: OCRConfig): Promise<OCRResult>;
+  abstract process(filePath: string, config: OCRConfig): Promise<OCRResultThree>;
 
   /**
    * Detect file type from extension
@@ -52,7 +52,7 @@ export abstract class BaseDocumentProcessor implements DocumentProcessor {
   /**
    * Create base OCR result structure
    */
-  protected createBaseResult(filename: string, fileType: FileType, fileSize: number): OCRResultWithMeta {
+  protected createBaseResult(filename: string, fileType: FileType, fileSize: number): OCRResultThree {
     return {
       text: '',
       status: 'pending' as ProcessingStatus,
@@ -65,7 +65,7 @@ export abstract class BaseDocumentProcessor implements DocumentProcessor {
         preprocessed: false,
         timestamp: new Date().toISOString()
       }
-    } as OCRResultWithMeta;
+    } as OCRResultThree;
   }
 
   /**
@@ -78,7 +78,7 @@ export abstract class BaseDocumentProcessor implements DocumentProcessor {
   /**
    * Update processing time in result
    */
-  protected updateProcessingTime(result: OCRResultWithMeta, startTime: number): OCRResultWithMeta {
+  protected updateProcessingTime(result: OCRResultThree, startTime: number): OCRResultThree {
     result.metadata.processingTime = Date.now() - startTime;
     return result;
   }

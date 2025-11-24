@@ -5,7 +5,7 @@
 import { FileId } from '@core/domain/value-objects/FileId';
 import { FileMetadata } from '@core/domain/value-objects/FileMetadata';
 import { ConversationId } from '@core/domain/value-objects/ConversationId';
-import { OCRResult } from '@/types/ocr-result.types';
+import { OCRResultTwo } from '@/types/ocr-result.types';
 
 
 export class TaxGptFile {
@@ -15,7 +15,7 @@ export class TaxGptFile {
     private _conversationId?: ConversationId,
     private _storedPath: string = '',
     private _processed: boolean = false,
-    private _ocrResult?: OCRResult,
+    private _ocrResult?: OCRResultTwo,
     public readonly uploadedAt: Date = new Date(),
     private _expiresAt?: Date
   ) {
@@ -37,7 +37,7 @@ export class TaxGptFile {
     return this._processed;
   }
 
-  get ocrResult(): OCRResult | undefined {
+  get ocrResult(): OCRResultTwo | undefined {
     return this._ocrResult ? { ...this._ocrResult } : undefined; // Return copy
   }
 
@@ -50,7 +50,7 @@ export class TaxGptFile {
   /**
    * Mark file as processed with OCR result
    */
-  markAsProcessed(ocrResult?: OCRResult): void {
+  markAsProcessed(ocrResult?: OCRResultTwo): void {
     this._processed = true;
     if (ocrResult) {
       this.validateOCRResult(ocrResult);
@@ -68,7 +68,7 @@ export class TaxGptFile {
   /**
    * Update OCR result
    */
-  updateOCRResult(ocrResult: OCRResult): void {
+  updateOCRResult(ocrResult: OCRResultTwo): void {
     this.validateOCRResult(ocrResult);
     this._ocrResult = ocrResult;
     this._processed = true;
@@ -134,7 +134,7 @@ export class TaxGptFile {
 
   // Private validation methods
 
-  private validateOCRResult(result: OCRResult): void {
+  private validateOCRResult(result: OCRResultTwo): void {
     if (!result.text && result.text !== '') {
       throw new Error('OCR result must contain text field');
     }

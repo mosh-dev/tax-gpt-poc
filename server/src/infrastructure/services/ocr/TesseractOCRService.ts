@@ -4,7 +4,7 @@
  */
 import { ocrService } from "@/services/ocr/ocr-service";
 import { IOCRService, OCROptions } from '@core/application/services/IOCRService';
-import { OCRResult } from '@/types/ocr-result.types';
+import { OCRResultOne } from '@/types/ocr-result.types';
 
 
 export class TesseractOCRService implements IOCRService {
@@ -14,7 +14,7 @@ export class TesseractOCRService implements IOCRService {
     // Using singleton OCRService instance
   }
 
-  async processDocument(filePath: string, options?: OCROptions): Promise<OCRResult> {
+  async processDocument(filePath: string, options?: OCROptions): Promise<OCRResultOne> {
     const result = await this.ocrService.processDocument(filePath, {
       language: options?.language,
       canton: options?.canton,
@@ -31,9 +31,9 @@ export class TesseractOCRService implements IOCRService {
     };
   }
 
-  async processMultiple(filePaths: string[], options?: OCROptions): Promise<OCRResult[]> {
-      return await Promise.all(
-        filePaths.map(path => this.processDocument(path, options))
+  async processMultiple(filePaths: string[], options?: OCROptions): Promise<OCRResultOne[]> {
+    return await Promise.all(
+      filePaths.map(path => this.processDocument(path, options))
     );
   }
 

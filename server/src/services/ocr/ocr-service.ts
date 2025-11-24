@@ -9,7 +9,7 @@ import { DocumentProcessor, FileType, OCRConfig, SupportedLanguage } from './typ
 import { DEFAULT_OCR_CONFIG, getOCRConfig, getSwissCantonLanguage } from './config';
 import { ImageProcessor } from '@services/ocr/processors/image-processor';
 import { PDFProcessor } from '@services/ocr/processors/pdf-processor';
-import { OCRResult, OCRResultWithMeta } from '@/types/ocr-result.types';
+import { OCRResultThree } from '@/types/ocr-result.types';
 
 export class OCRService {
   private processors: Map<FileType, DocumentProcessor>;
@@ -67,7 +67,7 @@ export class OCRService {
       quality?: 'fast' | 'balanced' | 'accurate';
       config?: Partial<OCRConfig>;
     }
-  ): Promise<OCRResultWithMeta> {
+  ): Promise<OCRResultThree> {
     const startTime = Date.now();
 
     try {
@@ -130,8 +130,8 @@ export class OCRService {
       canton?: string;
       quality?: 'fast' | 'balanced' | 'accurate';
     }
-  ): Promise<OCRResult[]> {
-    const results: OCRResult[] = [];
+  ): Promise<OCRResultThree[]> {
+    const results: OCRResultThree[] = [];
 
     for (const filePath of filePaths) {
       try {

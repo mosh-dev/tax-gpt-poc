@@ -10,8 +10,8 @@ import path from 'path';
 import { BaseDocumentProcessor } from './base-processor';
 import { FileType, OCRConfig, PreprocessingOptions } from '../types';
 import { DEFAULT_OCR_CONFIG, DEFAULT_PREPROCESSING_OPTIONS } from '../config';
-import { OCRResult, OCRResultWithMeta } from '@/types/ocr-result.types';
 import { getStoragePath } from '@config/storage';
+import { OCRResultThree } from '@/types/ocr-result.types';
 
 export class ImageProcessor extends BaseDocumentProcessor {
   protected supportedTypes: FileType[] = ['image'];
@@ -63,7 +63,7 @@ export class ImageProcessor extends BaseDocumentProcessor {
   /**
    * Extract text from image using Tesseract.js (standalone)
    */
-  async process(filePath: string, config: OCRConfig = DEFAULT_OCR_CONFIG): Promise<OCRResultWithMeta> {
+  async process(filePath: string, config: OCRConfig = DEFAULT_OCR_CONFIG): Promise<OCRResultThree> {
     const startTime = Date.now();
     const filename = path.basename(filePath);
     const fileSize = await this.getFileSize(filePath);
@@ -168,8 +168,8 @@ export class ImageProcessor extends BaseDocumentProcessor {
   /**
    * Batch process multiple images
    */
-  async processBatch(filePaths: string[], config: OCRConfig = DEFAULT_OCR_CONFIG): Promise<OCRResult[]> {
-    const results: OCRResult[] = [];
+  async processBatch(filePaths: string[], config: OCRConfig = DEFAULT_OCR_CONFIG): Promise<OCRResultThree[]> {
+    const results: OCRResultThree[] = [];
 
     for (const filePath of filePaths) {
       const result = await this.process(filePath, config);

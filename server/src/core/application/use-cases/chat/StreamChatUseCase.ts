@@ -11,6 +11,7 @@ import { ConversationModel } from '@models/conversation.model';
 import { MessageId } from '@core/domain/value-objects/MessageId';
 import { MessageRole } from '@core/domain/value-objects/MessageRole';
 import { TaxGptMessage } from '@core/domain/entities/TaxGptMessage';
+import { TaxGptConversation } from '@core/domain/entities/TaxGptConversation';
 
 export class StreamChatUseCase {
   constructor(
@@ -51,7 +52,7 @@ export class StreamChatUseCase {
     // Generate title from first message (first 3 words)
     const title = this.generateTitleFromMessage(request.message);
 
-    const conversation = new ConversationModel(
+    const conversation = new TaxGptConversation(
       conversationId,
       title
     );

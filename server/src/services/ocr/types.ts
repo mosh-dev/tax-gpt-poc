@@ -2,7 +2,7 @@
  * OCR Service Type Definitions
  * Centralized type definitions for the OCR system
  */
-import { OCRResult, OCRResultWithMeta } from '@/types/ocr-result.types';
+import { OCRResultThree } from '@/types/ocr-result.types';
 
 export type SupportedLanguage = 'eng' | 'deu' | 'fra' | 'ita';
 export type FileType = 'image' | 'pdf' | 'unknown';
@@ -70,7 +70,7 @@ export interface DocumentProcessor {
   /** Check if processor supports this file type */
   supports(fileType: FileType): boolean;
   /** Process the document */
-  process(filePath: string, config: OCRConfig): Promise<OCRResult>;
+  process(filePath: string, config: OCRConfig): Promise<OCRResultThree>;
 }
 
 /**
@@ -90,7 +90,7 @@ export interface SwissTaxDocument {
 /**
  * Enhanced OCR result with tax document analysis
  */
-export interface TaxDocumentResult extends OCRResult {
+export interface TaxDocumentResult extends OCRResultThree {
   /** Tax document specific data */
   taxDocument?: SwissTaxDocument;
   /** Detected amounts (CHF) */

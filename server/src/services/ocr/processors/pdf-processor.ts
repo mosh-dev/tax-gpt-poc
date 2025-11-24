@@ -16,7 +16,7 @@ import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
 import type { TextItem } from 'pdfjs-dist/types/src/display/api';
 import { createCanvas } from 'canvas';
 import { PDFParse } from 'pdf-parse';
-import { OCRResult } from '@/types/ocr-result.types';
+import { OCRResultThree } from '@/types/ocr-result.types';
 
 // Configure PDF.js worker to use the bundled version (matches API version)
 pdfjsLib.GlobalWorkerOptions.workerSrc = require.resolve('pdfjs-dist/legacy/build/pdf.worker.mjs');
@@ -35,7 +35,7 @@ export class PDFProcessor extends BaseDocumentProcessor {
    * - Try digital text extraction first
    * - Fall back to OCR if insufficient text extracted
    */
-  async process(filePath: string, config: OCRConfig = DEFAULT_OCR_CONFIG): Promise<OCRResult> {
+  async process(filePath: string, config: OCRConfig = DEFAULT_OCR_CONFIG): Promise<OCRResultThree> {
     const startTime = Date.now();
     const filename = path.basename(filePath);
     const fileSize = await this.getFileSize(filePath);
@@ -201,7 +201,7 @@ export class PDFProcessor extends BaseDocumentProcessor {
   /**
    * Process multi-page PDF and return results for each page
    */
-  async processMultiPage(filePath: string, config: OCRConfig): Promise<OCRResult[]> {
+  async processMultiPage(filePath: string, config: OCRConfig): Promise<OCRResultThree[]> {
     const tempDir = path.join(path.dirname(filePath), 'temp-pdf-ocr');
     await fs.mkdir(tempDir, { recursive: true });
 
@@ -216,7 +216,7 @@ export class PDFProcessor extends BaseDocumentProcessor {
 
       const pdfDocument = await loadingTask.promise;
       const pageCount = pdfDocument.numPages;
-      const results: OCRResult[] = [];
+      const results: OCRResultThree[] = [];
 
       for (let pageNum = 1; pageNum <= pageCount; pageNum++) {
         const page = await pdfDocument.getPage(pageNum);
