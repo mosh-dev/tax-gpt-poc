@@ -3,6 +3,6 @@
  * Exports all domain entities
  */
 
-export { Conversation, ConversationMetadata } from './Conversation';
+export { Conversation } from './Conversation';
 export { Message, ToolCall } from './Message';
 export { File, OCRResult } from './File';

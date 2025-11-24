@@ -6,7 +6,7 @@
 
 import { Conversation, File, Message, ObjectMap } from '@models';
 import { randomUUID } from 'crypto';
-import mongoose, { ConnectionStates } from 'mongoose';
+import mongoose from 'mongoose';
 import { ConversationData } from '@models/conversation.model';
 import { env } from '@config/env';
 import { MessageData } from '@models/message.model';
@@ -48,7 +48,7 @@ export class MongoRepository {
    * Check if database is connected
    */
   private isConnected(): boolean {
-    return mongoose.connection.readyState === ConnectionStates.connected;
+    return mongoose.connection.readyState === mongoose.STATES.connected;
   }
 
   /**
