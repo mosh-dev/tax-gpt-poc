@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Sparkles, BarChart3, Lightbulb } from 'lucide-react';
 import ChatInput from '../Chat/ChatInput';
 import { apiService } from '../../services/api';
-import { useConversations } from '../../contexts/ConversationContext';
+import { useConversations } from '../../contexts/useConversations';
 import { v4 as uuidv4 } from 'uuid';
 
 // Props kept for backward compatibility but not used - Welcome handles its own navigation

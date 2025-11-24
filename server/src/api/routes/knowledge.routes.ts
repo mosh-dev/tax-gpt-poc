@@ -20,10 +20,10 @@ const router = Router();
 
 // Configure multer for knowledge base uploads
 const storage = multer.diskStorage({
-  destination: async (req, file, cb) => {
+  destination: (req, file, cb) => {
     const filesDir = getStoragePath('files');
-    await fs.mkdir(filesDir, { recursive: true });
-    cb(null, filesDir);
+    fs.mkdir(filesDir, { recursive: true })
+      .then(() => cb(null, filesDir));
   },
   filename: (req, file, cb) => {
     // Generate unique filename with UUID (File Service pattern)

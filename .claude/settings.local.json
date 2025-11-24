@@ -1,32 +1,7 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm install:*)",
-      "Bash(npx:*)",
-      "Bash(npm run build:*)",
-      "Bash(npm run dev:*)",
-      "Bash(npm start)",
-      "Bash(cat:*)",
-      "Bash(netstat:*)",
-      "Bash(findstr:*)",
-      "Bash(taskkill:*)",
-      "Bash(curl:*)",
-      "Bash(python -m json.tool:*)",
-      "WebSearch",
-      "WebFetch(domain:www.copilotkit.ai)",
-      "WebFetch(domain:github.com)",
-      "WebFetch(domain:docs.ag-ui.com)",
-      "WebFetch(domain:mastra.ai)",
-      "WebFetch(domain:khaledgarbaya.net)",
-      "Bash(npm uninstall:*)",
-      "Bash(npm create:*)",
-      "Bash(node:*)",
-      "Bash(npm run type-check:*)",
-      "Bash(npm view:*)",
-      "Bash(del \"C:\\Users\\mtush\\WebstormProjects\\tax-gpt\\server\\src\\services\\mock-data.ts\")",
-      "Bash(for file in *.ts)",
-      "Bash(do cp \"$file\" \"../../../../../../api/routes/$file\")",
-      "Bash(done)"
+      "Bash(npm run lint)"
     ],
     "deny": [],
     "ask": []

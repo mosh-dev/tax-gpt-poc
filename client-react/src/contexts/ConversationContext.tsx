@@ -1,20 +1,7 @@
-import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import type { Conversation } from '../types/common.types.ts';
 import { apiService } from '../services/api';
-
-interface ConversationContextType {
-  conversations: Conversation[];
-  currentThreadId: string | null;
-  loading: boolean;
-  error: string | null;
-  loadConversations: () => Promise<void>;
-  refreshConversations: () => Promise<void>;
-  setCurrentThreadId: (threadId: string | null) => void;
-  deleteConversation: (threadId: string) => Promise<void>;
-  addConversation: (conversation: Conversation) => void;
-}
-
-const ConversationContext = createContext<ConversationContextType | undefined>(undefined);
+import { ConversationContext, type ConversationContextType } from './ConversationContextDefinition';
 
 // Module-level flag to prevent duplicate requests (persists across StrictMode remounts)
 let loadingPromise: Promise<Conversation[]> | null = null;
@@ -136,12 +123,4 @@ export function ConversationProvider({ children }: { children: ReactNode }) {
       {children}
     </ConversationContext.Provider>
   );
-}
-
-export function useConversations() {
-  const context = useContext(ConversationContext);
-  if (context === undefined) {
-    throw new Error('useConversations must be used within a ConversationProvider');
-  }
-  return context;
 }

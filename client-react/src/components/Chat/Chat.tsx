@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import type { Message, StreamEvent, TaxDocument, WorkflowStatus } from '../../types/common.types.ts';
 import { apiService } from '../../services/api';
-import { useConversations } from '../../contexts/ConversationContext';
+import { useConversations } from '../../contexts/useConversations';
 import TaxDataModal from './TaxDataModal';
 import WorkflowStepMessage from './WorkflowStepMessage';
 import ChatInput from './ChatInput';
@@ -108,6 +108,7 @@ export default function Chat({threadId}: ChatProps) {
       setActiveWorkflow(null);
       loadConversation().then();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [threadId]);
 
   // Auto-scroll
@@ -115,31 +116,7 @@ export default function Chat({threadId}: ChatProps) {
     scrollToBottom();
   }, [messages, isLoading]);
 
-  const loadConversation = async () => {
-    if (!threadId) {
-      // New conversation - don't load anything
-      setMessages([]);
-      setActiveWorkflow(null);
-      return;
-    }
-
-    try {
-      const data = await apiService.getConversation(threadId);
-      setMessages(data.messages);
-
-      // Check last message for active workflow state from tool calls
-      const lastMessage = data.messages[data.messages.length - 1];
-      updateWorkflowState(lastMessage);
-    } catch (error) {
-      // Conversation not found (404) - this is expected for new conversations
-      // The conversation will be created when the first message is sent
-      // Just start with empty messages, no need to show an error
-      setMessages([]);
-      setActiveWorkflow(null);
-    }
-  };
-
-  const updateWorkflowState = (lastMessage: Message) => {
+  const updateWorkflowState = useCallback((lastMessage: Message) => {
     if (lastMessage?.toolCalls && lastMessage.toolCalls.length > 0) {
       // Find the last workflow tool call
       for (let i = lastMessage.toolCalls.length - 1; i >= 0; i--) {
@@ -165,7 +142,31 @@ export default function Chat({threadId}: ChatProps) {
     } else {
       setActiveWorkflow(null);
     }
-  }
+  }, [threadId]);
+
+  const loadConversation = useCallback(async () => {
+    if (!threadId) {
+      // New conversation - don't load anything
+      setMessages([]);
+      setActiveWorkflow(null);
+      return;
+    }
+
+    try {
+      const data = await apiService.getConversation(threadId);
+      setMessages(data.messages);
+
+      // Check last message for active workflow state from tool calls
+      const lastMessage = data.messages[data.messages.length - 1];
+      updateWorkflowState(lastMessage);
+    } catch {
+      // Conversation not found (404) - this is expected for new conversations
+      // The conversation will be created when the first message is sent
+      // Just start with empty messages, no need to show an error
+      setMessages([]);
+      setActiveWorkflow(null);
+    }
+  }, [threadId, updateWorkflowState]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});

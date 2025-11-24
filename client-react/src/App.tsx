@@ -7,9 +7,9 @@ import ErrorBoundary from './components/ErrorBoundary';
 import Login from './components/Login/Login';
 import AgentConfig from './components/AgentConfig/AgentConfig';
 import EmployeeData from './components/EmployeeData/EmployeeData';
-import { useConversations } from './contexts/ConversationContext';
 import { authService } from './services/auth';
 import { AUTH_ERROR_EVENT } from './services/api';
+import { useConversations } from "./contexts/useConversations.ts";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(authService.isAuthenticated());

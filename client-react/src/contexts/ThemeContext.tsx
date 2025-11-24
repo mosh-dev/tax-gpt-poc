@@ -1,15 +1,5 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-
-type Theme = 'light' | 'dark' | 'system';
-type ResolvedTheme = 'light' | 'dark';
-
-interface ThemeContextType {
-  theme: Theme;
-  resolvedTheme: ResolvedTheme;
-  setTheme: (theme: Theme) => void;
-}
-
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
+import React, { useEffect, useState, useMemo } from 'react';
+import { ThemeContext, type Theme, type ResolvedTheme, type ThemeContextType } from './ThemeContextDefinition';
 
 const STORAGE_KEY = 'tax_gpt_theme_preference';
 
@@ -30,13 +20,6 @@ function getStoredTheme(): Theme {
   return 'system';
 }
 
-function resolveTheme(theme: Theme): ResolvedTheme {
-  if (theme === 'system') {
-    return getSystemTheme();
-  }
-  return theme;
-}
-
 function updateDOMTheme(resolvedTheme: ResolvedTheme) {
   const root = document.documentElement;
   if (resolvedTheme === 'dark') {
@@ -48,27 +31,27 @@ function updateDOMTheme(resolvedTheme: ResolvedTheme) {
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(getStoredTheme);
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() =>
-    resolveTheme(getStoredTheme())
-  );
+  const [systemTheme, setSystemTheme] = useState<ResolvedTheme>(getSystemTheme);
 
-  // Update resolved theme when theme changes
+  // Compute resolved theme from theme and systemTheme
+  const resolvedTheme = useMemo(() => {
+    if (theme === 'system') {
+      return systemTheme;
+    }
+    return theme;
+  }, [theme, systemTheme]);
+
+  // Update DOM when resolved theme changes
   useEffect(() => {
-    const newResolvedTheme = resolveTheme(theme);
-    setResolvedTheme(newResolvedTheme);
-    updateDOMTheme(newResolvedTheme);
-  }, [theme]);
+    updateDOMTheme(resolvedTheme);
+  }, [resolvedTheme]);
 
   // Listen for system theme changes
   useEffect(() => {
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
     const handleChange = () => {
-      if (theme === 'system') {
-        const newResolvedTheme = getSystemTheme();
-        setResolvedTheme(newResolvedTheme);
-        updateDOMTheme(newResolvedTheme);
-      }
+      setSystemTheme(getSystemTheme());
     };
 
     // Modern browsers
@@ -80,7 +63,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       mediaQuery.addListener(handleChange);
       return () => mediaQuery.removeListener(handleChange);
     }
-  }, [theme]);
+  }, []);
 
   const setTheme = (newTheme: Theme) => {
     try {
@@ -102,12 +85,4 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
       {children}
     </ThemeContext.Provider>
   );
-}
-
-export function useTheme() {
-  const context = useContext(ThemeContext);
-  if (context === undefined) {
-    throw new Error('useTheme must be used within a ThemeProvider');
-  }
-  return context;
 }

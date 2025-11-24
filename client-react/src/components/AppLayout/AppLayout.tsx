@@ -1,11 +1,11 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useIsMobile } from '../../hooks/useMediaQuery';
 import Toolbar from '../Toolbar/Toolbar';
 import Sidebar from '../Sidebar/Sidebar';
-import { useConversations } from '../../contexts/ConversationContext';
 import { authService } from '../../services/auth';
 import type { Conversation } from '../../types/common.types.ts';
+import { useConversations } from "../../contexts/useConversations.ts";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -14,34 +14,26 @@ interface AppLayoutProps {
 export default function AppLayout({ children }: AppLayoutProps) {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
-  const [sidebarOpen, setSidebarOpen] = useState(() => {
-    // Lazy initialization to properly detect initial mobile state
-    if (typeof window !== 'undefined') {
-      return window.innerWidth >= 768;
-    }
-    return true;
-  });
+  // Derive sidebar state from isMobile with manual override capability
+  const [userOverride, setUserOverride] = useState(false);
+  const [manualSidebarState, setManualSidebarState] = useState(false);
+
+  // Automatically sync with responsive behavior unless user manually toggled
+  const sidebarOpen = userOverride ? manualSidebarState : !isMobile;
+
   const { conversations, loading, deleteConversation } = useConversations();
   const [searchParams] = useSearchParams();
   const currentThreadId = searchParams.get('threadId');
 
-  // Auto-close sidebar when switching to mobile, auto-open when switching to desktop
-  useEffect(() => {
-    if (isMobile) {
-      setSidebarOpen(false);
-    } else {
-      setSidebarOpen(true);
-    }
-  }, [isMobile]);
-
   const handleToggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
+    setUserOverride(true);
+    setManualSidebarState(!sidebarOpen);
   };
 
   const handleSidebarItemClick = () => {
     // Auto-close sidebar on mobile when menu item is clicked
     if (isMobile) {
-      setSidebarOpen(false);
+      setUserOverride(false); // Reset to auto-behavior
     }
   };
 
@@ -74,7 +66,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
       {/* Toolbar */}
       <Toolbar
         onToggleSidebar={handleToggleSidebar}
-        onCloseSidebar={() => setSidebarOpen(false)}
+        onCloseSidebar={() => setUserOverride(false)}
         isSidebarOpen={sidebarOpen}
         isMobile={isMobile}
       />
@@ -90,7 +82,7 @@ export default function AppLayout({ children }: AppLayoutProps) {
           onDeleteConversation={handleDeleteConversation}
           isOpen={sidebarOpen}
           isMobile={isMobile}
-          onClose={() => setSidebarOpen(false)}
+          onClose={() => setUserOverride(false)}
           onItemClick={handleSidebarItemClick}
           loading={loading}
           userName={authService.getUser()?.name}

@@ -7,7 +7,6 @@ import { IMessageRepository } from '@core/domain/repositories/IMessageRepository
 import { IAIAgentService } from '@core/application/services/IAIAgentService';
 import { ChatMessageDTO, StreamChatRequestDTO, StreamEventDTO } from '@core/application/dtos/ChatDTO';
 import { ConversationId } from '@core/domain/value-objects/ConversationId';
-import { ConversationModel } from '@models/conversation.model';
 import { MessageId } from '@core/domain/value-objects/MessageId';
 import { MessageRole } from '@core/domain/value-objects/MessageRole';
 import { TaxGptMessage } from '@core/domain/entities/TaxGptMessage';
