@@ -4,12 +4,10 @@
  */
 
 import { Request, Response } from 'express';
-import {
-  GetAllConversationsUseCase,
-  GetConversationHistoryUseCase,
-  DeleteConversationUseCase,
-} from '@core/application/use-cases';
 import { getErrorMessage } from '@utils/error-handler';
+import { GetAllConversationsUseCase } from '@core/application/use-cases/conversation/GetAllConversationsUseCase';
+import { GetConversationHistoryUseCase } from '@core/application/use-cases/conversation/GetConversationHistoryUseCase';
+import { DeleteConversationUseCase } from '@core/application/use-cases/conversation/DeleteConversationUseCase';
 
 export class ConversationController {
   constructor(

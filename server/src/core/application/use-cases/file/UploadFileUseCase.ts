@@ -2,12 +2,13 @@
  * Upload File Use Case
  * Handles file upload and storage
  */
-
-import { IFileRepository } from '../../../domain';
-import { File as FileEntity } from '../../../domain/entities';
-import { FileId, ConversationId, FileMetadata } from '../../../domain';
-import { UploadFileDTO, FileDTO } from '../../dtos';
-import { IFileStorageService } from '../../services';
+import { IFileRepository } from '@core/domain/repositories/IFileRepository';
+import { IFileStorageService } from '@core/application/services/IFileStorageService';
+import { FileDTO, UploadFileDTO } from '@core/application/dtos/FileDTO';
+import { FileId } from '@core/domain/value-objects/FileId';
+import { FileMetadata } from '@core/domain/value-objects/FileMetadata';
+import { ConversationId } from '@core/domain/value-objects/ConversationId';
+import { TaxGptFile } from '@core/domain/entities/TaxGptFile';
 
 export class UploadFileUseCase {
   constructor(
@@ -38,7 +39,7 @@ export class UploadFileUseCase {
       storedFile.url || this.fileStorageService.getFileUrl(fileName)
     );
 
-    const fileEntity = new FileEntity(
+    const fileEntity = new TaxGptFile(
       fileId,
       metadata,
       data.conversationId ? ConversationId.create(data.conversationId) : undefined,

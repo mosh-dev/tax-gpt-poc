@@ -2,8 +2,11 @@
  * Message Entity
  * Represents a single message in a conversation
  */
+import { MessageId } from '@core/domain/value-objects/MessageId';
+import { ConversationId } from '@core/domain/value-objects/ConversationId';
+import { MessageRole } from '@core/domain/value-objects/MessageRole';
+import { FileId } from '@core/domain/value-objects/FileId';
 
-import { MessageId, ConversationId, MessageRole, FileId } from '../value-objects';
 
 export interface ToolCall {
   toolName: string;
@@ -12,7 +15,7 @@ export interface ToolCall {
   result?: any;
 }
 
-export class Message {
+export class TaxGptMessage {
   constructor(
     public readonly id: MessageId,
     public readonly conversationId: ConversationId,

@@ -2,16 +2,17 @@
  * File Mapper
  * Maps between domain entities and MongoDB models
  */
-
-import { File as FileEntity } from '@core/domain/entities';
-import { FileId, ConversationId, FileMetadata } from '@core/domain/value-objects';
 import { FileData } from '@models/file.model';
+import { TaxGptFile } from '@core/domain/entities/TaxGptFile';
+import { ConversationId } from '@core/domain/value-objects/ConversationId';
+import { FileMetadata } from '@core/domain/value-objects/FileMetadata';
+import { FileId } from '@core/domain/value-objects/FileId';
 
 export class FileMapper {
   /**
    * Map from domain entity to database model
    */
-  static toPersistence(file: FileEntity): Partial<FileData> {
+  static toPersistence(file: TaxGptFile): Partial<FileData> {
     return {
       fileId: file.id.value,
       conversationId: file.conversationId?.value,
@@ -30,7 +31,7 @@ export class FileMapper {
   /**
    * Map from database model to domain entity
    */
-  static toDomain(data: FileData): FileEntity {
+  static toDomain(data: FileData): TaxGptFile {
     const metadata = new FileMetadata(
       data.originalName,
       data.mimeType,
@@ -41,7 +42,7 @@ export class FileMapper {
     // Database and domain OCR result types are now compatible
     const domainOCRResult = data.ocrResult;
 
-    const file = new FileEntity(
+    const file = new TaxGptFile(
       FileId.create(data.fileId),
       metadata,
       data.conversationId ? ConversationId.create(data.conversationId) : undefined,
@@ -58,7 +59,7 @@ export class FileMapper {
   /**
    * Map array of database models to domain entities
    */
-  static toDomainArray(dataArray: FileData[]): FileEntity[] {
+  static toDomainArray(dataArray: FileData[]): TaxGptFile[] {
     return dataArray.map(data => this.toDomain(data));
   }
 }

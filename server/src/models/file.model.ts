@@ -103,4 +103,4 @@ FileSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 // Index for efficient querying
 FileSchema.index({ conversationId: 1, uploadedAt: -1 });
 
-export const File = mongoose.model<IFile>('File', FileSchema);
+export const FileModel = mongoose.model<IFile>('File', FileSchema);

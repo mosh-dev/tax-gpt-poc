@@ -3,7 +3,7 @@
  * Handles all communication with the backend server
  */
 
-import type { Conversation, Message, FileMetadata, StreamEvent, WorkflowStatus, EmployeeScenario, Employee } from '../types';
+import type { Conversation, Message, FileMetadata, StreamEvent, WorkflowStatus, EmployeeScenario, Employee } from '../types/common.types.ts';
 import { authService } from './auth';
 
 // Get API base URL from environment variable

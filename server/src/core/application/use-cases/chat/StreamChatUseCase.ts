@@ -2,12 +2,15 @@
  * Stream Chat Use Case
  * Handles streaming chat with AI agent
  */
-
-import { IConversationRepository, IMessageRepository } from '../../../domain';
-import { Conversation, Message } from '../../../domain';
-import { ConversationId, MessageId, MessageRole } from '../../../domain';
-import { StreamChatRequestDTO, StreamEventDTO, ChatMessageDTO } from '../../dtos';
-import { IAIAgentService } from '../../services';
+import { IConversationRepository } from '@core/domain/repositories/IConversationRepository';
+import { IMessageRepository } from '@core/domain/repositories/IMessageRepository';
+import { IAIAgentService } from '@core/application/services/IAIAgentService';
+import { ChatMessageDTO, StreamChatRequestDTO, StreamEventDTO } from '@core/application/dtos/ChatDTO';
+import { ConversationId } from '@core/domain/value-objects/ConversationId';
+import { Conversation } from '@models/conversation.model';
+import { MessageId } from '@core/domain/value-objects/MessageId';
+import { MessageRole } from '@core/domain/value-objects/MessageRole';
+import { TaxGptMessage } from '@core/domain/entities/TaxGptMessage';
 
 export class StreamChatUseCase {
   constructor(
@@ -57,7 +60,7 @@ export class StreamChatUseCase {
     await this.conversationRepository.findOrCreate(conversation);
 
     // 2. Save user message
-    const userMessage = new Message(
+    const userMessage = new TaxGptMessage(
       MessageId.generate(),
       conversationId,
       MessageRole.User(),
@@ -187,7 +190,7 @@ export class StreamChatUseCase {
 
       // 5. Save assistant message
       if (assistantContent.trim()) {
-        const assistantMessage = new Message(
+        const assistantMessage = new TaxGptMessage(
           MessageId.generate(),
           conversationId,
           MessageRole.Assistant(),

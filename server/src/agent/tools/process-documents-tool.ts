@@ -7,8 +7,8 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 import stringify from 'safe-stable-stringify';
-import { ocrService } from '@services/ocr';
 import { mongoRepository } from '@services/mongo-repository';
+import { ocrService } from '@services/ocr/ocr-service';
 
 /**
  * Safely serialize any value to ensure it's JSON-safe
@@ -24,6 +24,7 @@ function safeSerialize(value: any): any {
     } catch {
       // Fallback: basic cleanup
       return value
+        // eslint-disable-next-line no-control-regex
         .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
         .replace(/\r\n/g, '\n')
         .replace(/\r/g, '\n')

@@ -4,8 +4,8 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { workflowService, type WorkflowStatus } from '@agent/workflows';
 import { getErrorMessage } from '@utils/error-handler';
+import { workflowService } from '@agent/workflows/workflow-service';
 
 const router = Router();
 

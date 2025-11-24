@@ -2,8 +2,7 @@
  * Conversation Entity
  * Represents a tax conversation between user and AI assistant
  */
-
-import { ConversationId } from '../value-objects';
+import { ConversationId } from '@core/domain/value-objects/ConversationId';
 
 export interface ConversationMetadata {
   location?: string;
@@ -13,7 +12,7 @@ export interface ConversationMetadata {
   [key: string]: any;
 }
 
-export class Conversation {
+export class TaxGptConversation {
   constructor(
     public readonly id: ConversationId,
     private _title: string,

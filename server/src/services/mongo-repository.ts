@@ -4,13 +4,13 @@
  * Provides abstraction over Mongoose models
  */
 
-import { Conversation, File, Message, ObjectMap } from '@models';
 import { randomUUID } from 'crypto';
 import mongoose from 'mongoose';
-import { ConversationData } from '@models/conversation.model';
+import { Conversation, ConversationData } from '@models/conversation.model';
 import { env } from '@config/env';
-import { MessageData } from '@models/message.model';
-import { FileData } from '@models/file.model';
+import { MessageData, MessageModel } from '@models/message.model';
+import { FileData, FileModel } from '@models/file.model';
+import { ObjectMap } from '@/types/common.types';
 
 export interface CreateConversationData {
   conversationId?: string;
@@ -212,7 +212,7 @@ export class MongoRepository {
    */
   async createMessage(data: CreateMessageData): Promise<MessageData | null> {
     const doc = await this.execute(
-      async () => await Message.create({
+      async () => await MessageModel.create({
         conversationId: data.conversationId,
         role: data.role,
         content: data.content,
@@ -232,7 +232,7 @@ export class MongoRepository {
     limit: number = 200
   ): Promise<MessageData[]> {
     const results = await this.execute(
-      async () => await Message.find({ conversationId })
+      async () => await MessageModel.find({ conversationId })
         .sort({ createdAt: 1 })
         .limit(limit)
         .lean()
@@ -246,7 +246,7 @@ export class MongoRepository {
   async deleteMessagesByConversationId(conversationId: string): Promise<void> {
     await this.execute(
       async () => {
-        await Message.deleteMany({ conversationId });
+        await MessageModel.deleteMany({ conversationId });
       }
     );
   }
@@ -258,7 +258,7 @@ export class MongoRepository {
    */
   async createFile(data: CreateFileData): Promise<FileData | null> {
     const doc = await this.execute(
-      async () => await File.create({
+      async () => await FileModel.create({
         fileId: data.fileId,
         conversationId: data.conversationId,
         originalName: data.originalName,
@@ -280,7 +280,7 @@ export class MongoRepository {
    */
   async findFileById(fileId: string): Promise<FileData | null> {
     const result = await this.execute(
-      async () => await File.findOne({ fileId }).lean()
+      async () => await FileModel.findOne({ fileId }).lean()
     );
     return result as FileData | null;
   }
@@ -291,7 +291,7 @@ export class MongoRepository {
   async updateFile(fileId: string, updates: Partial<CreateFileData>): Promise<void> {
     await this.execute(
       async () => {
-        await File.updateOne({ fileId }, { $set: updates });
+        await FileModel.updateOne({ fileId }, { $set: updates });
       }
     );
   }
@@ -306,7 +306,7 @@ export class MongoRepository {
     }
     await this.execute(
       async () => {
-        await File.updateOne({ fileId }, { $set: updateData });
+        await FileModel.updateOne({ fileId }, { $set: updateData });
       }
     );
   }
@@ -317,7 +317,7 @@ export class MongoRepository {
   async deleteFile(fileId: string): Promise<void> {
     await this.execute(
       async () => {
-        await File.deleteOne({ fileId });
+        await FileModel.deleteOne({ fileId });
       }
     );
   }
@@ -327,7 +327,7 @@ export class MongoRepository {
    */
   async getFilesByConversationId(conversationId: string): Promise<FileData[]> {
     const results = await this.execute(
-      async () => await File.find({ conversationId })
+      async () => await FileModel.find({ conversationId })
         .sort({ uploadedAt: -1 })
         .lean()
     );
@@ -339,7 +339,7 @@ export class MongoRepository {
    */
   async findExpiredFiles(): Promise<FileData[]> {
     const results = await this.execute(
-      async () => await File.find({
+      async () => await FileModel.find({
         expiresAt: { $lt: new Date() },
       }).lean()
     );
@@ -352,7 +352,7 @@ export class MongoRepository {
   async deleteExpiredFiles(): Promise<number> {
     return await this.execute(
       async () => {
-        const res = await File.deleteMany({
+        const res = await FileModel.deleteMany({
           expiresAt: {$lt: new Date()},
         });
         return res.deletedCount || 0;

@@ -3,8 +3,6 @@
  * Contract for AI agent interactions (kept separate from clean architecture)
  */
 
-import { Message } from '../../domain/entities';
-
 export interface StreamEvent {
   type: string;
   content?: string;

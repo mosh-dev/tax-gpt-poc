@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Users, DollarSign, Calendar, ChevronDown, ChevronUp } from 'lucide-react';
 import { apiService } from '../../services/api';
-import type { Employee, SwissTaxData } from '../../types';
+import type { Employee, SwissTaxData } from '../../types/common.types.ts';
 
 export default function EmployeeData() {
   const [employees, setEmployees] = useState<Employee[]>([]);

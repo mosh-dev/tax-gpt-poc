@@ -9,7 +9,6 @@ import { connectDatabase } from '@config/database';
 import { getStoragePath } from '@config/storage';
 import { env } from '@config/env';
 import { initializeLLMClient } from '@config/llm';
-import { initializeContainer } from '@/di';
 import { runAllSeeds } from '@/seeds/run-seed';
 import { getErrorMessage } from '@utils/error-handler';
 import { workflowRoutes } from '@api/routes/workflow.routes';
@@ -21,8 +20,10 @@ import { createFileRoutes } from '@api/routes/file.routes';
 import { createConversationRoutes } from '@api/routes/conversation.routes';
 import { initializeTaxAgent } from '@agent/setup';
 import { createChatRoutes } from '@api/routes/chat.routes';
-import { MastraAIAgentService, TesseractOCRService } from '@/infrastructure';
-import { authMiddleware } from '@/api';
+import { initializeContainer } from '@/di/container';
+import { MastraAIAgentService } from '@infrastructure/services/ai/MastraAIAgentService';
+import { TesseractOCRService } from '@infrastructure/services/ocr/TesseractOCRService';
+import { authMiddleware } from '@api/middleware/auth.middleware';
 
 const app: Express = express();
 

@@ -2,25 +2,26 @@
  * Message Repository Interface
  * Contract for message data access
  */
+import { TaxGptMessage } from '@core/domain/entities/TaxGptMessage';
+import { ConversationId } from '@core/domain/value-objects/ConversationId';
+import { MessageId } from '@core/domain/value-objects/MessageId';
 
-import { Message } from '../entities';
-import { MessageId, ConversationId } from '../value-objects';
 
 export interface IMessageRepository {
   /**
    * Create a new message
    */
-  create(message: Message): Promise<Message>;
+  create(message: TaxGptMessage): Promise<TaxGptMessage>;
 
   /**
    * Find message by ID
    */
-  findById(id: MessageId): Promise<Message | null>;
+  findById(id: MessageId): Promise<TaxGptMessage | null>;
 
   /**
    * Find all messages for a conversation
    */
-  findByConversationId(conversationId: ConversationId, limit?: number): Promise<Message[]>;
+  findByConversationId(conversationId: ConversationId, limit?: number): Promise<TaxGptMessage[]>;
 
   /**
    * Delete message
@@ -40,5 +41,5 @@ export interface IMessageRepository {
   /**
    * Get latest message in a conversation
    */
-  getLatestByConversationId(conversationId: ConversationId): Promise<Message | null>;
+  getLatestByConversationId(conversationId: ConversationId): Promise<TaxGptMessage | null>;
 }

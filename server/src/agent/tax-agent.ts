@@ -1,15 +1,6 @@
 import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
 import { getOpenAiModel } from '@config/llm';
-import {
-  calculateDeductionsTool,
-  generateTaxPDFTool,
-  getTaxDataTool,
-  processDocumentsTool,
-  resumeWorkflowTool,
-  searchKnowledgeTool,
-  startWorkflowTool
-} from './tools';
 import { createMastraMemory, createMemoryConfigFromEnv } from './mastra-memory';
 import { AgentConfig } from '@models/agent-config.model';
 import { encode } from 'gpt-tokenizer';
@@ -17,6 +8,13 @@ import { getCollection } from '@config/database-utils';
 import { MASTRA_COLLECTIONS } from '@config/database-collections';
 import { agentLogger, logLLMResponse, logStreamError, logToolCall, logToolResult } from '@config/logger';
 import { getErrorMessage } from '@utils/error-handler';
+import { getTaxDataTool } from '@agent/tools/get-tax-data';
+import { calculateDeductionsTool } from '@agent/tools/calculate-deductions';
+import { generateTaxPDFTool } from '@agent/tools/generate-tax-pdf';
+import { processDocumentsTool } from '@agent/tools/process-documents-tool';
+import { startWorkflowTool } from '@agent/tools/start-workflow-tool';
+import { resumeWorkflowTool } from '@agent/tools/resume-workflow-tool';
+import { searchKnowledgeTool } from '@agent/tools/search-knowledge-tool';
 
 /**
  * Tax Agent powered by Mastra and LMStudio

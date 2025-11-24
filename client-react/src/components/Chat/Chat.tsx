@@ -2,7 +2,7 @@ import {useEffect, useRef, useState} from 'react';
 import {useLocation, useNavigate} from 'react-router-dom';
 import {marked} from 'marked';
 import DOMPurify from 'dompurify';
-import type {Message, StreamEvent, TaxDocument, WorkflowStatus} from '../../types';
+import type {Message, StreamEvent, TaxDocument, WorkflowStatus} from '../../types/common.types.ts';
 import {apiService} from '../../services/api';
 import {useConversations} from '../../contexts/ConversationContext';
 import TaxDataModal from './TaxDataModal';

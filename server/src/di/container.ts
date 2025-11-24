@@ -2,44 +2,28 @@
  * Dependency Injection Container
  * Wires all dependencies together
  */
-
-// Domain repositories (interfaces)
-import type { IConversationRepository, IMessageRepository, IFileRepository } from '@core/domain';
-
-// Infrastructure implementations
-import {
-  MongoConversationRepository,
-  MongoMessageRepository,
-  MongoFileRepository,
-} from '@infrastructure';
-import { LocalFileStorageService } from '@infrastructure';
-
-// Application use cases
-import {
-  GetAllConversationsUseCase,
-  GetConversationHistoryUseCase,
-  DeleteConversationUseCase,
-  CreateConversationUseCase,
-  StreamChatUseCase,
-  UploadFileUseCase,
-  ProcessDocumentUseCase,
-  GetFileUseCase,
-  DeleteFileUseCase,
-} from '@core/application';
-
-// Application services (interfaces)
-import type {
-  IFileStorageService,
-  IAIAgentService,
-  IOCRService,
-} from '@core/application';
-
-// API controllers
-import {
-  ConversationController,
-  ChatController,
-  FileController,
-} from '@api/controllers';
+import { MongoConversationRepository } from '@infrastructure/database/mongodb/repositories/MongoConversationRepository';
+import { MongoMessageRepository } from '@infrastructure/database/mongodb/repositories/MongoMessageRepository';
+import { MongoFileRepository } from '@infrastructure/database/mongodb/repositories/MongoFileRepository';
+import { LocalFileStorageService } from '@infrastructure/services/storage/LocalFileStorageService';
+import { IFileStorageService } from '@core/application/services/IFileStorageService';
+import { IMessageRepository } from '@core/domain/repositories/IMessageRepository';
+import { IConversationRepository } from '@core/domain/repositories/IConversationRepository';
+import { IFileRepository } from '@core/domain/repositories/IFileRepository';
+import { IAIAgentService } from '@core/application/services/IAIAgentService';
+import { IOCRService } from '@core/application/services/IOCRService';
+import { GetAllConversationsUseCase } from '@core/application/use-cases/conversation/GetAllConversationsUseCase';
+import { GetConversationHistoryUseCase } from '@core/application/use-cases/conversation/GetConversationHistoryUseCase';
+import { DeleteConversationUseCase } from '@core/application/use-cases/conversation/DeleteConversationUseCase';
+import { CreateConversationUseCase } from '@core/application/use-cases/conversation/CreateConversationUseCase';
+import { StreamChatUseCase } from '@core/application/use-cases/chat/StreamChatUseCase';
+import { UploadFileUseCase } from '@core/application/use-cases/file/UploadFileUseCase';
+import { ProcessDocumentUseCase } from '@core/application/use-cases/file/ProcessDocumentUseCase';
+import { GetFileUseCase } from '@core/application/use-cases/file/GetFileUseCase';
+import { DeleteFileUseCase } from '@core/application/use-cases/file/DeleteFileUseCase';
+import { ConversationController } from '@api/controllers/conversation.controller';
+import { ChatController } from '@api/controllers/chat.controller';
+import { FileController } from '@api/controllers/file.controller';
 
 /**
  * Container holds all instantiated dependencies

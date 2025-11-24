@@ -5,7 +5,7 @@ import Toolbar from '../Toolbar/Toolbar';
 import Sidebar from '../Sidebar/Sidebar';
 import { useConversations } from '../../contexts/ConversationContext';
 import { authService } from '../../services/auth';
-import type { Conversation } from '../../types';
+import type { Conversation } from '../../types/common.types.ts';
 
 interface AppLayoutProps {
   children: React.ReactNode;

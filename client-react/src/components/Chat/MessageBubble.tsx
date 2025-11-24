@@ -1,5 +1,5 @@
 import { Copy, Edit2 } from 'lucide-react';
-import type { Message } from '../../types';
+import type { Message } from '../../types/common.types.ts';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 

@@ -2,6 +2,7 @@
  * OCR Service Interface
  * Contract for document OCR processing
  */
+import { OCRService } from '@services/ocr/ocr-service';
 
 export interface OCROptions {
   language?: string;

@@ -7,10 +7,10 @@ import { Mastra } from '@mastra/core';
 import { MongoDBStore } from '@mastra/mongodb';
 import { taxCalculationWorkflow } from './tax-calculation-workflow';
 import { env } from '@config/env';
-import { WORKFLOW_IDS, WORKFLOW_STATUS } from '@/constants';
 import { getCollection } from '@config/database-utils';
 import { MASTRA_COLLECTIONS } from '@config/database-collections';
 import { getErrorMessage } from '@utils/error-handler';
+import { WORKFLOW_IDS } from '@/constants/workflow';
 
 // Create MongoDB storage for workflow snapshots
 const workflowStorage = new MongoDBStore({

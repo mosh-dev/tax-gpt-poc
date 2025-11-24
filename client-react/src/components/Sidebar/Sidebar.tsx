@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Search, MessageSquare, Trash2, HelpCircle, FileText, LogOut, User, Settings, Users } from 'lucide-react';
-import type { Conversation } from '../../types';
+import type { Conversation } from '../../types/common.types.ts';
 
 interface SidebarProps {
   conversations: Conversation[];

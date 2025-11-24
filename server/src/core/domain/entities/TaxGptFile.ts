@@ -2,8 +2,9 @@
  * File Entity
  * Represents an uploaded file with OCR processing capability
  */
-
-import { FileId, ConversationId, FileMetadata } from '../value-objects';
+import { FileId } from '@core/domain/value-objects/FileId';
+import { FileMetadata } from '@core/domain/value-objects/FileMetadata';
+import { ConversationId } from '@core/domain/value-objects/ConversationId';
 
 export interface OCRResult {
   text: string;
@@ -14,7 +15,7 @@ export interface OCRResult {
   [key: string]: any;
 }
 
-export class File {
+export class TaxGptFile {
   constructor(
     public readonly id: FileId,
     public readonly metadata: FileMetadata,

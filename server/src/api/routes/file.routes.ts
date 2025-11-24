@@ -5,7 +5,7 @@
 
 import { Router } from 'express';
 import multer from 'multer';
-import { FileController } from '../controllers';
+import { FileController } from '@api/controllers/file.controller';
 
 // Configure multer for in-memory file storage
 const upload = multer({

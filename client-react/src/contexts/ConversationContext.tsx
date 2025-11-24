@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react';
-import type { Conversation } from '../types';
+import type { Conversation } from '../types/common.types.ts';
 import { apiService } from '../services/api';
 
 interface ConversationContextType {

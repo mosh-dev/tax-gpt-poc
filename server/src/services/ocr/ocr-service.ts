@@ -6,8 +6,9 @@
 
 import path from 'path';
 import { DocumentProcessor, FileType, OCRConfig, OCRResult, SupportedLanguage } from './types';
-import { ImageProcessor, PDFProcessor } from './processors';
 import { DEFAULT_OCR_CONFIG, getOCRConfig, getSwissCantonLanguage } from './config';
+import { ImageProcessor } from '@services/ocr/processors/image-processor';
+import { PDFProcessor } from '@services/ocr/processors/pdf-processor';
 
 export class OCRService {
   private processors: Map<FileType, DocumentProcessor>;

@@ -4,7 +4,7 @@
  */
 
 import { Router } from 'express';
-import { ConversationController } from '../controllers';
+import { ConversationController } from '@api/controllers/conversation.controller';
 
 export function createConversationRoutes(controller: ConversationController): Router {
   const router = Router();

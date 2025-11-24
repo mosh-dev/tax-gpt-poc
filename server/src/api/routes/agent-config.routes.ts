@@ -5,8 +5,8 @@
 
 import { Router, Request, Response } from 'express';
 import { AgentConfig } from '@models/agent-config.model';
-import { invalidateTaxAgent } from '@agent';
 import { getErrorMessage } from '@utils/error-handler';
+import { invalidateTaxAgent } from '@agent/setup';
 
 const router = Router();
 
