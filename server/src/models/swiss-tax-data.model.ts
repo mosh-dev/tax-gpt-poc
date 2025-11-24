@@ -1,32 +1,4 @@
 /**
- * Message in a conversation
- */
-export interface Message {
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-  timestamp: string;
-}
-
-/**
- * Chat request from client
- */
-export interface ChatRequest {
-  message: string;
-  threadId?: string; // Optional for new conversations, will be generated on server
-  userId?: string;
-}
-
-/**
- * Chat response to client
- */
-export interface ChatResponse {
-  success: boolean;
-  message?: string;
-  error?: string;
-  timestamp: string;
-}
-
-/**
  * Swiss tax data structure
  */
 export interface SwissTaxData {

@@ -9,7 +9,7 @@ import multer from 'multer';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { getStoragePath } from '@config/storage';
-import { getRAGService } from '@services/rag';
+import { getRAGService } from '@services/rag/rag-service';
 import { authMiddleware } from '../middleware/auth.middleware';
 import { fileService } from '@services/file-service';
 import { env } from '@config/env';

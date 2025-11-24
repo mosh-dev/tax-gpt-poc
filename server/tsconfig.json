@@ -18,19 +18,12 @@
     "paths": {
       "@/*": ["./*"],
       "@config/*": ["./config/*"],
-      "@api": ["./api"],
       "@api/*": ["./api/*"],
-      "@core": ["./core"],
       "@core/*": ["./core/*"],
-      "@infrastructure": ["./infrastructure"],
       "@infrastructure/*": ["./infrastructure/*"],
-      "@agent": ["./agent"],
       "@agent/*": ["./agent/*"],
-      "@models": ["./models"],
       "@models/*": ["./models/*"],
-      "@services": ["./services"],
       "@services/*": ["./services/*"],
-      "@utils": ["./utils"],
       "@utils/*": ["./utils/*"]
     },
     "types": ["node"]

@@ -3,15 +3,15 @@
   "version": "1.0.0",
   "description": "Backend server for Tax-GPT application",
   "type": "module",
-  "main": "dist/index.js",
+  "main": "dist/server.js",
   "scripts": {
     "build": "tsc && tsc-alias && copyfiles -u 1 \"src/assets/**/*\" dist",
-    "dev": "tsx watch src/index.ts",
-    "start": "node dist/index.js",
+    "dev": "tsx watch src/server.ts",
+    "start": "node dist/server.js",
     "lint": "eslint src/**/*.ts",
     "lint:fix": "eslint src/**/*.ts --fix",
     "type-check": "tsc --noEmit",
-    "dev:mastra": "mastra dev --dir src/mastra-dev"
+    "dev:mastra": "mastra dev --dir src/mastra"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^1.0.25",

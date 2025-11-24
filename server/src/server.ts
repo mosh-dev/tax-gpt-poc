@@ -9,12 +9,20 @@ import { connectDatabase } from '@config/database';
 import { getStoragePath } from '@config/storage';
 import { env } from '@config/env';
 import { initializeLLMClient } from '@config/llm';
-import { initializeTaxAgent } from '@agent';
 import { initializeContainer } from '@/di';
-import { createConversationRoutes, createChatRoutes, createFileRoutes, workflowRoutes, authRoutes, agentConfigRoutes, employeeRoutes, knowledgeRoutes, authMiddleware } from '@api';
-import { MastraAIAgentService, TesseractOCRService } from '@infrastructure';
-import { runAllSeeds } from '@/seeds';
+import { runAllSeeds } from '@/seeds/run-seed';
 import { getErrorMessage } from '@utils/error-handler';
+import { workflowRoutes } from '@api/routes/workflow.routes';
+import { agentConfigRoutes } from '@api/routes/agent-config.routes';
+import { authRoutes } from '@api/routes/auth.routes';
+import { employeeRoutes } from '@api/routes/employee.routes';
+import knowledgeRoutes from '@api/routes/knowledge.routes';
+import { createFileRoutes } from '@api/routes/file.routes';
+import { createConversationRoutes } from '@api/routes/conversation.routes';
+import { initializeTaxAgent } from '@agent/setup';
+import { createChatRoutes } from '@api/routes/chat.routes';
+import { MastraAIAgentService, TesseractOCRService } from '@/infrastructure';
+import { authMiddleware } from '@/api';
 
 const app: Express = express();
 
@@ -27,13 +35,13 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Request logging middleware
-app.use((req: Request, res: Response, next: NextFunction) => {
+app.use((req: Request, _: Response, next: NextFunction) => {
   console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
   next();
 });
 
 // Health check endpoint
-app.get('/api/health', (req: Request, res: Response) => {
+app.get('/api/health', (_: Request, res: Response) => {
   res.json({
     status: 'ok',
     message: 'Tax-GPT server is running (Clean Architecture)',
@@ -107,7 +115,7 @@ async function setupApplication() {
   });
 
   // Global error handler
-  app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  app.use((err: Error, _: Request, res: Response, _next: NextFunction) => {
     console.error('Error:', err.message);
     console.error('Stack:', err.stack);
 
@@ -162,6 +170,7 @@ process.on('uncaughtException', (error: Error) => {
   }
 });
 
-startServer();
+await startServer();
 
+// noinspection JSUnusedGlobalSymbols
 export default app;

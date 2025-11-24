@@ -3,9 +3,8 @@
  * Seeds the database with mock employee/tax data
  */
 
-import { Employee } from '@models';
-import { SwissTaxData } from '@/types';
-import { EmployeeData } from '@models/employee.model';
+import { Employee, EmployeeData } from '@models/employee.model';
+import { SwissTaxData } from '@models/swiss-tax-data.model';
 
 // Scenario 1: Single employee in Zurich
 const mockEmployeeSingle: SwissTaxData = {
