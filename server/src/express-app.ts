@@ -20,6 +20,13 @@ import { initializeContainer } from '@/di/container';
 import { MastraAIAgentService } from '@infrastructure/services/ai/MastraAIAgentService';
 import { TesseractOCRService } from '@infrastructure/services/ocr/TesseractOCRService';
 import { authMiddleware } from '@api/middleware/auth.middleware';
+import { Mastra } from '@mastra/core';
+import { workflowStorage } from '@/mastra/storage/workflow-storage';
+import { taxCalculationWorkflow } from '@/mastra/workflows/tax-calculation/tax-calculation-workflow';
+import { PinoLogger } from '@mastra/loggers';
+import { Observability } from '@mastra/observability';
+import { setMastra } from '@/mastra/mastra-instance';
+import { getOrCreateTaxAgent } from '@/mastra/agents/tax-agent/tax-agent.handler';
 
 /**
  * Create and configure Express application
@@ -28,6 +35,26 @@ import { authMiddleware } from '@api/middleware/auth.middleware';
 export async function createExpressApp(): Promise<Express> {
   // Initialize database, seeds, and LLM client (idempotent)
   await initializeApp();
+
+  const taxAgentWrapper = await getOrCreateTaxAgent();
+  const mastra = new Mastra({
+    agents: {taxAgent: taxAgentWrapper.agent},
+    storage: workflowStorage,
+    workflows: {
+      taxCalculation: taxCalculationWorkflow,
+    },
+    logger: new PinoLogger({
+      name: 'Mastra',
+      level: 'info',
+    }),
+    observability: new Observability({
+      default: {enabled: true},
+    }),
+  });
+  console.log('[Mastra] Mastra instance initialized successfully');
+  setMastra(mastra);
+
+
   const app: Express = express();
 
   // Middleware
