@@ -1,14 +1,14 @@
-import {useEffect, useRef, useState} from 'react';
-import {useLocation, useNavigate} from 'react-router-dom';
-import {marked} from 'marked';
+import { useEffect, useRef, useState } from 'react';
+import { useLocation, useNavigate } from 'react-router-dom';
+import { marked } from 'marked';
 import DOMPurify from 'dompurify';
-import type {Message, StreamEvent, TaxDocument, WorkflowStatus} from '../../types/common.types.ts';
-import {apiService} from '../../services/api';
-import {useConversations} from '../../contexts/ConversationContext';
+import type { Message, StreamEvent, TaxDocument, WorkflowStatus } from '../../types/common.types.ts';
+import { apiService } from '../../services/api';
+import { useConversations } from '../../contexts/ConversationContext';
 import TaxDataModal from './TaxDataModal';
 import WorkflowStepMessage from './WorkflowStepMessage';
 import ChatInput from './ChatInput';
-import {STEP_TITLES, TOOL_NAMES, WORKFLOW_IDS, WORKFLOW_STATUS, WORKFLOW_STEPS} from '../../constants';
+import { STEP_TITLES, TOOL_NAMES, WORKFLOW_IDS, WORKFLOW_STATUS, WORKFLOW_STEPS } from "../../constants/workflow.ts";
 
 interface LocationState {
   initialMessage?: string;
@@ -27,13 +27,14 @@ interface SwissTaxData {
   maritalStatus?: string;
   income?: number;
   deductions?: number;
+
   [key: string]: any;
 }
 
-export default function Chat({ threadId }: ChatProps) {
+export default function Chat({threadId}: ChatProps) {
   const navigate = useNavigate();
   const location = useLocation();
-  const { loadConversations } = useConversations();
+  const {loadConversations} = useConversations();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false); // Track if assistant is actively streaming
@@ -60,7 +61,7 @@ export default function Chat({ threadId }: ChatProps) {
       breaks: false,
       gfm: true,
       renderer: {
-        link({ href, title, text }) {
+        link({href, title, text}) {
           const titleAttr = title ? ` title="${title}"` : '';
           return `<a href="${href}"${titleAttr} target="_blank" rel="noopener noreferrer">${text}</a>`;
         }
@@ -129,7 +130,7 @@ export default function Chat({ threadId }: ChatProps) {
       // Check last message for active workflow state from tool calls
       const lastMessage = data.messages[data.messages.length - 1];
       updateWorkflowState(lastMessage);
-    } catch (err) {
+    } catch (_) {
       // Conversation not found (404) - this is expected for new conversations
       // The conversation will be created when the first message is sent
       // Just start with empty messages, no need to show an error
@@ -138,36 +139,36 @@ export default function Chat({ threadId }: ChatProps) {
     }
   };
 
-  const updateWorkflowState = (lastMessage : Message) => {
-      if (lastMessage?.toolCalls && lastMessage.toolCalls.length > 0) {
-          // Find the last workflow tool call
-          for (let i = lastMessage.toolCalls.length - 1; i >= 0; i--) {
-              const toolCall = lastMessage.toolCalls[i];
-              if ((toolCall.toolName === TOOL_NAMES.START_WORKFLOW || toolCall.toolName === TOOL_NAMES.RESUME_WORKFLOW) && toolCall.result) {
-                  const result = toolCall.result;
-                  // Check if workflow is suspended (not completed)
-                  if (result.success && !result.completed && result.runId) {
-                      setActiveWorkflow({
-                          runId: result.runId,
-                          threadId: threadId,
-                          workflowId: WORKFLOW_IDS.TAX_CALCULATION,
-                          status: WORKFLOW_STATUS.SUSPENDED,
-                          currentStep: result.nextStep || result.currentStep,
-                          suspendPayload: result.suspendPayload,
-                          createdAt: new Date().toISOString(),
-                          updatedAt: new Date().toISOString(),
-                      });
-                      break;
-                  }
-              }
+  const updateWorkflowState = (lastMessage: Message) => {
+    if (lastMessage?.toolCalls && lastMessage.toolCalls.length > 0) {
+      // Find the last workflow tool call
+      for (let i = lastMessage.toolCalls.length - 1; i >= 0; i--) {
+        const toolCall = lastMessage.toolCalls[i];
+        if ((toolCall.toolName === TOOL_NAMES.START_WORKFLOW || toolCall.toolName === TOOL_NAMES.RESUME_WORKFLOW) && toolCall.result) {
+          const result = toolCall.result;
+          // Check if workflow is suspended (not completed)
+          if (result.success && !result.completed && result.runId) {
+            setActiveWorkflow({
+              runId: result.runId,
+              threadId: threadId,
+              workflowId: WORKFLOW_IDS.TAX_CALCULATION,
+              status: WORKFLOW_STATUS.SUSPENDED,
+              currentStep: result.nextStep || result.currentStep,
+              suspendPayload: result.suspendPayload,
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            });
+            break;
           }
-      } else {
-          setActiveWorkflow(null);
+        }
       }
+    } else {
+      setActiveWorkflow(null);
+    }
   }
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
   };
 
   /**
@@ -204,11 +205,11 @@ export default function Chat({ threadId }: ChatProps) {
             if (event.content) {
               assistantMessage.content += event.content;
               if (!firstChunk && assistantMessage.content.trim().length > 0) {
-                setMessages(prev => [...prev, { ...assistantMessage }]);
+                setMessages(prev => [...prev, {...assistantMessage}]);
                 setIsLoading(false);
                 firstChunk = true;
               } else if (firstChunk) {
-                setMessages(prev => [...prev.slice(0, -1), { ...assistantMessage }]);
+                setMessages(prev => [...prev.slice(0, -1), {...assistantMessage}]);
               }
             }
             break;
@@ -257,11 +258,11 @@ export default function Chat({ threadId }: ChatProps) {
             }
 
             if (!firstChunk) {
-              setMessages(prev => [...prev, { ...assistantMessage }]);
+              setMessages(prev => [...prev, {...assistantMessage}]);
               setIsLoading(false);
               firstChunk = true;
             } else {
-              setMessages(prev => [...prev.slice(0, -1), { ...assistantMessage }]);
+              setMessages(prev => [...prev.slice(0, -1), {...assistantMessage}]);
             }
             break;
 
@@ -295,15 +296,15 @@ export default function Chat({ threadId }: ChatProps) {
   // Clean up message content for display (remove internal instructions)
   const cleanMessageContent = (content: string): string => {
     // Remove workflow resume instructions meant for LLM
-      return content
-        // Remove the IMPORTANT instruction block for resume-workflow (handles nested JSON)
-        .replace(/\n\n\*\*IMPORTANT: Call resume-workflow with this EXACT data:\*\*\n- stepId: "[^"]+"\n- data: .+\n?/g, '')
-        .replace(/\nDo NOT modify the stepId or data structure\. Pass them exactly as shown above\.\n?/g, '')
-        // Remove [Workflow Context] section
-        .replace(/\n\[Workflow Context]\n- Run ID: [^\n]+\n- Step ID: [^\n]+\n?/g, '')
-        // Remove [Context: threadId=xxx] tags
-        .replace(/\s*\[Context: threadId=[^\]]+]/g, '')
-        .trim();
+    return content
+      // Remove the IMPORTANT instruction block for resume-workflow (handles nested JSON)
+      .replace(/\n\n\*\*IMPORTANT: Call resume-workflow with this EXACT data:\*\*\n- stepId: "[^"]+"\n- data: .+\n?/g, '')
+      .replace(/\nDo NOT modify the stepId or data structure\. Pass them exactly as shown above\.\n?/g, '')
+      // Remove [Workflow Context] section
+      .replace(/\n\[Workflow Context]\n- Run ID: [^\n]+\n- Step ID: [^\n]+\n?/g, '')
+      // Remove [Context: threadId=xxx] tags
+      .replace(/\s*\[Context: threadId=[^\]]+]/g, '')
+      .trim();
   };
 
   const parseMarkdown = (content: string): string => {
@@ -456,7 +457,7 @@ export default function Chat({ threadId }: ChatProps) {
         content += `- stepId: "${WORKFLOW_STEPS.COLLECT_PERSONAL_INFO}"\n`;
         content += `- data: ${JSON.stringify(data)}\n`;
         break;
-      case WORKFLOW_STEPS.UPLOAD_DOCUMENTS:
+      case WORKFLOW_STEPS.UPLOAD_DOCUMENTS: {
         const docs = data.documents || [];
         content += `**Uploaded Documents:** ${docs.length} file(s)\n`;
         docs.forEach((d: TaxDocument) => {
@@ -467,6 +468,7 @@ export default function Chat({ threadId }: ChatProps) {
         content += `- data: ${JSON.stringify(data)}\n`;
         content += `\nDo NOT modify the stepId or data structure. Pass them exactly as shown above.\n`;
         break;
+      }
       case WORKFLOW_STEPS.REVIEW_EXTRACTED_DATA:
         content += `**Confirmed Tax Data**\n`;
         content += `I confirm the extracted tax data is correct.\n`;
@@ -591,7 +593,7 @@ export default function Chat({ threadId }: ChatProps) {
       // Capture threadId from server (for new conversations)
       if (receivedThreadId && !threadId) {
         console.log('[Chat] Received new threadId from server:', receivedThreadId);
-        navigate(`/?threadId=${receivedThreadId}`, { replace: true });
+        navigate(`/?threadId=${receivedThreadId}`, {replace: true});
         loadConversations();
       }
     });
@@ -617,12 +619,14 @@ export default function Chat({ threadId }: ChatProps) {
               <div className="flex items-center gap-2 mb-2">
                 {message.role === 'assistant' && (
                   <>
-                    <div className="w-6 h-6 md:w-8 md:h-8 bg-primary-100 dark:bg-primary-900/50 rounded-lg flex items-center justify-center text-primary-600 dark:text-primary-400 flex-shrink-0">
+                    <div
+                      className="w-6 h-6 md:w-8 md:h-8 bg-primary-100 dark:bg-primary-900/50 rounded-lg flex items-center justify-center text-primary-600 dark:text-primary-400 flex-shrink-0">
                       <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 md:w-5 md:h-5">
                         <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" strokeWidth="2"/>
                         <circle cx="9" cy="10" r="1.5" fill="currentColor"/>
                         <circle cx="15" cy="10" r="1.5" fill="currentColor"/>
-                        <path d="M9 15c.5.5 1.5 1 3 1s2.5-.5 3-1" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                        <path d="M9 15c.5.5 1.5 1 3 1s2.5-.5 3-1" stroke="currentColor" strokeWidth="2"
+                              strokeLinecap="round"/>
                       </svg>
                     </div>
                     <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">Assistant</div>
@@ -630,10 +634,12 @@ export default function Chat({ threadId }: ChatProps) {
                 )}
                 {message.role === 'user' && (
                   <>
-                    <div className="w-6 h-6 md:w-8 md:h-8 bg-white/20 dark:bg-white/10 rounded-lg flex items-center justify-center text-white flex-shrink-0">
+                    <div
+                      className="w-6 h-6 md:w-8 md:h-8 bg-white/20 dark:bg-white/10 rounded-lg flex items-center justify-center text-white flex-shrink-0">
                       <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 md:w-5 md:h-5">
                         <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2"/>
-                        <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                        <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" stroke="currentColor" strokeWidth="2"
+                              strokeLinecap="round"/>
                       </svg>
                     </div>
                     <div className="text-sm font-semibold text-white">You</div>
@@ -643,9 +649,10 @@ export default function Chat({ threadId }: ChatProps) {
 
               <div
                 className={message.role === 'user' ? 'prose-chat-user' : 'prose-chat'}
-                dangerouslySetInnerHTML={{ __html: parseMarkdown(message.content) }}
+                dangerouslySetInnerHTML={{__html: parseMarkdown(message.content)}}
               />
-              <div className={`text-xs mt-2 ${message.role === 'user' ? 'text-primary-100 dark:text-primary-200' : 'text-gray-500 dark:text-gray-400'}`}>
+              <div
+                className={`text-xs mt-2 ${message.role === 'user' ? 'text-primary-100 dark:text-primary-200' : 'text-gray-500 dark:text-gray-400'}`}>
                 {new Date(message.createdAt).toLocaleTimeString()}
               </div>
             </div>
@@ -654,23 +661,29 @@ export default function Chat({ threadId }: ChatProps) {
 
         {isLoading && (
           <div className="flex mb-4 md:mb-6">
-            <div className="max-w-full sm:max-w-xl md:max-w-2xl bg-gray-100 dark:bg-gray-800 rounded-2xl rounded-tl-none px-4 py-3 md:px-6 md:py-4 shadow-sm shadow-gray-300/50 dark:shadow-gray-700/50">
+            <div
+              className="max-w-full sm:max-w-xl md:max-w-2xl bg-gray-100 dark:bg-gray-800 rounded-2xl rounded-tl-none px-4 py-3 md:px-6 md:py-4 shadow-sm shadow-gray-300/50 dark:shadow-gray-700/50">
               {/* Icon and title side by side */}
               <div className="flex items-center gap-2 mb-2">
-                <div className="w-6 h-6 md:w-8 md:h-8 bg-primary-100 dark:bg-primary-900/50 rounded-lg flex items-center justify-center text-primary-600 dark:text-primary-400 flex-shrink-0">
+                <div
+                  className="w-6 h-6 md:w-8 md:h-8 bg-primary-100 dark:bg-primary-900/50 rounded-lg flex items-center justify-center text-primary-600 dark:text-primary-400 flex-shrink-0">
                   <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 md:w-5 md:h-5">
                     <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" strokeWidth="2"/>
                     <circle cx="9" cy="10" r="1.5" fill="currentColor"/>
                     <circle cx="15" cy="10" r="1.5" fill="currentColor"/>
-                    <path d="M9 15c.5.5 1.5 1 3 1s2.5-.5 3-1" stroke="currentColor" strokeWidth="2" strokeLinecap="round"/>
+                    <path d="M9 15c.5.5 1.5 1 3 1s2.5-.5 3-1" stroke="currentColor" strokeWidth="2"
+                          strokeLinecap="round"/>
                   </svg>
                 </div>
                 <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">Assistant</div>
               </div>
               <div className="flex gap-1">
-                <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce"
+                     style={{animationDelay: '0ms'}}></div>
+                <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce"
+                     style={{animationDelay: '150ms'}}></div>
+                <div className="w-2 h-2 bg-gray-400 dark:bg-gray-500 rounded-full animate-bounce"
+                     style={{animationDelay: '300ms'}}></div>
               </div>
             </div>
           </div>
@@ -679,7 +692,8 @@ export default function Chat({ threadId }: ChatProps) {
         {/* Workflow step form - rendered inline in chat */}
         {activeWorkflow && activeWorkflow.status === 'suspended' && !isWorkflowSubmitting && !isStreaming && (
           <div className="mb-6">
-            <div className="max-w-full sm:max-w-xl md:max-w-2xl bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-2xl shadow-sm shadow-gray-300/50 dark:shadow-gray-700/50 px-4 py-3 md:px-6 md:py-4">
+            <div
+              className="max-w-full sm:max-w-xl md:max-w-2xl bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-2xl shadow-sm shadow-gray-300/50 dark:shadow-gray-700/50 px-4 py-3 md:px-6 md:py-4">
               <WorkflowStepMessage
                 workflow={activeWorkflow}
                 onSubmit={handleWorkflowStepSubmit}
@@ -695,13 +709,14 @@ export default function Chat({ threadId }: ChatProps) {
           </div>
         )}
 
-        <div ref={messagesEndRef} className="pb-20" />
+        <div ref={messagesEndRef} className="pb-20"/>
       </div>
 
       {/* Error Display */}
       {error && (
         <div className="px-6 py-4 mb-20">
-          <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-lg text-sm max-w-4xl mx-auto">
+          <div
+            className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-lg text-sm max-w-4xl mx-auto">
             {JSON.stringify(error)}
           </div>
         </div>

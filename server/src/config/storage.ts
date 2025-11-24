@@ -4,8 +4,9 @@
  */
 
 import path from 'path';
+import { getPathInfo } from '@config/path-utils';
 
-// Base storage directory (all files go here for easy Docker volume mounting)
+const { __dirname } = getPathInfo(import.meta.url);
 export const STORAGE_ROOT = path.join(__dirname, '../../storage');
 
 // Storage subdirectories

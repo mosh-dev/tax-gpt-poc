@@ -8,10 +8,12 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { env } from '@config/env';
 import { AgentConfig, IAgentConfig } from '@models/agent-config.model';
+import { getPathInfo } from '@config/path-utils';
 
 // Load default system instructions from assets folder
 // This makes it easier to edit and maintain the instructions
 // Works in both dev (src/assets) and production (dist/assets)
+const { __dirname } = getPathInfo(import.meta.url);
 const instructionsPath = path.join(__dirname, '../assets/system-instructions.md');
 const defaultInstructions = fs.readFileSync(instructionsPath, 'utf-8');
 

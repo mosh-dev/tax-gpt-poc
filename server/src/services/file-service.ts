@@ -9,6 +9,7 @@ import path from 'path';
 import { randomUUID } from 'crypto';
 import { getStoragePath } from '../config/storage';
 import { mongoRepository } from './mongo-repository';
+import { env } from '@config/env';
 
 export interface UploadedFileInfo {
   fileId: string;
@@ -44,8 +45,6 @@ export class FileService {
     conversationId?: string,
     baseUrl?: string
   ): Promise<UploadedFileInfo> {
-    // Import env here to avoid circular dependency
-    const { env } = require('../config/env');
 
     const fileId = path.basename(file.filename, path.extname(file.filename));
     const fileUrl = baseUrl
@@ -232,8 +231,6 @@ export class FileService {
     mimeType: string,
     conversationId?: string
   ): Promise<UploadedFileInfo> {
-    // Import env here to avoid circular dependency
-    const { env } = require('../config/env');
 
     const fileId = randomUUID();
     const storedFilename = `${fileId}${path.extname(filename)}`;

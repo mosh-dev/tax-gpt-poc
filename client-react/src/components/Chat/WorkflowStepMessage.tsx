@@ -6,8 +6,8 @@
 import { useState, useEffect } from 'react';
 import { Upload, Check, FileText } from 'lucide-react';
 import type { WorkflowStatus, PersonalInfo, TaxDocument, ExtractedTaxData } from '../../types/common.types.ts';
-import { WORKFLOW_STEPS } from '../../constants';
 import * as React from "react";
+import { WORKFLOW_STEPS } from "../../constants/workflow.ts";
 
 interface WorkflowStepMessageProps {
   workflow: WorkflowStatus;
