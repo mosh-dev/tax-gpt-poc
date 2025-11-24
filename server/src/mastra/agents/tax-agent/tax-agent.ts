@@ -1,20 +1,20 @@
 import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
 // import { getOpenAiModel } from '@config/llm';
-import { createMastraMemory, createMemoryConfigFromEnv } from './mastra-memory';
+import { createMastraMemory, createMemoryConfigFromEnv } from '@/mastra/helpers/mastra-memory.helper';
 import { AgentConfig } from '@models/agent-config.model';
 import { encode } from 'gpt-tokenizer';
 import { getCollection } from '@config/database-utils';
 import { MASTRA_COLLECTIONS } from '@config/database-collections';
 import { agentLogger, logLLMResponse, logStreamError, logToolCall, logToolResult } from '@config/logger';
 import { getErrorMessage } from '@utils/error-handler';
-import { getTaxDataTool } from '@agent/tools/get-tax-data';
-import { calculateDeductionsTool } from '@agent/tools/calculate-deductions';
-import { generateTaxPDFTool } from '@agent/tools/generate-tax-pdf';
-import { processDocumentsTool } from '@agent/tools/process-documents-tool';
-import { startWorkflowTool } from '@agent/tools/start-workflow-tool';
-import { resumeWorkflowTool } from '@agent/tools/resume-workflow-tool';
-import { searchKnowledgeTool } from '@agent/tools/search-knowledge-tool';
+import { getTaxDataTool } from '@/mastra/agents/tax-agent/tools/get-tax-data';
+import { calculateDeductionsTool } from '@/mastra/agents/tax-agent/tools/calculate-deductions';
+import { generateTaxPDFTool } from '@/mastra/agents/tax-agent/tools/generate-tax-pdf';
+import { processDocumentsTool } from '@/mastra/agents/tax-agent/tools/process-documents-tool';
+import { startWorkflowTool } from '@/mastra/agents/tax-agent/tools/start-workflow-tool';
+import { resumeWorkflowTool } from '@/mastra/agents/tax-agent/tools/resume-workflow-tool';
+import { searchKnowledgeTool } from '@/mastra/agents/tax-agent/tools/search-knowledge-tool';
 import { getOpenAiModel } from '@config/llm';
 
 /**

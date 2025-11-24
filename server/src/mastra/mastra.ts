@@ -1,12 +1,11 @@
-import { PinoLogger } from '@mastra/loggers';
+// Create Mastra instance with storage and workflows
 import { Mastra } from '@mastra/core';
+import { taxCalculationWorkflow } from '@/mastra/workflows/tax-calculation/tax-calculation-workflow';
+import { workflowStorage } from '@/mastra/storage/workflow-storage';
 
 export const mastra = new Mastra({
-  workflows: {  },
-  agents: {  },
-  scorers: {  },
-  logger: new PinoLogger({
-    name: 'Mastra',
-    level: 'info',
-  })
+  storage: workflowStorage,
+  workflows: {
+    taxCalculation: taxCalculationWorkflow,
+  },
 });

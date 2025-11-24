@@ -6,7 +6,7 @@
 
 
 import { ChatMessage, IAIAgentService, StreamEvent } from '@core/application/services/IAIAgentService';
-import { getOrCreateTaxAgent } from '@agent/setup';
+import { getOrCreateTaxAgent } from '@/mastra/agents/tax-agent/tax-agent.handler';
 
 export class MastraAIAgentService implements IAIAgentService {
   async *streamChat(

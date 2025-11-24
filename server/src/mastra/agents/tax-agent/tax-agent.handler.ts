@@ -87,17 +87,3 @@ export async function initializeTaxAgent(): Promise<void> {
     await getOrCreateTaxAgent();
     console.log('[TaxAgent] Agent initialized successfully');
 }
-
-/**
- * Legacy singleton access - DEPRECATED
- * Use getOrCreateTaxAgent() instead for proper async handling
- * This proxy is kept for backward compatibility with existing code
- */
-export const taxAgent = new Proxy({} as TaxAgent, {
-    get(target, prop) {
-        throw new Error(
-            'Direct access to taxAgent singleton is deprecated. ' +
-            'Use getOrCreateTaxAgent() to get the agent instance.'
-        );
-    }
-});

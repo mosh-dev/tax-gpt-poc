@@ -2,30 +2,11 @@
  * Workflow Service
  * Manages workflow runs and their state
  */
-
-import { Mastra } from '@mastra/core';
-import { MongoDBStore } from '@mastra/mongodb';
-import { taxCalculationWorkflow } from './tax-calculation-workflow';
-import { env } from '@config/env';
 import { getCollection } from '@config/database-utils';
 import { MASTRA_COLLECTIONS } from '@config/database-collections';
 import { getErrorMessage } from '@utils/error-handler';
 import { WORKFLOW_IDS } from '@/constants/workflow';
-
-// Create MongoDB storage for workflow snapshots
-const workflowStorage = new MongoDBStore({
-  id: 'tax-gpt-workflow-storage',
-  url: env.MONGODB_URI,
-  dbName: env.MONGODB_DB_NAME,
-});
-
-// Create Mastra instance with storage and workflows
-const mastra = new Mastra({
-  storage: workflowStorage,
-  workflows: {
-    taxCalculation: taxCalculationWorkflow,
-  },
-});
+import { mastra } from '@/mastra/mastra';
 
 // Store active workflow run IDs mapped to their internal Mastra run IDs
 const workflowRuns = new Map<string, any>();
@@ -43,7 +24,7 @@ export interface WorkflowStatus {
   updatedAt: Date;
 }
 
-export class WorkflowService {
+export class TaxCalculationWorkflowService {
   /**
    * Start a new tax calculation workflow
    */
@@ -312,4 +293,4 @@ export class WorkflowService {
 }
 
 // Export singleton instance
-export const workflowService = new WorkflowService();
+export const workflowService = new TaxCalculationWorkflowService();

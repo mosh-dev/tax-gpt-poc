@@ -6,7 +6,7 @@
 
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
-import { workflowService } from '@agent/workflows/workflow-service';
+import { workflowService } from '@/mastra/workflows/tax-calculation/tax-calculation-workflow.service';
 
 export const resumeWorkflowTool = createTool({
   id: 'resume-workflow',

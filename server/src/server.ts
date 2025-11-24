@@ -18,7 +18,7 @@ import { employeeRoutes } from '@api/routes/employee.routes';
 import knowledgeRoutes from '@api/routes/knowledge.routes';
 import { createFileRoutes } from '@api/routes/file.routes';
 import { createConversationRoutes } from '@api/routes/conversation.routes';
-import { initializeTaxAgent } from '@agent/setup';
+import { initializeTaxAgent } from '@/mastra/agents/tax-agent/tax-agent.handler';
 import { createChatRoutes } from '@api/routes/chat.routes';
 import { initializeContainer } from '@/di/container';
 import { MastraAIAgentService } from '@infrastructure/services/ai/MastraAIAgentService';

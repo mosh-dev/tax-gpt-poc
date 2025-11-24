@@ -5,7 +5,7 @@
 
 import { Router, Request, Response } from 'express';
 import { getErrorMessage } from '@utils/error-handler';
-import { workflowService } from '@agent/workflows/workflow-service';
+import { workflowService } from '@/mastra/workflows/tax-calculation/tax-calculation-workflow.service';
 
 const router = Router();
 
