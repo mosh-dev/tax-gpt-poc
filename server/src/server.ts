@@ -8,7 +8,7 @@ import cors from 'cors';
 import { connectDatabase } from '@config/database';
 import { getStoragePath } from '@config/storage';
 import { env } from '@config/env';
-import { initializeLLMClient } from '@config/llm';
+// import { initializeLLMClient } from '@config/llm';
 import { runAllSeeds } from '@/seeds/run-seed';
 import { getErrorMessage } from '@utils/error-handler';
 import { workflowRoutes } from '@api/routes/workflow.routes';
@@ -24,6 +24,7 @@ import { initializeContainer } from '@/di/container';
 import { MastraAIAgentService } from '@infrastructure/services/ai/MastraAIAgentService';
 import { TesseractOCRService } from '@infrastructure/services/ocr/TesseractOCRService';
 import { authMiddleware } from '@api/middleware/auth.middleware';
+import { initializeLLMClient } from '@config/llm';
 
 const app: Express = express();
 

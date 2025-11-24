@@ -37,7 +37,7 @@ export async function initializeLLMClient(): Promise<void> {
  * Get the LLM client instance
  * Throws error if client not initialized
  */
-export function getLLMClient(): ReturnType<typeof createOpenAICompatible> {
+function getLLMClient(): ReturnType<typeof createOpenAICompatible> {
   if (!llmClient) {
     throw new Error('LLM client not initialized. Call initializeLLMClient() first.');
   }

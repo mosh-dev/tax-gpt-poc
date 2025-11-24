@@ -1,6 +1,6 @@
 import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
-import { getOpenAiModel } from '@config/llm';
+// import { getOpenAiModel } from '@config/llm';
 import { createMastraMemory, createMemoryConfigFromEnv } from './mastra-memory';
 import { AgentConfig } from '@models/agent-config.model';
 import { encode } from 'gpt-tokenizer';
@@ -15,6 +15,7 @@ import { processDocumentsTool } from '@agent/tools/process-documents-tool';
 import { startWorkflowTool } from '@agent/tools/start-workflow-tool';
 import { resumeWorkflowTool } from '@agent/tools/resume-workflow-tool';
 import { searchKnowledgeTool } from '@agent/tools/search-knowledge-tool';
+import { getOpenAiModel } from '@config/llm';
 
 /**
  * Tax Agent powered by Mastra and LMStudio
@@ -107,6 +108,9 @@ export class TaxAgent {
         memory: {
           thread: threadId,
           resource: effectiveResourceId,
+        },
+        modelSettings: {
+          temperature: 1 // Must For gpt 5
         }
       });
     };
