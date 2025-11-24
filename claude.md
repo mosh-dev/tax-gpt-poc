@@ -15,8 +15,12 @@ AI tax assistant for Canton Zurich, Switzerland with local LLM.
 - SSE streaming chat with real-time responses
 - MongoDB persistent conversation history
 - Document OCR (images, PDFs) with deferred processing
-- Tax PDF generation via AI tools
+- Tax PDF generation via Mastra tools
 - Tool calling with user confirmation modals
+
+## Important: Server Initialization
+
+**Database, seeds, LLM client, and Mastra agent are all initialized in `server/src/mastra/mastra.ts` at module import time.** This ensures the `mastra` export is ready for the Mastra playground. The `server.ts` only handles DI container and routes.
 
 ## OCR Processing
 
@@ -39,110 +43,6 @@ AI tax assistant for Canton Zurich, Switzerland with local LLM.
 3. AI calls `process-documents` tool
 4. OCR processes on-demand
 5. AI analyzes extracted text
-
-## Project Structure
-
-### Backend (server/src)
-
-```
-server/src/
-├── api/                          # API Layer (Routes, Controllers, Middleware)
-│   ├── controllers/              # HTTP Controllers (kebab-case)
-│   │   ├── chat.controller.ts
-│   │   ├── conversation.controller.ts
-│   │   ├── file.controller.ts
-│   │   └── index.ts
-│   ├── routes/                   # API Routes (kebab-case with .routes.ts)
-│   │   ├── auth.routes.ts
-│   │   ├── chat.routes.ts
-│   │   ├── conversation.routes.ts
-│   │   ├── file.routes.ts
-│   │   ├── employee.routes.ts
-│   │   ├── workflow.routes.ts
-│   │   ├── agent-config.routes.ts
-│   │   ├── knowledge.routes.ts
-│   │   └── index.ts
-│   ├── middleware/               # HTTP Middleware (kebab-case)
-│   │   └── auth.middleware.ts
-│   └── index.ts                  # API exports
-│
-├── core/                         # Clean Architecture - Domain & Application
-│   ├── domain/                   # Domain Layer (PascalCase)
-│   │   ├── entities/             # Domain Entities
-│   │   ├── value-objects/        # Value Objects
-│   │   └── repositories/         # Repository Interfaces
-│   └── application/              # Application Layer (PascalCase)
-│       ├── use-cases/            # Use Cases
-│       ├── dtos/                 # Data Transfer Objects
-│       └── services/             # Service Interfaces
-│
-├── infrastructure/               # Infrastructure Layer (PascalCase)
-│   ├── database/                 # Database implementations
-│   │   └── mongodb/
-│   │       └── repositories/     # Concrete repositories
-│   └── services/                 # Service implementations
-│       ├── ai/
-│       ├── ocr/
-│       ├── pdf/
-│       └── storage/
-│
-├── config/                       # Configuration (kebab-case)
-│   ├── database.ts
-│   ├── database-collections.ts   # Collection name constants
-│   ├── database-utils.ts         # Database utilities
-│   ├── env.ts
-│   ├── llm.ts
-│   └── storage.ts
-│
-├── agent/                        # Mastra Agent (kebab-case)
-│   ├── tools/                    # Agent tools
-│   ├── workflows/                # Mastra workflows
-│   ├── mastra-memory.ts
-│   ├── setup.ts
-│   └── tax-agent.ts
-│
-├── models/                       # Mongoose Models (kebab-case with .model.ts)
-│   ├── conversation.model.ts
-│   ├── message.model.ts
-│   ├── file.model.ts
-│   ├── user.model.ts
-│   ├── employee.model.ts
-│   ├── agent-config.model.ts
-│   └── knowledge-base.model.ts
-│
-├── services/                     # Legacy/Utility Services (kebab-case)
-│   ├── mongodb-memory.ts
-│   ├── mongo-repository.ts
-│   ├── file-service.ts
-│   ├── ocr/
-│   ├── rag/
-│   └── hybrid-retrieval.ts
-│
-├── di/                           # Dependency Injection
-│   └── container.ts
-│
-├── seeds/                        # Database seeds
-│   └── employee-seed.ts
-│
-└── index.ts                      # Application entry point
-```
-
-### File Naming Conventions
-
-| Type | Pattern | Example |
-|------|---------|---------|
-| **Controllers** | kebab-case + `.controller.ts` | `chat.controller.ts` |
-| **Routes** | kebab-case + `.routes.ts` | `conversation.routes.ts` |
-| **Middleware** | kebab-case + `.middleware.ts` | `auth.middleware.ts` |
-| **Models** | kebab-case + `.model.ts` | `conversation.model.ts` |
-| **Services** | kebab-case | `file-service.ts` |
-| **Config** | kebab-case | `database.ts` |
-| **Domain Entities** | PascalCase | `Conversation.ts` |
-| **Value Objects** | PascalCase | `ConversationId.ts` |
-| **Use Cases** | PascalCase + `UseCase.ts` | `CreateConversationUseCase.ts` |
-| **DTOs** | PascalCase + `DTO.ts` | `ConversationDTO.ts` |
-| **Repositories** | PascalCase + `Repository.ts` | `MongoConversationRepository.ts` |
-| **Interfaces** | PascalCase with `I` prefix | `IAIAgentService.ts` |
 
 ## Key Dependencies
 

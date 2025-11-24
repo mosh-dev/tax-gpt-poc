@@ -9,9 +9,16 @@ let llmClient: ReturnType<typeof createOpenAICompatible> | null = null;
 
 /**
  * Initialize LLM client with API key from database
+ * Checks if client exists and skips if already initialized (naturally idempotent)
  * Should be called after database connection is established
  */
 export async function initializeLLMClient(): Promise<void> {
+  // Check client state to avoid re-initialization
+  if (llmClient) {
+    console.log('[LLM] Already initialized, skipping initialization');
+    return;
+  }
+
   // Fetch API key from database only (no env fallback)
   const apiKey = await getLLMApiKey();
 

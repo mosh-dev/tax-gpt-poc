@@ -5,11 +5,8 @@
 
 import express, { Express, Request, Response, NextFunction } from 'express';
 import cors from 'cors';
-import { connectDatabase } from '@config/database';
 import { getStoragePath } from '@config/storage';
 import { env } from '@config/env';
-// import { initializeLLMClient } from '@config/llm';
-import { runAllSeeds } from '@/seeds/run-seed';
 import { getErrorMessage } from '@utils/error-handler';
 import { workflowRoutes } from '@api/routes/workflow.routes';
 import { agentConfigRoutes } from '@api/routes/agent-config.routes';
@@ -23,8 +20,6 @@ import { initializeContainer } from '@/di/container';
 import { MastraAIAgentService } from '@infrastructure/services/ai/MastraAIAgentService';
 import { TesseractOCRService } from '@infrastructure/services/ocr/TesseractOCRService';
 import { authMiddleware } from '@api/middleware/auth.middleware';
-import { initializeLLMClient } from '@config/llm';
-import { initializeTaxAgent } from '@/mastra/agents/tax-agent/tax-agent.handler';
 
 const app: Express = express();
 
@@ -55,22 +50,15 @@ app.get('/api/health', (_: Request, res: Response) => {
  * Initialize and wire dependencies
  */
 async function setupApplication() {
-  // Connect to MongoDB
-  await connectDatabase();
-
-  // Run seed scripts
-  await runAllSeeds();
-
-  // Initialize LLM client with API key from database
-  await initializeLLMClient();
+  // Note: Database connection, seeds, LLM client, and tax agent
+  // are all initialized in mastra.ts when it's imported.
+  // This ensures the mastra instance is ready for the playground.
 
   // Initialize DI container
   const container = initializeContainer(env.BASE_URL);
-
   console.log('[Setup] DI Container initialized');
 
-  // Initialize Tax Agent with instructions from database
-  await initializeTaxAgent();
+  // Initialize AI Agent Service (uses the already-initialized mastra instance)
   const aiAgentService = new MastraAIAgentService();
   container.setAIAgentService(aiAgentService);
   console.log('[Setup] AI Agent Service initialized');
