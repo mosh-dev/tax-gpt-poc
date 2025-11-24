@@ -4,7 +4,7 @@
  */
 
 import { mongoRepository } from './mongo-repository';
-import { MessageData } from '../models';
+import { MessageData } from '@models/message.model';
 
 export interface ConversationMessage {
   role: 'user' | 'assistant' | 'system';

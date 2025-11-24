@@ -4,16 +4,13 @@
  * Provides abstraction over Mongoose models
  */
 
-import {
-  Conversation,
-  Message,
-  File,
-  ConversationData,
-  MessageData,
-  FileData
-} from '../models';
+import { Conversation, File, Message, ObjectMap } from '@models';
 import { randomUUID } from 'crypto';
-import mongoose from 'mongoose';
+import mongoose, { ConnectionStates } from 'mongoose';
+import { ConversationData } from '@models/conversation.model';
+import { env } from '@config/env';
+import { MessageData } from '@models/message.model';
+import { FileData } from '@models/file.model';
 
 export interface CreateConversationData {
   conversationId?: string;
@@ -51,7 +48,7 @@ export class MongoRepository {
    * Check if database is connected
    */
   private isConnected(): boolean {
-    return mongoose.connection.readyState === 1;
+    return mongoose.connection.readyState === ConnectionStates.connected;
   }
 
   /**
@@ -61,9 +58,6 @@ export class MongoRepository {
     if (this.isConnected()) {
       return;
     }
-
-    // Import env here to avoid circular dependency
-    const { env } = require('../config/env');
 
     console.log('[MongoRepository] Attempting to reconnect to database...');
     try {
@@ -306,7 +300,7 @@ export class MongoRepository {
    * Mark file as processed
    */
   async markFileAsProcessed(fileId: string, ocrResult?: any): Promise<void> {
-    const updateData: any = { processed: true };
+    const updateData: ObjectMap = { processed: true };
     if (ocrResult) {
       updateData.ocrResult = ocrResult;
     }
@@ -356,15 +350,14 @@ export class MongoRepository {
    * Delete expired files
    */
   async deleteExpiredFiles(): Promise<number> {
-    const result = await this.execute(
+    return await this.execute(
       async () => {
         const res = await File.deleteMany({
-          expiresAt: { $lt: new Date() },
+          expiresAt: {$lt: new Date()},
         });
         return res.deletedCount || 0;
       }
     );
-    return result;
   }
 }
 

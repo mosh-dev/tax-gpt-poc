@@ -3,10 +3,11 @@
  * Seeds the database with default AI agent system instructions
  */
 
-import {AgentConfig, IAgentConfig} from '../models';
+import {AgentConfig} from '@models';
 import * as fs from 'fs';
 import * as path from 'path';
-import { env } from '../config/env';
+import { env } from '@config/env';
+import { IAgentConfig } from '@models/agent-config.model';
 
 // Load default system instructions from assets folder
 // This makes it easier to edit and maintain the instructions

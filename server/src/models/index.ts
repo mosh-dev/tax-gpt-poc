@@ -3,10 +3,14 @@
  * Export all database models
  */
 
-export { Conversation, IConversation, ConversationData } from './conversation.model';
-export { Message, IMessage, MessageData } from './message.model';
-export { File, IFile, FileData } from './file.model';
-export { User, IUser, UserData } from './user.model';
-export { AgentConfig, IAgentConfig, AgentConfigData } from './agent-config.model';
-export { Employee, IEmployee, EmployeeData } from './employee.model';
-export { Secret, ISecret, SecretData } from './secret.model';
+export interface ObjectMap<T = any> {
+  [key: string]: T;
+}
+
+export { Conversation } from './conversation.model';
+export { Message } from './message.model';
+export { File  } from './file.model';
+export { User } from './user.model';
+export { AgentConfig } from './agent-config.model';
+export { Employee } from './employee.model';
+export { Secret } from './secret.model';

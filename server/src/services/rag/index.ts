@@ -5,7 +5,7 @@
 
 import {v4 as uuidv4} from 'uuid';
 import {PDFParse} from 'pdf-parse';
-import {KnowledgeBase} from '../../models/knowledge-base.model';
+import {KnowledgeBase} from '@models/knowledge-base.model';
 import {chunkDocument, getChunkStats} from './chunker';
 import {generateEmbeddings} from './embedder';
 import {getVectorStore, SearchResult, VectorDocument} from './retriever';
