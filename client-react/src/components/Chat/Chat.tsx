@@ -8,8 +8,10 @@ import WorkflowStepMessage from './WorkflowStepMessage';
 import ChatInput from './ChatInput';
 import MessageBubble from './MessageBubble';
 import LoadingBubble from './LoadingBubble';
+import ErrorDisplay from './ErrorDisplay';
 import { TOOL_NAMES, WORKFLOW_IDS, WORKFLOW_STATUS } from "../../constants/workflow.ts";
-import { STREAM_EVENT_TYPES } from "../../constants/events.ts";
+import { STREAM_EVENT_TYPES, MESSAGE_ROLES } from "../../constants/events.ts";
+import { CHAT_PLACEHOLDERS, ERROR_MESSAGES } from "../../constants/chatMessages";
 import {
   handleConnectedEvent,
   handleChunkEvent,
@@ -19,7 +21,13 @@ import {
   updateMessageAfterToolResult,
 } from '../../utils/chat/streamEventHandlers';
 import { handleWorkflowToolResult } from '../../utils/chat/workflowStreamHandlers';
-import type { LocationState, ChatProps, SendMessageOptions } from './Chat.types';
+import {
+  handleGetTaxDataResult,
+  handleGenerateTaxPdfResult,
+  handleCalculateDeductionsResult,
+} from '../../utils/chat/toolResultHandlers';
+import { uploadWorkflowFiles } from '../../utils/chat/fileUpload';
+import type { LocationState, ChatProps, SendMessageOptions, TaxDataToolResult, StreamChatParams } from './Chat.types';
 
 export default function Chat({threadId}: ChatProps) {
   const navigate = useNavigate();
@@ -33,7 +41,7 @@ export default function Chat({threadId}: ChatProps) {
 
   // Tax data modal
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [pendingToolResult, setPendingToolResult] = useState<any>(null);
+  const [pendingToolResult, setPendingToolResult] = useState<TaxDataToolResult | null>(null);
 
   // Workflow state - integrated into chat
   const [activeWorkflow, setActiveWorkflow] = useState<WorkflowStatus | null>(null);
@@ -145,16 +153,12 @@ export default function Chat({threadId}: ChatProps) {
    * Unified SSE streaming handler - consolidates all chat streaming logic
    * Orchestrates stream processing and delegates to specialized handlers
    */
-  const streamChatMessage = async (
-    content: string,
-    threadIdToUse: string,
-    fileIds?: string[],
-    onConnected?: (threadId?: string) => void,
-    agentMessage?: string
-  ) => {
+  const streamChatMessage = async (params: StreamChatParams) => {
+    const { content, threadId: threadIdToUse, fileIds, onConnected, agentMessage } = params;
+
     const assistantMessage: Message = {
       conversationId: threadIdToUse,
-      role: 'assistant',
+      role: MESSAGE_ROLES.ASSISTANT,
       content: '',
       createdAt: new Date().toISOString(),
     };
@@ -245,10 +249,10 @@ export default function Chat({threadId}: ChatProps) {
 
       // Handle case where stream completed but no content was received
       if (!firstChunk && streamCompleted && !hasError) {
-        setError('No response received from assistant');
+        setError(ERROR_MESSAGES.NO_RESPONSE);
       }
     } catch (err: any) {
-      setError(err.message || 'Failed to send message');
+      setError(err.message || ERROR_MESSAGES.FAILED_TO_SEND);
     } finally {
       // Clear loading state if no content was received
       if (!firstChunk) {
@@ -266,31 +270,18 @@ export default function Chat({threadId}: ChatProps) {
   const handleToolResult = (event: StreamEvent, assistantMessage: Message) => {
     switch (event.toolName) {
       case TOOL_NAMES.GET_TAX_DATA:
-        setPendingToolResult(event.result);
-        setIsModalOpen(true);
+        handleGetTaxDataResult(event.result, {
+          setPendingToolResult,
+          setIsModalOpen,
+        });
         break;
 
       case TOOL_NAMES.GENERATE_TAX_PDF:
-        if (!event.result?.downloadUrl) {
-          assistantMessage.content += `\n\nFailed to generate PDF: ${event.result?.error || 'Unknown error'}`;
-        }
+        handleGenerateTaxPdfResult(event.result, assistantMessage);
         break;
 
       case TOOL_NAMES.CALCULATE_DEDUCTIONS:
-        if (event.result) {
-          const result = event.result;
-          let summary = `\n\n📊 **Deduction Calculation Results:**\n`;
-          summary += `- Total Deductions: CHF ${result.totalDeductions?.toLocaleString() || 0}\n`;
-          summary += `- Estimated Tax Savings: CHF ${result.estimatedTaxSavings?.toLocaleString() || 0}\n\n`;
-
-          if (result.recommendations && result.recommendations.length > 0) {
-            summary += `💡 **Recommendations:**\n`;
-            result.recommendations.forEach((rec: string, idx: number) => {
-              summary += `${idx + 1}. ${rec}\n`;
-            });
-          }
-          assistantMessage.content += summary;
-        }
+        handleCalculateDeductionsResult(event.result, assistantMessage);
         break;
 
       default:
@@ -310,7 +301,7 @@ export default function Chat({threadId}: ChatProps) {
 
     const userMessage: Message = {
       conversationId: threadId,
-      role: 'user',
+      role: MESSAGE_ROLES.USER,
       content: displayMessage,  // Show clean message to user
       createdAt: new Date().toISOString(),
     };
@@ -320,17 +311,16 @@ export default function Chat({threadId}: ChatProps) {
     // Keep isWorkflowSubmitting true - will be cleared when workflow updates in tool-result handler
 
     // Send both messages: displayMessage for storage, agentMessage for LLM
-    await streamChatMessage(displayMessage, threadId, undefined, undefined, agentMessage);
+    await streamChatMessage({
+      content: displayMessage,
+      threadId,
+      agentMessage,
+    });
   };
 
   // Handle file uploads for workflow
   const handleWorkflowUploadFiles = async (files: File[]): Promise<TaxDocument[]> => {
-    const uploadedFiles = await apiService.uploadFiles(files, threadId);
-    return uploadedFiles.map(f => ({
-      fileId: f.fileId,
-      fileName: f.originalName,
-      fileType: f.mimeType,
-    }));
+    return uploadWorkflowFiles(files, threadId);
   };
 
   // Unified message sending function
@@ -348,38 +338,33 @@ export default function Chat({threadId}: ChatProps) {
 
     // Upload files first if provided
     let fileIds: string[] = [];
-    if (files.length > 0) {
+    const hasFiles = files.length > 0;
+
+    if (hasFiles) {
       setIsUploading(true);
       try {
         const uploadedFiles = await apiService.uploadFiles(files, threadId || undefined);
         fileIds = uploadedFiles.map(f => f.fileId);
       } catch (err: any) {
-        setError(`Upload failed: ${err.message}`);
+        setError(ERROR_MESSAGES.UPLOAD_FAILED(err.message));
         setIsUploading(false);
         return;
       }
       setIsUploading(false);
     }
 
-    // Build display message for user (clean, with filenames) - stored in DB
-    let userDisplayMessage = message;
-    if (files.length > 0) {
-      const fileNames = files.map(f => f.name).join(', ');
-      userDisplayMessage += `\n\n📎 Attached: ${fileNames}`;
-    }
+    // Build messages with file attachments
+    const userDisplayMessage = hasFiles
+      ? `${message}\n\nAttached: ${files.map(f => f.name).join(', ')}`
+      : message;
 
-    // Build agent message (with fileIds) - sent to agent only
-    let agentMessage = message;
-    if (fileIds.length > 0) {
-      agentMessage += '\n\n[Uploaded Files]';
-      fileIds.forEach(id => {
-        agentMessage += `\n[fileId: ${id}]`;
-      });
-    }
+    const agentMessage = fileIds.length > 0
+      ? `${message}\n\n[Uploaded Files]\n${fileIds.map(id => `[fileId: ${id}]`).join('\n')}`
+      : message;
 
     const userMessage: Message = {
       conversationId: threadId || '',
-      role: 'user',
+      role: MESSAGE_ROLES.USER,
       content: userDisplayMessage,
       createdAt: new Date().toISOString(),
     };
@@ -395,7 +380,13 @@ export default function Chat({threadId}: ChatProps) {
     setError(null);
 
     // Send display message for storage, agent message for processing
-    await streamChatMessage(userDisplayMessage, threadId, fileIds, onConnected, agentMessage);
+    await streamChatMessage({
+      content: userDisplayMessage,
+      threadId,
+      fileIds,
+      onConnected,
+      agentMessage,
+    });
   };
 
   // Send initial message from Welcome page navigation
@@ -431,7 +422,7 @@ export default function Chat({threadId}: ChatProps) {
         {isLoading && <LoadingBubble />}
 
         {/* Workflow step form - rendered inline in chat */}
-        {activeWorkflow && activeWorkflow.status === 'suspended' && !isWorkflowSubmitting && !isStreaming && (
+        {activeWorkflow && activeWorkflow.status === WORKFLOW_STATUS.SUSPENDED && !isWorkflowSubmitting && !isStreaming && (
           <div className="mb-6">
             <div
               className="max-w-full sm:max-w-xl md:max-w-2xl bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-2xl shadow-sm shadow-gray-300/50 dark:shadow-gray-700/50 px-4 py-3 md:px-6 md:py-4">
@@ -453,14 +444,7 @@ export default function Chat({threadId}: ChatProps) {
       </div>
 
       {/* Error Display */}
-      {error && (
-        <div className="px-6 py-4 mb-20">
-          <div
-            className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-400 rounded-lg text-sm max-w-4xl mx-auto">
-            {JSON.stringify(error)}
-          </div>
-        </div>
-      )}
+      <ErrorDisplay error={error} />
 
       {/* Tax Data Modal */}
       <TaxDataModal
@@ -476,7 +460,7 @@ export default function Chat({threadId}: ChatProps) {
           onSendMessage={sendMessage}
           disabled={isStreaming || !!activeWorkflow}
           isUploading={isUploading}
-          placeholder={activeWorkflow ? "Complete workflow step first..." : "Type your message..."}
+          placeholder={activeWorkflow ? CHAT_PLACEHOLDERS.WORKFLOW_ACTIVE : CHAT_PLACEHOLDERS.DEFAULT}
         />
       </div>
     </div>
