@@ -8,6 +8,8 @@
     "mastra-dev": "concurrently \"cd server && npm run dev:mastra\" \"npm run dev:client:wait\"",
     "dev:server": "cd server && npm run dev",
     "dev:client": "cd client-react && npm run dev",
+    "lint:server": "cd server && npm run lint",
+    "lint:client": "cd client-react && npm run lint",
     "dev:client:wait": "wait-on http://localhost:3000/api/health && npm run dev:client",
     "build": "npm run build:server && npm run build:client",
     "build:server": "cd server && npm run build",
