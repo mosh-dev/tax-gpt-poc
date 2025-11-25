@@ -1,5 +1,4 @@
-import type { Message, StreamEvent } from '../../types/common.types';
-import type { StreamContext, StreamEventResult } from './types';
+import type { Message, StreamEvent, StreamContext, StreamEventResult } from '../../types/common.types';
 
 /**
  * Handle CONNECTED event

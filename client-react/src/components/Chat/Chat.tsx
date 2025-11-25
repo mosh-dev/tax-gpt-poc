@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import type { Message, StreamEvent, TaxDocument, WorkflowStatus } from '../../types/common.types.ts';
+import type { Message, StreamEvent, TaxDocument, WorkflowStatus, StreamContext, StreamEventResult } from '../../types/common.types.ts';
 import { apiService } from '../../services/api';
 import { useConversations } from '../../contexts/useConversations';
 import TaxDataModal from './TaxDataModal';
@@ -19,7 +19,6 @@ import {
   updateMessageAfterToolResult,
 } from '../../utils/chat/streamEventHandlers';
 import { handleWorkflowToolResult } from '../../utils/chat/workflowStreamHandlers';
-import type { StreamContext, StreamEventResult } from '../../utils/chat/types';
 
 interface LocationState {
   initialMessage?: string;
@@ -98,30 +97,38 @@ export default function Chat({threadId}: ChatProps) {
   }, [messages, isLoading]);
 
   const updateWorkflowState = useCallback((lastMessage: Message) => {
-    if (lastMessage?.toolCalls && lastMessage.toolCalls.length > 0) {
-      // Find the last workflow tool call
-      for (let i = lastMessage.toolCalls.length - 1; i >= 0; i--) {
-        const toolCall = lastMessage.toolCalls[i];
-        if ((toolCall.toolName === TOOL_NAMES.START_WORKFLOW || toolCall.toolName === TOOL_NAMES.RESUME_WORKFLOW) && toolCall.result) {
-          const result = toolCall.result;
-          // Check if workflow is suspended (not completed)
-          if (result.success && !result.completed && result.runId) {
-            setActiveWorkflow({
-              runId: result.runId,
-              threadId: threadId,
-              workflowId: WORKFLOW_IDS.TAX_CALCULATION,
-              status: WORKFLOW_STATUS.SUSPENDED,
-              currentStep: result.nextStep || result.currentStep,
-              suspendPayload: result.suspendPayload,
-              createdAt: new Date().toISOString(),
-              updatedAt: new Date().toISOString(),
-            });
-            break;
-          }
-        }
-      }
-    } else {
+    if (!lastMessage?.toolCalls || lastMessage.toolCalls.length === 0) {
       setActiveWorkflow(null);
+      return;
+    }
+
+    // Find the last workflow tool call by iterating in reverse
+    const lastWorkflowToolCall = [...lastMessage.toolCalls]
+      .reverse()
+      .find(toolCall =>
+        (toolCall.toolName === TOOL_NAMES.START_WORKFLOW ||
+         toolCall.toolName === TOOL_NAMES.RESUME_WORKFLOW) &&
+        toolCall.result
+      );
+
+    if (!lastWorkflowToolCall) {
+      return;
+    }
+
+    const result = lastWorkflowToolCall.result;
+
+    // Check if workflow is suspended (not completed)
+    if (result.success && !result.completed && result.runId) {
+      setActiveWorkflow({
+        runId: result.runId,
+        threadId: threadId,
+        workflowId: WORKFLOW_IDS.TAX_CALCULATION,
+        status: WORKFLOW_STATUS.SUSPENDED,
+        currentStep: result.nextStep || result.currentStep,
+        suspendPayload: result.suspendPayload,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      });
     }
   }, [threadId]);
 
