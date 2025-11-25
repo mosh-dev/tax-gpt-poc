@@ -1,6 +1,6 @@
 /**
- * WorkflowStepMessage
- * Renders workflow steps as interactive chat messages
+ * TaxWorkflowStep
+ * Renders tax calculation workflow steps as interactive chat messages
  */
 
 import type { DragEvent, FormEvent } from 'react';
@@ -9,7 +9,7 @@ import { Check, FileText, Upload } from 'lucide-react';
 import type { ExtractedTaxData, PersonalInfo, TaxDocument, WorkflowStatus } from '../../types/common.types.ts';
 import { WORKFLOW_STEPS, STEP_TITLES } from "../../constants/workflow.ts";
 
-interface WorkflowStepMessageProps {
+interface TaxWorkflowStepProps {
   workflow: WorkflowStatus;
   onSubmit: (displayMessage: string, agentMessage: string) => void;
   onUploadFiles: (files: File[]) => Promise<TaxDocument[]>;
@@ -125,7 +125,7 @@ const formatWorkflowMessage = (
   return { displayMessage, agentMessage };
 };
 
-export default function WorkflowStepMessage(props: WorkflowStepMessageProps) {
+export default function TaxWorkflowStep(props: TaxWorkflowStepProps) {
   const { workflow, onSubmit, onUploadFiles, onCancel, isSubmitting, onRender } = props;
   const { currentStep, suspendPayload, runId } = workflow;
 
