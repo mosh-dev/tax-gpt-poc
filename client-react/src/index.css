@@ -71,7 +71,7 @@
   /* Base prose styles for assistant messages */
   .prose-chat {
     font-size: 0.9rem;
-    line-height: 1.6;
+    line-height: 1.2;
     color: #1f2937;
   }
 
@@ -418,7 +418,7 @@
   /* User message prose (inverted colors for dark background) */
   .prose-chat-user {
     font-size: 0.9rem;
-    line-height: 1.6;
+    line-height: 1.2;
     color: #ffffff;
   }
 

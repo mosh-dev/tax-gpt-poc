@@ -11,7 +11,8 @@
     "build": "npm run build:server && npm run build:client",
     "build:server": "cd server && npm run build",
     "build:client": "cd client-react && npm run build",
-    "start": "cd server && npm start"
+    "start": "cd server && npm start",
+    "devmasta-client": "concurrently \"cd server && npm run dev:mastra\" \"npm run dev:client:wait\""
   },
   "devDependencies": {
     "concurrently": "^9.0.1",

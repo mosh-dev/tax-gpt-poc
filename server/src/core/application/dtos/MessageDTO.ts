@@ -8,6 +8,7 @@ export interface MessageDTO {
   conversationId: string;
   role: 'user' | 'assistant' | 'system';
   content: string;
+  displayContent?: string;
   fileIds?: string[];
   toolCalls?: ToolCallDTO[];
   metadata?: Record<string, any>;

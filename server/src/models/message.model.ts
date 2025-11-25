@@ -10,6 +10,7 @@ export interface MessageData {
   conversationId: string;
   role: 'user' | 'assistant' | 'system';
   content: string;
+  displayContent?: string;
   fileIds?: string[];
   toolCalls?: Array<{
     toolName: string;
@@ -43,6 +44,10 @@ const MessageSchema = new Schema<IMessage>(
     content: {
       type: String,
       required: true,
+    },
+    displayContent: {
+      type: String,
+      required: false,
     },
     fileIds: {
       type: [String],

@@ -34,6 +34,7 @@ export class GetConversationHistoryUseCase {
         conversationId: msg.conversationId.value,
         role: msg.role.toString() as 'user' | 'assistant' | 'system',
         content: msg.content,
+        displayContent: msg.displayContent,
         fileIds: msg.fileIds.map(id => id.value),
         toolCalls: msg.toolCalls,
         metadata: msg.metadata,

@@ -98,14 +98,16 @@ class ApiService {
   /**
    * Stream chat with tools (SSE)
    * Returns an async generator for streaming events
-   * @param message User's message
+   * @param message User's message (display version)
    * @param threadId Optional thread ID for existing conversations (new threadId generated on server if not provided)
    * @param fileIds Optional file IDs for uploaded documents
+   * @param agentMessage Optional agent-specific message with markers/instructions (if not provided, uses message)
    */
   async* streamChat(
     message: string,
     threadId?: string,
-    fileIds?: string[]
+    fileIds?: string[],
+    agentMessage?: string
   ): AsyncGenerator<StreamEvent> {
     const response = await authService.fetchWithAuth(`${API_BASE_URL}/api/chat/stream-with-tools`, {
       method: 'POST',
@@ -114,6 +116,7 @@ class ApiService {
       },
       body: JSON.stringify({
         message,
+        agentMessage,  // Send agent message if provided
         threadId,
         fileIds,
       }),

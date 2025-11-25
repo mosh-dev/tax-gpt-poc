@@ -195,6 +195,7 @@ export class StreamChatUseCase {
           conversationId,
           MessageRole.Assistant(),
           assistantContent,
+          undefined, // displayContent - not needed for assistant messages
           [],
           toolCalls.length > 0 ? toolCalls : undefined
         );

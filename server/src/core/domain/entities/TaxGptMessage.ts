@@ -21,17 +21,24 @@ export class TaxGptMessage {
     public readonly conversationId: ConversationId,
     public readonly role: MessageRole,
     private _content: string,
+    private _displayContent?: string,
     private _fileIds: FileId[] = [],
     private _toolCalls: ToolCall[] = [],
     private _metadata: Record<string, any> = {},
     public readonly createdAt: Date = new Date()
   ) {
     this.validateContent(_content);
+    // displayContent is now provided by the frontend (no auto-generation needed)
+    // Frontend creates separate displayMessage and agentMessage at the source
   }
 
   // Getters
   get content(): string {
     return this._content;
+  }
+
+  get displayContent(): string {
+    return this._displayContent || this._content;
   }
 
   get fileIds(): FileId[] {

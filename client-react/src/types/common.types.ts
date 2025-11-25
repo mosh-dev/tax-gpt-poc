@@ -20,6 +20,7 @@ export interface Message {
   conversationId: string;
   role: 'user' | 'assistant' | 'system';
   content: string;
+  displayContent?: string;
   fileIds?: string[];
   toolCalls?: Array<{
     toolName: string;

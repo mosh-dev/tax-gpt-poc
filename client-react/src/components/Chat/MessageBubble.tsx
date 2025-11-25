@@ -1,7 +1,5 @@
-import { Copy, Edit2 } from 'lucide-react';
 import type { Message } from '../../types/common.types.ts';
-import { marked } from 'marked';
-import DOMPurify from 'dompurify';
+import { parseMarkdown } from '../../utils/markdown';
 
 interface MessageBubbleProps {
   message: Message;
@@ -9,94 +7,63 @@ interface MessageBubbleProps {
 }
 
 export default function MessageBubble({ message, onButtonClick }: MessageBubbleProps) {
-  const parseMarkdown = (content: string): string => {
-    try {
-      const html = marked.parse(content) as string;
-      return DOMPurify.sanitize(html);
-    } catch (error) {
-      console.error('Markdown parsing error:', error);
-      return content;
-    }
-  };
-
-  const handleCopy = () => {
-    navigator.clipboard.writeText(message.content).then();
+  const getMarkdownContent = (message: Message): string => {
+    // Use displayContent if available, fallback to content
+    const contentToDisplay = message.displayContent || message.content;
+    return parseMarkdown(contentToDisplay);
   };
 
   return (
     <div
-      className={`flex gap-4 mb-6 ${message.role === 'user' ? 'justify-end' : ''}`}
+      className={`flex mb-4 md:mb-6 ${message.role === 'user' ? 'justify-end' : ''}`}
     >
-      {/* Avatar - Assistant */}
-      {message.role === 'assistant' && (
-        <div className="w-10 h-10 bg-primary-100 rounded-full flex-shrink-0 flex items-center justify-center text-primary-600">
-          <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
-            <rect
-              x="4"
-              y="4"
-              width="16"
-              height="16"
-              rx="2"
-              stroke="currentColor"
-              strokeWidth="2"
-            />
-            <circle cx="9" cy="10" r="1.5" fill="currentColor" />
-            <circle cx="15" cy="10" r="1.5" fill="currentColor" />
-            <path
-              d="M9 15c.5.5 1.5 1 3 1s2.5-.5 3-1"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          </svg>
+      <div
+        className={`relative max-w-full sm:max-w-xl md:max-w-2xl shadow-sm ${
+          message.role === 'user'
+            ? 'bg-primary-600 dark:bg-primary-700 text-white rounded-2xl rounded-br-none shadow-primary-600/20 dark:shadow-primary-700/20'
+            : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-2xl rounded-tl-none shadow-gray-300/50 dark:shadow-gray-700/50'
+        } px-4 py-3 md:px-6 md:py-4`}
+      >
+        {/* Icon and title side by side */}
+        <div className="flex items-center gap-2 mb-2">
+          {message.role === 'assistant' && (
+            <>
+              <div
+                className="w-6 h-6 md:w-8 md:h-8 bg-primary-100 dark:bg-primary-900/50 rounded-lg flex items-center justify-center text-primary-600 dark:text-primary-400 flex-shrink-0">
+                <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 md:w-5 md:h-5">
+                  <rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" strokeWidth="2"/>
+                  <circle cx="9" cy="10" r="1.5" fill="currentColor"/>
+                  <circle cx="15" cy="10" r="1.5" fill="currentColor"/>
+                  <path d="M9 15c.5.5 1.5 1 3 1s2.5-.5 3-1" stroke="currentColor" strokeWidth="2"
+                        strokeLinecap="round"/>
+                </svg>
+              </div>
+              <div className="text-sm font-semibold text-gray-900 dark:text-gray-100">Assistant</div>
+            </>
+          )}
+          {message.role === 'user' && (
+            <>
+              <div
+                className="w-6 h-6 md:w-8 md:h-8 bg-white/20 dark:bg-white/10 rounded-lg flex items-center justify-center text-white flex-shrink-0">
+                <svg viewBox="0 0 24 24" fill="none" className="w-4 h-4 md:w-5 md:h-5">
+                  <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2"/>
+                  <path d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" stroke="currentColor" strokeWidth="2"
+                        strokeLinecap="round"/>
+                </svg>
+              </div>
+              <div className="text-sm font-semibold text-white">You</div>
+            </>
+          )}
         </div>
-      )}
 
-      {/* Message Content */}
-      <div className="max-w-2xl">
-        {/* Bubble */}
         <div
-          className={`${
-            message.role === 'user'
-              ? 'bg-primary-600 rounded-2xl rounded-br-md'
-              : 'bg-gray-100 text-gray-900 rounded-2xl rounded-tl-md'
-          } px-6 py-4`}
-        >
-          <div className="text-sm font-semibold mb-2">
-            {message.role === 'user' ? 'You' : 'TaxGPT'}
-            <span className="ml-2 text-xs opacity-70">
-              {new Date(message.createdAt).toLocaleTimeString([], {
-                hour: '2-digit',
-                minute: '2-digit',
-              })}
-            </span>
-          </div>
-          <div
-            className={`prose prose-sm max-w-none ${
-              message.role === 'user' ? 'prose-invert' : ''
-            }`}
-            dangerouslySetInnerHTML={{ __html: parseMarkdown(message.content) }}
-          />
+          className={`${message.role === 'user' ? 'prose-chat-user' : 'prose-chat'} leading-snug`}
+          dangerouslySetInnerHTML={{__html: getMarkdownContent(message)}}
+        />
+        <div
+          className={`text-xs mt-2 ${message.role === 'user' ? 'text-primary-100 dark:text-primary-200' : 'text-gray-500 dark:text-gray-400'}`}>
+          {new Date(message.createdAt).toLocaleTimeString()}
         </div>
-
-        {/* Action Buttons - Only for assistant messages */}
-        {message.role === 'assistant' && (
-          <div className="flex gap-2 mt-2 ml-2">
-            <button
-              onClick={handleCopy}
-              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-              title="Copy"
-            >
-              <Copy className="w-4 h-4" />
-            </button>
-            <button
-              className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-              title="Edit"
-            >
-              <Edit2 className="w-4 h-4" />
-            </button>
-          </div>
-        )}
 
         {/* Button Options - From UX design */}
         {message.buttons && message.buttons.length > 0 && (
@@ -113,21 +80,6 @@ export default function MessageBubble({ message, onButtonClick }: MessageBubbleP
           </div>
         )}
       </div>
-
-      {/* Avatar - User */}
-      {message.role === 'user' && (
-        <div className="w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center ">
-          <svg viewBox="0 0 24 24" fill="none" className="w-6 h-6">
-            <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="2" />
-            <path
-              d="M6 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-            />
-          </svg>
-        </div>
-      )}
     </div>
   );
 }

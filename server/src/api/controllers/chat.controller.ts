@@ -18,10 +18,13 @@ export class ChatController {
   async streamChat(req: Request, res: Response): Promise<void> {
     try {
       // Support both threadId and conversationId for backwards compatibility
-      const { message, conversationHistory, conversationId, threadId } = req.body;
+      const { message, agentMessage, conversationHistory, conversationId, threadId } = req.body;
+
+      // Use agentMessage if provided (workflow messages), otherwise use message
+      const contentForAgent = agentMessage || message;
 
       // Validate request
-      if (!message || message.trim().length === 0) {
+      if (!contentForAgent || contentForAgent.trim().length === 0) {
         res.status(400).json({
           success: false,
           error: 'Message is required',
@@ -37,8 +40,9 @@ export class ChatController {
       res.setHeader('X-Accel-Buffering', 'no');
 
       // Prepare request DTO - prefer threadId over conversationId
+      // Use contentForAgent (agentMessage || message) for LLM processing
       const requestDTO: StreamChatRequestDTO = {
-        message,
+        message: contentForAgent,
         conversationId: threadId || conversationId,
         conversationHistory,
       };
