@@ -1,9 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import type { Message, TaxDocument, WorkflowStatus } from '../../types/common.types.ts';
 import { apiService } from '../../services/api';
 import { useConversations } from '../../contexts/useConversations';
 import { useStreamChat } from '../../hooks/useStreamChat';
+import { useThreadManagement } from '../../hooks/useThreadManagement';
+import { useModalState } from '../../hooks/useModalState';
+import { useWorkflowState } from '../../hooks/useWorkflowState';
 import TaxDataModal from './TaxDataModal';
 import TaxWorkflowStep from './TaxWorkflowStep';
 import WorkflowContainer from './WorkflowContainer';
@@ -13,27 +16,31 @@ import LoadingBubble from './LoadingBubble';
 import ErrorDisplay from './ErrorDisplay';
 import { WORKFLOW_IDS, WORKFLOW_STATUS } from "../../constants/workflow.ts";
 import { MESSAGE_ROLES } from "../../constants/events.ts";
-import { CHAT_PLACEHOLDERS, ERROR_MESSAGES, FILE_ATTACHMENT_FORMAT } from "../../constants/chatMessages";
+import { CHAT_PLACEHOLDERS, ERROR_MESSAGES } from "../../constants/chatMessages";
 import { uploadWorkflowFiles } from '../../utils/chat/fileUpload';
 import { extractWorkflowState } from '../../utils/chat/workflowState';
-import type { LocationState, ChatProps, SendMessageOptions, TaxDataToolResult } from './Chat.types';
+import { prepareMessageWithFiles } from '../../utils/chat/messageBuilder';
+import type { ChatProps, SendMessageOptions } from './Chat.types';
 
 export default function Chat({threadId}: ChatProps) {
   const navigate = useNavigate();
-  const location = useLocation();
   const {loadConversations} = useConversations();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
-  // Tax data modal
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [pendingToolResult, setPendingToolResult] = useState<TaxDataToolResult | null>(null);
+  // Tax data modal state
+  const { isModalOpen, pendingToolResult, setIsModalOpen, setPendingToolResult } = useModalState();
 
   // Workflow state - integrated into chat
-  const [activeWorkflow, setActiveWorkflow] = useState<WorkflowStatus | null>(null);
-  const [isWorkflowSubmitting, setIsWorkflowSubmitting] = useState(false);
+  const {
+    activeWorkflow,
+    isWorkflowSubmitting,
+    setActiveWorkflow,
+    setIsWorkflowSubmitting,
+    setWorkflowState,
+  } = useWorkflowState();
 
   // Streaming chat hook
   const { streamChatMessage, isStreaming } = useStreamChat({
@@ -48,48 +55,16 @@ export default function Chat({threadId}: ChatProps) {
   });
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const initialMessageSentRef = useRef<string | null>(null); // Track which threadId we sent initial message for
-  const loadedThreadIdRef = useRef<string | null>(null); // Track which threadId we've loaded
 
-  // Handle thread changes and initial messages
-  useEffect(() => {
-    const state = location.state as LocationState | null;
-
-    // Check if this is a new conversation with initial message
-    // Use ref to prevent double execution in React StrictMode
-    if (state?.initialMessage && initialMessageSentRef.current !== threadId) {
-      initialMessageSentRef.current = threadId;
-      loadedThreadIdRef.current = threadId; // Mark as loaded to prevent loadConversation
-
-      // Clear the location state to prevent re-sending on refresh
-      window.history.replaceState({}, document.title);
-
-      // Don't load conversation - we're about to send the first message
-      setMessages([]);
-      setActiveWorkflow(null);
-
-      // Send the initial message (agent will detect workflow intent from message)
-      sendInitialMessage(state.initialMessage, state.files || []).then();
-    } else if (!state?.initialMessage && loadedThreadIdRef.current !== threadId) {
-      // Normal conversation load (no initial message)
-      // Use ref to prevent double execution in React StrictMode
-      loadedThreadIdRef.current = threadId;
-      setActiveWorkflow(null);
-      loadConversation().then();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [threadId]);
-
-  // Auto-scroll
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, isLoading]);
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
+  };
 
   const loadConversation = useCallback(async () => {
     if (!threadId) {
       // New conversation - don't load anything
       setMessages([]);
-      setActiveWorkflow(null);
+      setWorkflowState({ active: null, isSubmitting: false });
       return;
     }
 
@@ -99,20 +74,16 @@ export default function Chat({threadId}: ChatProps) {
 
       // Check last message for active workflow state from tool calls
       const lastMessage = data.messages[data.messages.length - 1];
-      const workflowState = extractWorkflowState(lastMessage, threadId);
-      setActiveWorkflow(workflowState);
+      const activeWorkflow = extractWorkflowState(lastMessage, threadId);
+      setWorkflowState({ active: activeWorkflow, isSubmitting: false });
     } catch {
       // Conversation not found (404) - this is expected for new conversations
       // The conversation will be created when the first message is sent
       // Just start with empty messages, no need to show an error
       setMessages([]);
-      setActiveWorkflow(null);
+      setWorkflowState({ active: null, isSubmitting: false });
     }
-  }, [threadId]);
-
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
-  };
+  }, [threadId, setWorkflowState]);
 
   // Handle workflow step submission - receives pre-formatted messages from TaxWorkflowStep
   const handleWorkflowStepSubmit = async (displayMessage: string, agentMessage: string) => {
@@ -183,31 +154,23 @@ export default function Chat({threadId}: ChatProps) {
       return;
     }
 
-    // Upload files first if provided
-    let fileIds: string[] = [];
-    const hasFiles = files.length > 0;
+    // Prepare message with file uploads
+    setIsUploading(true);
+    let userDisplayMessage: string;
+    let agentMessage: string;
+    let fileIds: string[];
 
-    if (hasFiles) {
-      setIsUploading(true);
-      try {
-        const uploadedFiles = await apiService.uploadFiles(files, threadId || undefined);
-        fileIds = uploadedFiles.map(f => f.fileId);
-      } catch (err: any) {
-        setError(ERROR_MESSAGES.UPLOAD_FAILED(err.message));
-        setIsUploading(false);
-        return;
-      }
+    try {
+      const prepared = await prepareMessageWithFiles(message, files, threadId || undefined);
+      userDisplayMessage = prepared.userDisplayMessage;
+      agentMessage = prepared.agentMessage;
+      fileIds = prepared.fileIds;
+    } catch (err: any) {
+      setError(ERROR_MESSAGES.UPLOAD_FAILED(err.message));
       setIsUploading(false);
+      return;
     }
-
-    // Build messages with file attachments
-    const userDisplayMessage = hasFiles
-      ? `${message}${FILE_ATTACHMENT_FORMAT.USER_DISPLAY(files.map(f => f.name).join(', '))}`
-      : message;
-
-    const agentMessage = fileIds.length > 0
-      ? `${message}${FILE_ATTACHMENT_FORMAT.AGENT_MARKERS(fileIds)}`
-      : message;
+    setIsUploading(false);
 
     const userMessage: Message = {
       conversationId: threadId || '',
@@ -257,6 +220,20 @@ export default function Chat({threadId}: ChatProps) {
       }
     });
   };
+
+  // Thread management - handles loading and initial messages
+  useThreadManagement({
+    threadId,
+    setMessages,
+    setWorkflowState,
+    loadConversation,
+    sendInitialMessage,
+  });
+
+  // Auto-scroll when messages or loading state changes
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages, isLoading]);
 
   return (
     <div className="flex flex-col h-full min-h-0 relative">

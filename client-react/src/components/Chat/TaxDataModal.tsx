@@ -1,5 +1,5 @@
 import { X } from 'lucide-react';
-import type { ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 interface SwissTaxData {
   name?: string;
@@ -29,10 +29,31 @@ export default function TaxDataModal({
   onConfirm,
   onCancel
 }: TaxDataModalProps) {
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [shouldRender, setShouldRender] = useState(false);
+
   // Extract data from tool result
   const taxData = toolResult?.success ? toolResult.data : null;
 
-  if (!isOpen || !taxData) return null;
+  // Manage animation and mounting state
+  useEffect(() => {
+    if (isOpen) {
+      // Mount and then animate in
+      setShouldRender(true);
+      requestAnimationFrame(() => {
+        setIsAnimating(true);
+      });
+    } else {
+      // Animate out, then unmount after animation completes
+      setIsAnimating(false);
+      const timeout = setTimeout(() => {
+        setShouldRender(false);
+      }, 300); // Match transition duration
+      return () => clearTimeout(timeout);
+    }
+  }, [isOpen]);
+
+  if (!shouldRender || !taxData) return null;
 
   const formatCurrency = (amount: number | undefined): string => {
     if (amount === undefined || amount === null) return 'CHF 0';
@@ -103,8 +124,16 @@ export default function TaxDataModal({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+    <div
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${
+        isAnimating ? 'opacity-100' : 'opacity-0'
+      }`}
+    >
+      <div
+        className={`bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto transition-all duration-300 ${
+          isAnimating ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+        }`}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
           <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Tax Data Loaded</h2>

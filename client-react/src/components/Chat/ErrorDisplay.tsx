@@ -4,6 +4,7 @@
  */
 
 import { X } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface ErrorDisplayProps {
   error: string | null;
@@ -11,11 +12,40 @@ interface ErrorDisplayProps {
 }
 
 export default function ErrorDisplay({ error, onClose }: ErrorDisplayProps) {
-  if (!error) return null;
+  const [isAnimating, setIsAnimating] = useState(false);
+  const [shouldRender, setShouldRender] = useState(false);
+
+  // Manage animation and mounting state
+  useEffect(() => {
+    if (error) {
+      // Mount and then animate in
+      setShouldRender(true);
+      requestAnimationFrame(() => {
+        setIsAnimating(true);
+      });
+    } else {
+      // Animate out, then unmount after animation completes
+      setIsAnimating(false);
+      const timeout = setTimeout(() => {
+        setShouldRender(false);
+      }, 300); // Match transition duration
+      return () => clearTimeout(timeout);
+    }
+  }, [error]);
+
+  if (!shouldRender) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4">
+    <div
+      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${
+        isAnimating ? 'opacity-100' : 'opacity-0'
+      }`}
+    >
+      <div
+        className={`bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-md w-full mx-4 transition-all duration-300 ${
+          isAnimating ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+        }`}
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-red-200 dark:border-red-800">
           <h2 className="text-lg font-bold text-red-700 dark:text-red-400">Error</h2>
