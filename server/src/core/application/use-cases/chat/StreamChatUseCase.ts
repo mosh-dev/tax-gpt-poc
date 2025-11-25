@@ -5,7 +5,7 @@
 import { IConversationRepository } from '@core/domain/repositories/IConversationRepository';
 import { IMessageRepository } from '@core/domain/repositories/IMessageRepository';
 import { IAIAgentService } from '@core/application/services/IAIAgentService';
-import { ChatMessageDTO, StreamChatRequestDTO, StreamEventDTO } from '@core/application/dtos/ChatDTO';
+import { StreamChatRequestDTO, StreamEventDTO } from '@core/application/dtos/ChatDTO';
 import { ConversationId } from '@core/domain/value-objects/ConversationId';
 import { MessageId } from '@core/domain/value-objects/MessageId';
 import { MessageRole } from '@core/domain/value-objects/MessageRole';
@@ -25,9 +25,6 @@ export class StreamChatUseCase {
   private generateTitleFromMessage(message: string): string {
     // Clean up message - remove workflow context markers
     const cleanMessage = message
-      .replace(/\[Context:.*?\]/g, '')
-      .replace(/\[Workflow Context\][\s\S]*?(?=\n\n|$)/g, '')
-      .replace(/\[fileId:.*?]/g, '')
       .replace(/\*\*/g, '')
       .trim();
 
@@ -49,13 +46,8 @@ export class StreamChatUseCase {
       : ConversationId.generate();
 
     // Generate title from first message (first 3 words)
-    const title = this.generateTitleFromMessage(request.message);
-
-    const conversation = new TaxGptConversation(
-      conversationId,
-      title
-    );
-
+    const title = this.generateTitleFromMessage(request.userMessage || request.message);
+    const conversation = new TaxGptConversation(conversationId, title);
     // Use findOrCreate for atomic operation
     await this.conversationRepository.findOrCreate(conversation);
 
@@ -69,16 +61,7 @@ export class StreamChatUseCase {
     );
     await this.messageRepository.create(userMessage);
 
-    // 3. Get conversation history
-    const historyMessages = await this.messageRepository.findByConversationId(conversationId);
-    const history: ChatMessageDTO[] = historyMessages.map(msg => ({
-      role: msg.role.toString() as 'user' | 'assistant' | 'system',
-      content: msg.content,
-      fileIds: msg.fileIds.map(id => id.value),
-      toolCalls: msg.toolCalls,
-    }));
-
-    // 4. Stream AI response
+    // 3. Stream AI response
     let assistantContent = '';
     const toolCalls: any[] = [];
 
@@ -96,12 +79,9 @@ export class StreamChatUseCase {
       // resourceId is required by Mastra Memory - use default if not provided
       const resourceId = request.userId || 'default-user';
 
-      for await (const event of this.aiAgentService.streamChat(
-        request.message,
-        history,
-        threadId,
-        resourceId
-      )) {
+      const eventStream = this.aiAgentService.streamChat(request.message, threadId, resourceId);
+
+      for await (const event of eventStream) {
         // Map Mastra events to client-expected format
         const eventType = event.type as string;
 
@@ -189,14 +169,14 @@ export class StreamChatUseCase {
         }
       }
 
-      // 5. Save assistant message
+      // 4. Save assistant message
       if (assistantContent.trim()) {
         const assistantMessage = new TaxGptMessage(
           MessageId.generate(),
           conversationId,
           MessageRole.Assistant(),
           assistantContent,
-          undefined, // displayContent - not needed for assistant messages
+          '',
           [],
           toolCalls.length > 0 ? toolCalls : undefined
         );

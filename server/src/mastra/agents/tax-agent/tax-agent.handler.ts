@@ -55,9 +55,7 @@ export async function getOrCreateTaxAgent(): Promise<TaxAgent> {
     taxAgentInstance = agent;
     needsRefresh = false; // Clear refresh flag
 
-    console.log('[TaxAgent] Agent instance created successfully', {
-      instructionsLength: instructions.length
-    });
+    console.log('[TaxAgent] Agent instance created successfully');
 
     return agent;
   } catch (error) {

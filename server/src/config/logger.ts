@@ -3,15 +3,16 @@
  * Writes logs to storage/logs directory for debugging and monitoring
  */
 
-import pino from 'pino';
-import * as fs from 'fs';
+
 import { getStoragePath } from './storage';
 import { createStream } from 'rotating-file-stream';
+import { existsSync, mkdirSync } from 'node:fs';
+import pino from "pino";
 
 // Ensure logs directory exists
 const logsDir = getStoragePath('logs');
-if (!fs.existsSync(logsDir)) {
-    fs.mkdirSync(logsDir, { recursive: true });
+if (!existsSync(logsDir)) {
+    mkdirSync(logsDir, { recursive: true });
 }
 
 const combinedLogStream = createStream('combined.log', {
@@ -46,45 +47,6 @@ export const pinoServerLogger = pino(
  * Create a child logger for the Tax Agent with detailed tool call logging
  */
 export const agentLogger = pinoServerLogger.child({ module: 'TaxAgent' });
-
-/**
- * Log tool call with arguments
- */
-export function logToolCall(toolName: string | undefined, toolCallId: string | undefined, args: any) {
-    agentLogger.info({
-        event: 'tool-call',
-        toolName: toolName || 'unknown',
-        toolCallId: toolCallId || 'unknown',
-        args: args || {},
-    }, `Tool Call: ${toolName || 'unknown'}`);
-}
-
-/**
- * Log tool result
- */
-export function logToolResult(toolName: string | undefined, toolCallId: string | undefined, result: any) {
-    let resultPreview = 'undefined';
-
-    try {
-        if (result === undefined || result === null) {
-            resultPreview = String(result);
-        } else if (typeof result === 'string') {
-            resultPreview = result.substring(0, 200);
-        } else {
-            const jsonStr = JSON.stringify(result);
-            resultPreview = jsonStr ? jsonStr.substring(0, 200) : 'undefined';
-        }
-    } catch (error) {
-        resultPreview = `[Error stringifying result: ${error}]`;
-    }
-
-    agentLogger.info({
-        event: 'tool-result',
-        toolName: toolName || 'unknown',
-        toolCallId: toolCallId || 'unknown',
-        resultPreview,
-    }, `Tool Result: ${toolName || 'unknown'}`);
-}
 
 /**
  * Log streaming error with full context

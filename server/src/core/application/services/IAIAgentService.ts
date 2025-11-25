@@ -26,21 +26,10 @@ export interface IAIAgentService {
   /**
    * Stream chat response with tool calling support
    * @param message User's message
-   * @param conversationHistory Conversation history (for legacy mode without Memory)
    * @param threadId Optional thread ID for Mastra Memory
    * @param resourceId Optional resource ID for Mastra Memory (e.g., user ID)
    */
-  streamChat(
-    message: string,
-    conversationHistory: ChatMessage[],
-    threadId?: string,
-    resourceId?: string
-  ): AsyncIterable<StreamEvent>;
-
-  /**
-   * Get single chat response (non-streaming)
-   */
-  chat(message: string, conversationHistory: ChatMessage[]): Promise<string>;
+  streamChat(message: string, threadId?: string, resourceId?: string): AsyncIterable<StreamEvent>;
 
   /**
    * Delete a conversation thread from Mastra memory

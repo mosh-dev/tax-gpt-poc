@@ -34,7 +34,6 @@ import { getOrCreateTaxAgent } from '@/mastra/agents/tax-agent/tax-agent.handler
 export async function createExpressApp(): Promise<Express> {
   // Initialize database, seeds, and LLM client (idempotent)
   await initializeApp();
-
   const taxAgentWrapper = await getOrCreateTaxAgent();
   const mastra = new Mastra({
     agents: {taxAgent: taxAgentWrapper.agent},
@@ -50,7 +49,6 @@ export async function createExpressApp(): Promise<Express> {
       default: {enabled: true},
     }),
   });
-  console.log('[Mastra] Mastra instance initialized successfully');
   setMastra(mastra);
 
 
@@ -134,7 +132,7 @@ export async function createExpressApp(): Promise<Express> {
   });
 
   // Global error handler
-  app.use((err: Error, _: Request, res: Response, _next: NextFunction) => {
+  app.use((err: Error, _: Request, res: Response) => {
     console.error('Error:', err.message);
     console.error('Stack:', err.stack);
 

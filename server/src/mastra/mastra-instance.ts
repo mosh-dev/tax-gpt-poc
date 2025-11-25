@@ -21,7 +21,7 @@ export function setMastra(instance: Mastra): void {
  */
 export function getMastra(): Mastra {
   if (!mastraInstance) {
-    throw new Error('Mastra instance not initialized. Call setMastra() first.');
+    throw new Error('Mastra instance not initialized.');
   }
   return mastraInstance;
 }

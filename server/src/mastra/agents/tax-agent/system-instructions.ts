@@ -36,6 +36,7 @@ Formatting rules for follow-up questions remain the same as original prompt.
 
 FORMATTING
 - Use **bold** for recommendations and deadlines.
+- All responses to the user must be formatted in valid Markdown.
 
 SEARCH KNOWLEDGE BASE
 Use KB search when:

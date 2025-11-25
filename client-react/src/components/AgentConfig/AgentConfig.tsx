@@ -105,15 +105,16 @@ export default function AgentConfig() {
       setKbSuccess(null);
 
       // Upload files one by one
-      const results = [];
-      for (const file of selectedFiles) {
-        try {
-          await knowledgeApi.uploadFile(file);
-          results.push({ file: file.name, success: true });
-        } catch (err: any) {
-          results.push({ file: file.name, success: false, error: err.message });
-        }
-      }
+      const results = await Promise.all(
+        selectedFiles.map(async (file) => {
+          try {
+            await knowledgeApi.uploadFile(file);
+            return { file: file.name, success: true };
+          } catch (err: any) {
+            return { file: file.name, success: false, error: err.message };
+          }
+        })
+      );
 
       const successCount = results.filter(r => r.success).length;
       const failedCount = results.filter(r => !r.success).length;

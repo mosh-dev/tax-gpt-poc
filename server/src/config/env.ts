@@ -49,7 +49,7 @@ export const env = {
   MONGODB_URI: getRequiredEnv('MONGODB_URI'),
   MONGODB_DB_NAME: getRequiredEnv('MONGODB_DB_NAME'),
 
-  DISABLE_VECTOR_STORAGE: getOptionalEnv('DISABLE_VECTOR_STORAGE'),
+  DISABLE_VECTOR_STORAGE: getOptionalEnv('DISABLE_VECTOR_STORAGE') === 'true',
 
   // File Upload Configuration
   MAX_FILE_SIZE: parseInt(getRequiredEnv('MAX_FILE_SIZE'), 10),

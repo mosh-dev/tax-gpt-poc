@@ -1,12 +1,11 @@
 import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
-// import { getOpenAiModel } from '@config/llm';
 import { createMastraMemory, createMemoryConfigFromEnv } from '@/mastra/helpers/mastra-memory.helper';
 import { AgentConfig } from '@models/agent-config.model';
 import { encode } from 'gpt-tokenizer';
 import { getCollection } from '@config/database-utils';
 import { MASTRA_COLLECTIONS } from '@config/database-collections';
-import { agentLogger, logLLMResponse, logStreamError, logToolCall, logToolResult } from '@config/logger';
+import { logLLMResponse, logStreamError } from '@config/logger';
 import { getErrorMessage } from '@utils/error-handler';
 import { getTaxDataTool } from '@/mastra/agents/tax-agent/tools/get-tax-data';
 import { calculateDeductionsTool } from '@/mastra/agents/tax-agent/tools/calculate-deductions';
@@ -16,6 +15,7 @@ import { startWorkflowTool } from '@/mastra/agents/tax-agent/tools/start-workflo
 import { resumeWorkflowTool } from '@/mastra/agents/tax-agent/tools/resume-workflow-tool';
 import { searchKnowledgeTool } from '@/mastra/agents/tax-agent/tools/search-knowledge-tool';
 import { getOpenAiModel } from '@config/llm';
+import { ChunkType } from '@mastra/core/stream';
 
 /**
  * Tax Agent powered by Mastra and LMStudio
@@ -89,7 +89,7 @@ export class TaxAgent {
     message: string,
     threadId: string,
     resourceId?: string
-  ): AsyncGenerator<any, void, unknown> {
+  ): AsyncGenerator<ChunkType<any>, void, unknown> {
     if (!threadId) {
       throw new Error('threadId is required for conversation management');
     }
@@ -99,8 +99,7 @@ export class TaxAgent {
     }
 
     // resourceId is required by Mastra Memory - use default if not provided
-    const effectiveResourceId = resourceId || 'default-user';
-    console.log(`[TaxAgent] Using Mastra Memory - Thread: ${threadId}, Resource: ${effectiveResourceId}`);
+    const effectiveResourceId = resourceId || 'default-user';``
 
     // Helper function to create stream
     const createStream = () => {
@@ -116,20 +115,17 @@ export class TaxAgent {
     };
 
     let stream;
-    let retried = false;
-
     try {
       stream = await createStream();
-    } catch (error: unknown) {
+    } catch (error) {
       // If first attempt fails (e.g., thread not found), retry once
       // This allows Mastra to create the thread on second attempt
       const errorMessage = getErrorMessage(error).toLowerCase();
       if (errorMessage.includes('thread') || errorMessage.includes('not found') || errorMessage.includes('does not exist')) {
         console.log(`[TaxAgent] First attempt failed with thread error, retrying...`);
-        retried = true;
         try {
           stream = await createStream();
-        } catch (retryError: unknown) {
+        } catch (retryError) {
           const retryErrorMsg = getErrorMessage(retryError);
           console.error('[TaxAgent] Retry also failed:', retryErrorMsg);
           throw retryError;
@@ -139,45 +135,12 @@ export class TaxAgent {
       }
     }
 
-    if (retried) {
-      console.log(`[TaxAgent] Retry successful`);
-    }
-
     try {
       for await (const event of stream.fullStream) {
-        // Log all LLM events to file for debugging JSON parsing issues
         logLLMResponse(event);
-
-        // Cast once for cleaner access
-        const eventAny = event as any;
-
-        // Log important events to console and file
-        if (event.type === 'tool-call') {
-          const toolName = eventAny.payload?.toolName || eventAny.toolName;
-          const toolCallId = eventAny.payload?.toolCallId || eventAny.toolCallId;
-          const args = eventAny.payload?.args || eventAny.args;
-
-          // Log the raw event if toolName is missing (debugging)
-          if (!toolName) {
-            agentLogger.warn({rawEvent: event}, 'Tool call event missing toolName');
-          }
-          logToolCall(toolName, toolCallId, args);
-        } else if (event.type === 'tool-result') {
-          const toolName = eventAny.payload?.toolName || eventAny.toolName;
-          const toolCallId = eventAny.payload?.toolCallId || eventAny.toolCallId;
-          const result = eventAny.payload?.result || eventAny.result;
-
-          if (!toolName) {
-            agentLogger.warn({rawEvent: event}, 'Tool result event missing toolName');
-          }
-          logToolResult(toolName, toolCallId, result);
-        } else if (event.type === 'error') {
-          agentLogger.error({event}, 'Stream Error Event');
-        }
-
-        yield event as any;
+        yield event as ChunkType<any>;
       }
-    } catch (error: unknown) {
+    } catch (error) {
       logStreamError(error);
       throw error;
     }

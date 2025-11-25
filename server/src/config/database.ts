@@ -13,7 +13,6 @@ const MONGODB_URI = env.MONGODB_URI;
  * Checks connection state and skips if already connected (naturally idempotent)
  */
 export async function connectDatabase(): Promise<void> {
-  // Check if already connected via Mongoose connection state
   if (isDatabaseConnected()) {
     console.log('[Database] Already connected, skipping connection');
     return;
@@ -25,12 +24,8 @@ export async function connectDatabase(): Promise<void> {
       socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
       bufferCommands: false, // Disable buffering to fail fast
     });
-    console.log('[Database] Connection successful');
   } catch (error) {
     console.error('[Database] Connection failed:', error);
-    console.error(`[Database] Make sure MongoDB is running at ${MONGODB_URI}`);
-    // Don't exit process, allow server to run without DB for now
-    console.warn('[Database] Server will continue without database features');
     throw error; // Throw to let caller handle the error
   }
 }
@@ -41,7 +36,6 @@ export async function connectDatabase(): Promise<void> {
 export async function disconnectDatabase(): Promise<void> {
   try {
     await mongoose.disconnect();
-    console.log('[Database] Disconnected from MongoDB');
   } catch (error) {
     console.error('[Database] Disconnect failed:', error);
   }
