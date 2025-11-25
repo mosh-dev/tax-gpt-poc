@@ -22,7 +22,7 @@ const router = Router();
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const filesDir = getStoragePath('files');
-    fs.mkdir(filesDir, { recursive: true })
+    void fs.mkdir(filesDir, { recursive: true })
       .then(() => cb(null, filesDir));
   },
   filename: (req, file, cb) => {

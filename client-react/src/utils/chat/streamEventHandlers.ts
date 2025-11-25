@@ -1,4 +1,5 @@
 import type { Message, StreamEvent, StreamContext, StreamEventResult } from '../../types/common.types';
+import type { Dispatch, SetStateAction } from 'react';
 
 /**
  * Handle CONNECTED event
@@ -81,8 +82,8 @@ export function handleErrorEvent(
 export function updateMessageAfterToolResult(
   assistantMessage: Message,
   firstChunk: boolean,
-  setMessages: React.Dispatch<React.SetStateAction<Message[]>>,
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>
+  setMessages: Dispatch<SetStateAction<Message[]>>,
+  setIsLoading: Dispatch<SetStateAction<boolean>>
 ): boolean {
   if (!firstChunk && assistantMessage.content.trim().length > 0) {
     setMessages(prev => [...prev, { ...assistantMessage }]);

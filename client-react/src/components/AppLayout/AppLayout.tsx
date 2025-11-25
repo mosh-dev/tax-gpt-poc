@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { type ReactNode, useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useIsMobile } from '../../hooks/useMediaQuery';
 import Toolbar from '../Toolbar/Toolbar';
@@ -8,7 +8,7 @@ import type { Conversation } from '../../types/common.types.ts';
 import { useConversations } from "../../contexts/useConversations.ts";
 
 interface AppLayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export default function AppLayout({ children }: AppLayoutProps) {

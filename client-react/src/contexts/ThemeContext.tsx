@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useMemo } from 'react';
+import type { ReactNode } from "react";
 import { ThemeContext, type Theme, type ResolvedTheme, type ThemeContextType } from './ThemeContextDefinition';
 
 const STORAGE_KEY = 'tax_gpt_theme_preference';
@@ -29,7 +30,7 @@ function updateDOMTheme(resolvedTheme: ResolvedTheme) {
   }
 }
 
-export function ThemeProvider({ children }: { children: React.ReactNode }) {
+export function ThemeProvider({ children }: { children: ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(getStoredTheme);
   const [systemTheme, setSystemTheme] = useState<ResolvedTheme>(getSystemTheme);
 

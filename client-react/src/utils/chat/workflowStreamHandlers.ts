@@ -1,5 +1,6 @@
 import type { StreamEvent, WorkflowStatus } from '../../types/common.types';
 import { TOOL_NAMES, WORKFLOW_IDS, WORKFLOW_STATUS } from '../../constants/workflow';
+import type { Dispatch, SetStateAction } from 'react';
 
 /**
  * Extract workflow status from tool result
@@ -56,8 +57,8 @@ export function extractWorkflowStatusFromResult(
 export function handleWorkflowToolResult(
   event: StreamEvent,
   threadId: string,
-  setActiveWorkflow: React.Dispatch<React.SetStateAction<WorkflowStatus | null>>,
-  setIsWorkflowSubmitting: React.Dispatch<React.SetStateAction<boolean>>
+  setActiveWorkflow: Dispatch<SetStateAction<WorkflowStatus | null>>,
+  setIsWorkflowSubmitting: Dispatch<SetStateAction<boolean>>
 ): boolean {
   if (!event.toolName || !event.result) return false;
 

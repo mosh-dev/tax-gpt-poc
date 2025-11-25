@@ -4,29 +4,9 @@
  * Provides abstraction over Mongoose models
  */
 
-import { randomUUID } from 'crypto';
-import { ConversationModel, ConversationData } from '@models/conversation.model';
-import { MessageData, MessageModel } from '@models/message.model';
 import { FileData, FileModel } from '@models/file.model';
 import { ObjectMap } from '@/types/common.types';
 import { connectDatabase, isDatabaseConnected } from '@config/database';
-
-export interface CreateConversationData {
-  conversationId?: string;
-  title: string;
-  taxYear?: number;
-  userId?: string;
-  metadata?: any;
-}
-
-export interface CreateMessageData {
-  conversationId: string;
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-  fileIds?: string[];
-  toolCalls?: any[];
-  metadata?: any;
-}
 
 export interface CreateFileData {
   fileId: string;

@@ -1,5 +1,7 @@
 // Types and interfaces for the application
 
+import type { Dispatch, SetStateAction } from 'react';
+
 export interface Conversation {
   conversationId: string;
   title: string;
@@ -198,9 +200,9 @@ export interface Employee {
 export interface StreamContext {
   assistantMessage: Message;
   firstChunk: boolean;
-  setMessages: React.Dispatch<React.SetStateAction<Message[]>>;
-  setIsLoading: React.Dispatch<React.SetStateAction<boolean>>;
-  setError: React.Dispatch<React.SetStateAction<string | null>>;
+  setMessages: Dispatch<SetStateAction<Message[]>>;
+  setIsLoading: Dispatch<SetStateAction<boolean>>;
+  setError: Dispatch<SetStateAction<string | null>>;
 }
 
 /**

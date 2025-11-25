@@ -5,8 +5,7 @@
 
 import { useState, useEffect } from 'react';
 import { Upload, Check, FileText } from 'lucide-react';
-import type { WorkflowStatus, PersonalInfo, TaxDocument, ExtractedTaxData } from '../../types/common.types.ts';
-import * as React from "react";
+import type { WorkflowStatus, PersonalInfo, TaxDocument, ExtractedTaxData, FormEvent , DragEvent } from '../../types/common.types.ts';
 import { WORKFLOW_STEPS } from "../../constants/workflow.ts";
 
 interface WorkflowStepMessageProps {
@@ -107,7 +106,7 @@ function PersonalInfoForm({
     taxYear: new Date().getFullYear(),
   });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     onSubmit(formData);
   };
@@ -271,7 +270,7 @@ function DocumentUploadForm({
     setSelectedFiles(prev => [...prev, ...validFiles]);
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = (e: DragEvent) => {
     e.preventDefault();
     setDragOver(false);
     handleFiles(e.dataTransfer.files);

@@ -1,4 +1,5 @@
 import { X } from 'lucide-react';
+import type { ReactNode } from "react";
 
 interface SwissTaxData {
   name?: string;
@@ -52,7 +53,7 @@ export default function TaxDataModal({
     return String(value);
   };
 
-  const renderValue = (key: string, value: any): React.ReactNode => {
+  const renderValue = (key: string, value: any): ReactNode => {
     if (value === null || value === undefined) return '-';
     if (typeof value === 'boolean') return value ? 'Yes' : 'No';
     if (typeof value === 'number') {

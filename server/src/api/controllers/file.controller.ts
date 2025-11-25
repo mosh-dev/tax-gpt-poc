@@ -36,8 +36,6 @@ export class FileController {
         return;
       }
 
-      const baseUrl = req.protocol + '://' + req.get('host');
-
       // Upload all files
       const uploadedFiles = await Promise.all(
         files.map(async (file) => {
@@ -49,7 +47,7 @@ export class FileController {
             conversationId,
           };
 
-          return await this.uploadFileUseCase.execute(uploadDTO, baseUrl);
+          return await this.uploadFileUseCase.execute(uploadDTO);
         })
       );
 

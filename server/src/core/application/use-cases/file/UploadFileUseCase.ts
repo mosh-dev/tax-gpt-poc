@@ -14,9 +14,10 @@ export class UploadFileUseCase {
   constructor(
     private fileRepository: IFileRepository,
     private fileStorageService: IFileStorageService
-  ) {}
+  ) {
+  }
 
-  async execute(data: UploadFileDTO, baseUrl?: string): Promise<FileDTO> {
+  async execute(data: UploadFileDTO): Promise<FileDTO> {
     // 1. Generate file ID and save to storage
     const fileId = FileId.generate();
     const extension = data.originalName.split('.').pop() || '';

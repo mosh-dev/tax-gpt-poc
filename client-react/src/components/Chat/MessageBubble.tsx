@@ -14,9 +14,7 @@ export default function MessageBubble({ message, onButtonClick }: MessageBubbleP
   };
 
   return (
-    <div
-      className={`flex mb-4 md:mb-6 ${message.role === 'user' ? 'justify-end' : ''}`}
-    >
+    <div className={`flex mb-4 md:mb-6 ${message.role === 'user' ? 'justify-end' : ''}`}>
       <div
         className={`relative max-w-full sm:max-w-xl md:max-w-2xl shadow-sm ${
           message.role === 'user'

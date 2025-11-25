@@ -1,6 +1,7 @@
 import { Menu } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import ThemeToggle from '../ThemeToggle/ThemeToggle';
+import type { MouseEvent } from 'react';
 
 interface ToolbarProps {
   onToggleSidebar: () => void;
@@ -19,7 +20,7 @@ export default function Toolbar({ onToggleSidebar, onCloseSidebar, isSidebarOpen
     }
   };
 
-  const handleTitleClick = (e: React.MouseEvent) => {
+  const handleTitleClick = (e: MouseEvent) => {
     e.stopPropagation();
     navigate('/');
     // Also close sidebar on mobile when navigating home
@@ -28,7 +29,7 @@ export default function Toolbar({ onToggleSidebar, onCloseSidebar, isSidebarOpen
     }
   };
 
-  const handleMenuClick = (e: React.MouseEvent) => {
+  const handleMenuClick = (e: MouseEvent) => {
     e.stopPropagation();
     onToggleSidebar();
   };
@@ -44,7 +45,7 @@ export default function Toolbar({ onToggleSidebar, onCloseSidebar, isSidebarOpen
           className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
           aria-label="Toggle sidebar"
         >
-          <Menu className="h-6 w-6 text-gray-700 dark:text-gray-300" />
+          <Menu className="h-6 w-6 text-gray-700 dark:text-gray-300"/>
         </button>
         <h1
           className="ml-4 text-xl font-semibold text-gray-900 dark:text-gray-100 cursor-pointer hover:opacity-80 transition-opacity"
@@ -53,7 +54,7 @@ export default function Toolbar({ onToggleSidebar, onCloseSidebar, isSidebarOpen
           TaxGPT
         </h1>
       </div>
-      <ThemeToggle />
+      <ThemeToggle/>
     </header>
   );
 }
