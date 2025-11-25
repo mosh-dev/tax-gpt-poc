@@ -3,58 +3,159 @@ import { env } from './env';
 import { getLLMApiKey } from '@services/secrets.service';
 import type { LanguageModel } from "ai";
 
-/**
- * LLM client instance (initialized after database connection)
- */
-let llmClient: ReturnType<typeof createOpenAICompatible> | null = null;
+export const MODEL_PURPOSES = {
+  PRIMARY: 'primary',
+  SECONDARY: 'secondary',
+  SIMPLE_CHAT: 'simpleChat',
+  EXTRACTION: 'extraction',
+} as const;
 
-/**
- * Initialize LLM client with API key from database
- * Checks if client exists and skips if already initialized (naturally idempotent)
- * Should be called after database connection is established
- */
+export type ModelPurpose = typeof MODEL_PURPOSES[keyof typeof MODEL_PURPOSES];
+
+interface ModelConfig {
+  modelName: string;
+  baseURL: string;
+  generateMode: 'tool' | 'json';
+  purpose: ModelPurpose;
+}
+
+const llmClients: Map<string, ReturnType<typeof createOpenAICompatible>> = new Map();
+const modelConfigs: Map<ModelPurpose, ModelConfig> = new Map();
+let isInitialized = false;
+
 export async function initializeLLMClient(): Promise<void> {
-  // Check client state to avoid re-initialization
-  if (llmClient) {
+  if (isInitialized) {
     console.log('[LLM] Already initialized, skipping initialization');
     return;
   }
 
-  // Fetch API key from database only (no env fallback)
   const apiKey = await getLLMApiKey();
 
   if (!apiKey) {
     throw new Error('LLM API key not found in database. Please ensure the "llmkey" secret is set in the secrets collection.');
   }
 
-  // Create LLM client with database API key
-  llmClient = createOpenAICompatible({
-    name: 'llm-provider',
-    baseURL: env.LLM_BASE_URL,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${apiKey}`,
-    },
+  buildModelConfigs();
+
+  const uniqueBaseUrls = new Set(
+    Array.from(modelConfigs.values()).map(config => config.baseURL)
+  );
+
+  for (const baseURL of uniqueBaseUrls) {
+    const client = createOpenAICompatible({
+      name: `llm-provider-${baseURL.split('/').pop()}`,
+      baseURL,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`,
+      },
+    });
+
+    llmClients.set(baseURL, client);
+    console.log(`[LLM] Created client for base URL: ${baseURL}`);
+  }
+
+  console.log('[LLM] Model Registry:');
+  for (const [purpose, config] of modelConfigs.entries()) {
+    console.log(`  - ${purpose}: ${config.modelName} (mode: ${config.generateMode})`);
+  }
+
+  isInitialized = true;
+}
+
+function buildModelConfigs(): void {
+  modelConfigs.clear();
+
+  modelConfigs.set(MODEL_PURPOSES.PRIMARY, {
+    modelName: env.LLM_PRIMARY_MODEL,
+    baseURL: env.LLM_PRIMARY_BASE_URL,
+    generateMode: env.getModelGenerateMode(env.LLM_PRIMARY_MODEL),
+    purpose: MODEL_PURPOSES.PRIMARY,
   });
 
-  console.log(`[LLM] Base URL: ${env.LLM_BASE_URL}`);
-  console.log(`[LLM] Model: ${env.LLM_MODEL}`);
+  const secondaryModel = env.LLM_SECONDARY_MODEL || env.LLM_PRIMARY_MODEL;
+  const secondaryBaseUrl = env.LLM_SECONDARY_BASE_URL || env.LLM_PRIMARY_BASE_URL;
+  modelConfigs.set(MODEL_PURPOSES.SECONDARY, {
+    modelName: secondaryModel,
+    baseURL: secondaryBaseUrl,
+    generateMode: env.getModelGenerateMode(secondaryModel),
+    purpose: MODEL_PURPOSES.SECONDARY,
+  });
+
+  const simpleChatModel = env.LLM_SIMPLE_CHAT_MODEL || env.LLM_PRIMARY_MODEL;
+  const simpleChatBaseUrl = env.LLM_SIMPLE_CHAT_BASE_URL || env.LLM_PRIMARY_BASE_URL;
+  modelConfigs.set(MODEL_PURPOSES.SIMPLE_CHAT, {
+    modelName: simpleChatModel,
+    baseURL: simpleChatBaseUrl,
+    generateMode: env.getModelGenerateMode(simpleChatModel),
+    purpose: MODEL_PURPOSES.SIMPLE_CHAT,
+  });
+
+  const extractionModel = env.LLM_EXTRACTION_MODEL || env.LLM_PRIMARY_MODEL;
+  const extractionBaseUrl = env.LLM_EXTRACTION_BASE_URL || env.LLM_PRIMARY_BASE_URL;
+  modelConfigs.set(MODEL_PURPOSES.EXTRACTION, {
+    modelName: extractionModel,
+    baseURL: extractionBaseUrl,
+    generateMode: env.getModelGenerateMode(extractionModel),
+    purpose: MODEL_PURPOSES.EXTRACTION,
+  });
 }
 
-/**
- * Get the LLM client instance
- * Throws error if client not initialized
- */
-function getLLMClient(): ReturnType<typeof createOpenAICompatible> {
-  if (!llmClient) {
+export function getModelByPurpose(purpose: ModelPurpose): LanguageModel {
+  if (!isInitialized) {
     throw new Error('LLM client not initialized. Call initializeLLMClient() first.');
   }
-  return llmClient;
+
+  const config = modelConfigs.get(purpose);
+  if (!config) {
+    throw new Error(`No configuration found for model purpose: ${purpose}`);
+  }
+
+  const client = llmClients.get(config.baseURL);
+  if (!client) {
+    throw new Error(`No client found for base URL: ${config.baseURL}`);
+  }
+
+  return client.chatModel(config.modelName);
 }
 
-/**
- * Get the configured LLM model
- */
+export const getPrimaryModel = (): LanguageModel => {
+  return getModelByPurpose(MODEL_PURPOSES.PRIMARY);
+};
+
+export const getSecondaryModel = (): LanguageModel => {
+  return getModelByPurpose(MODEL_PURPOSES.SECONDARY);
+};
+
+export const getSimpleChatModel = (): LanguageModel => {
+  return getModelByPurpose(MODEL_PURPOSES.SIMPLE_CHAT);
+};
+
+export const getExtractionModel = (): LanguageModel => {
+  return getModelByPurpose(MODEL_PURPOSES.EXTRACTION);
+};
+
+export const getGenerateMode = (purpose: ModelPurpose = MODEL_PURPOSES.PRIMARY): 'tool' | 'json' => {
+  const config = modelConfigs.get(purpose);
+  if (!config) {
+    throw new Error(`No configuration found for model purpose: ${purpose}`);
+  }
+  return config.generateMode;
+};
+
 export const getOpenAiModel = (): LanguageModel => {
-  return getLLMClient().chatModel(env.LLM_MODEL);
+  return getPrimaryModel();
+};
+
+export const getModelConfigs = (): ReadonlyMap<ModelPurpose, Readonly<ModelConfig>> => {
+  return modelConfigs;
+};
+
+export const isSpecializedModel = (purpose: ModelPurpose): boolean => {
+  const primaryConfig = modelConfigs.get(MODEL_PURPOSES.PRIMARY);
+  const purposeConfig = modelConfigs.get(purpose);
+
+  if (!primaryConfig || !purposeConfig) return false;
+
+  return primaryConfig.modelName !== purposeConfig.modelName;
 };

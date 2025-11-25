@@ -45,8 +45,20 @@ export const env = {
   LLM_BASE_URL: getRequiredEnv('LLM_BASE_URL'),
   LLM_MODEL: getRequiredEnv('LLM_MODEL'),
 
-  get LLM_GENERATE_MODE(): 'tool' | 'json' {
-    const model = this.LLM_MODEL.toLowerCase();
+  LLM_PRIMARY_MODEL: getOptionalEnv('LLM_PRIMARY_MODEL') || getRequiredEnv('LLM_MODEL'),
+  LLM_PRIMARY_BASE_URL: getOptionalEnv('LLM_PRIMARY_BASE_URL') || getRequiredEnv('LLM_BASE_URL'),
+
+  LLM_EXTRACTION_MODEL: getOptionalEnv('LLM_EXTRACTION_MODEL'),
+  LLM_EXTRACTION_BASE_URL: getOptionalEnv('LLM_EXTRACTION_BASE_URL'),
+
+  LLM_SECONDARY_MODEL: getOptionalEnv('LLM_SECONDARY_MODEL'),
+  LLM_SECONDARY_BASE_URL: getOptionalEnv('LLM_SECONDARY_BASE_URL'),
+
+  LLM_SIMPLE_CHAT_MODEL: getOptionalEnv('LLM_SIMPLE_CHAT_MODEL'),
+  LLM_SIMPLE_CHAT_BASE_URL: getOptionalEnv('LLM_SIMPLE_CHAT_BASE_URL'),
+
+  getModelGenerateMode(modelName: string): 'tool' | 'json' {
+    const model = modelName.toLowerCase();
 
     switch (true) {
       case model.includes('gpt-4'):
@@ -59,6 +71,10 @@ export const env = {
       default:
         return 'json';
     }
+  },
+
+  get LLM_GENERATE_MODE(): 'tool' | 'json' {
+    return this.getModelGenerateMode(this.LLM_MODEL);
   },
 
   // MongoDB Configuration

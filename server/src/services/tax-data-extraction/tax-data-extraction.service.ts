@@ -5,9 +5,8 @@
  */
 
 import { z } from 'zod';
-import { generateObject } from 'ai';
-import { getOpenAiModel } from '@config/llm';
-import { env } from '@config/env';
+import { MODEL_PURPOSES } from '@config/llm';
+import { extractStructuredData } from '@services/structured-extraction/structured-extraction.service';
 
 // Schema for extracted tax data
 export const taxDataSchema = z.object({
@@ -60,32 +59,56 @@ export async function extractTaxData(
   documents: DocumentWithText[],
   personalContext?: PersonalContext
 ): Promise<TaxData> {
-  // Check if we have any documents with text
   if (documents.length === 0 || documents.every(d => !d.extractedText)) {
     console.warn('[TaxDataExtraction] No documents with extracted text provided, returning zeros');
     return createEmptyTaxData();
   }
 
-  // Combine all document texts
-  const combinedText = documents
+  const documentTexts = documents
     .filter(doc => doc.extractedText && doc.extractedText.trim().length > 0)
-    .map(doc => `=== ${doc.fileName} ===\n${doc.extractedText}`)
-    .join('\n\n');
+    .map(doc => `=== ${doc.fileName} ===\n${doc.extractedText}`);
 
-  if (combinedText.trim().length === 0) {
+  if (documentTexts.length === 0) {
     console.warn('[TaxDataExtraction] Combined text is empty, returning zeros');
     return createEmptyTaxData();
   }
 
-  // Truncate very large texts to prevent token limit issues
-  const MAX_TEXT_LENGTH = 50000; // ~12k tokens, safe for most models
-  const truncatedText = combinedText.length > MAX_TEXT_LENGTH
-    ? combinedText.substring(0, MAX_TEXT_LENGTH) + '\n\n[... text truncated due to length ...]'
-    : combinedText;
+  console.log(`[TaxDataExtraction] Extracting from ${documents.length} documents`);
 
-  console.log(`[TaxDataExtraction] Extracting from ${documents.length} documents, text length: ${truncatedText.length} chars (original: ${combinedText.length})`);
+  const systemPrompt = buildSwissTaxPrompt(personalContext);
 
-  // Build context from personal info
+  try {
+    const result = await extractStructuredData(
+      { text: documentTexts, context: personalContext },
+      taxDataSchema,
+      {
+        maxTokens: 12000,
+        systemPrompt,
+        useCache: true,
+        modelPurpose: MODEL_PURPOSES.EXTRACTION,
+      }
+    );
+
+    console.log('[TaxDataExtraction] AI extraction completed successfully');
+    console.log('[TaxDataExtraction] Extracted data:', JSON.stringify(result, null, 2));
+
+    return result;
+  } catch (error: any) {
+    console.error('[TaxDataExtraction] Error during AI extraction:', {
+      error: error.message || error,
+      type: error.constructor?.name,
+    });
+
+    console.error('[TaxDataExtraction] Context:', {
+      documentCount: documents.length,
+      hasPersonalContext: !!personalContext,
+    });
+
+    return createEmptyTaxData();
+  }
+}
+
+function buildSwissTaxPrompt(personalContext?: PersonalContext): string {
   let contextInfo = '';
   if (personalContext) {
     const parts = [];
@@ -96,10 +119,7 @@ export async function extractTaxData(
     contextInfo = parts.length > 0 ? '\n\nPersonal Context:\n' + parts.join('\n') : '';
   }
 
-  const prompt = `You are a Swiss tax document analyzer specialized in Canton Zurich taxation. Extract financial data from these documents and return structured JSON data in CHF (Swiss Francs).
-
-Documents:
-${truncatedText}${contextInfo}
+  return `You are a Swiss tax document analyzer specialized in Canton Zurich taxation. Extract financial data from these documents and return structured JSON data in CHF (Swiss Francs).${contextInfo}
 
 EXTRACTION RULES:
 1. Look for these SWISS TAX TERMS and map them:
@@ -142,46 +162,6 @@ EXTRACTION RULES:
 4. RETURN ONLY NUMERIC VALUES (no formatting, no currency symbols)
 
 Extract all relevant financial data and return a structured JSON object. Use 0 for fields with no information.`;
-
-  try {
-    const model = getOpenAiModel();
-
-    console.log(`[TaxDataExtraction] Using mode: ${env.LLM_GENERATE_MODE} (model: ${env.LLM_MODEL})`);
-
-    const result = await generateObject({
-      model,
-      schema: taxDataSchema,
-      prompt,
-      mode: env.LLM_GENERATE_MODE, // Auto-selected based on model capabilities
-    });
-
-    console.log('[TaxDataExtraction] AI extraction completed successfully');
-    console.log('[TaxDataExtraction] Extracted data:', JSON.stringify(result.object, null, 2));
-
-    // Validate result is not null/undefined
-    if (!result.object) {
-      console.warn('[TaxDataExtraction] AI returned null/undefined, using empty data');
-      return createEmptyTaxData();
-    }
-
-    return result.object;
-  } catch (error: any) {
-    console.error('[TaxDataExtraction] Error during AI extraction:', {
-      error: error.message || error,
-      type: error.constructor?.name,
-      stack: error.stack?.split('\n').slice(0, 3).join('\n'), // First 3 lines of stack
-    });
-
-    // Log more context for debugging
-    console.error('[TaxDataExtraction] Context:', {
-      documentCount: documents.length,
-      textLength: truncatedText.length,
-      hasPersonalContext: !!personalContext,
-    });
-
-    // Return empty data on error (graceful degradation)
-    return createEmptyTaxData();
-  }
 }
 
 /**
