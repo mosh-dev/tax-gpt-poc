@@ -15,7 +15,8 @@ dotenv.config({ override: true });
 function getRequiredEnv(key: string): string {
   const value = process.env[key];
   if (!value) {
-    throw new Error(`Required environment variable ${key} is not defined`);
+    const message = `Required environment variable ${key} is not defined`;
+    throw new Error(message);
   }
   return value;
 }
@@ -56,23 +57,25 @@ export const Environment = {
 
   LLM_SIMPLE_CHAT_MODEL: getOptionalEnv('LLM_SIMPLE_CHAT_MODEL'),
   LLM_SIMPLE_CHAT_BASE_URL: getOptionalEnv('LLM_SIMPLE_CHAT_BASE_URL'),
-  get LLM_GENERATE_MODE(): 'tool' | 'json' {
-    const getModelGenerateMode = (modelName: string): 'tool' | 'json' => {
-      const model = modelName.toLowerCase();
 
-      switch (true) {
-        case model.includes('gpt-4'):
-        case model.includes('gpt-3.5'):
-        case model.includes('gpt-5'):
-        case model.includes('claude'):
-        case model.includes('gemini'):
-          return 'tool';
+  getModelGenerateMode(modelName: string): 'tool' | 'json' {
+    const model = modelName.toLowerCase();
 
-        default:
-          return 'json';
-      }
+    switch (true) {
+      case model.includes('gpt-4'):
+      case model.includes('gpt-3.5'):
+      case model.includes('gpt-5'):
+      case model.includes('claude'):
+      case model.includes('gemini'):
+        return 'tool';
+
+      default:
+        return 'json';
     }
-    return getModelGenerateMode(this.LLM_MODEL);
+  },
+
+  get LLM_GENERATE_MODE(): 'tool' | 'json' {
+    return this.getModelGenerateMode(this.LLM_MODEL);
   },
 
   // MongoDB Configuration
