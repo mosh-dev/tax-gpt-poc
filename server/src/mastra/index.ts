@@ -1,9 +1,9 @@
 import { getMastra } from '@/mastra/mastra-instance';
-import { env } from '@/env';
+import { Environment } from '@/environment';
 import { createExpressApp, startExpressServer } from '@/express-app';
 import { Mastra } from '@mastra/core';
 
-const isMastraPlayground = env.MASTRA_START_SERVER;
+const isMastraPlayground = Environment.MASTRA_START_SERVER;
 
 let mastraInstance: Mastra | null = null;
 

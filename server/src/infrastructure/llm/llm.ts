@@ -1,5 +1,5 @@
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
-import { env } from '../../env';
+import { Environment } from '../../environment';
 import { getLLMApiKey } from '@infrastructure/secrets/secrets.service';
 import type { LanguageModel } from "ai";
 
@@ -67,36 +67,36 @@ function buildModelConfigs(): void {
   modelConfigs.clear();
 
   modelConfigs.set(MODEL_PURPOSES.PRIMARY, {
-    modelName: env.LLM_PRIMARY_MODEL,
-    baseURL: env.LLM_PRIMARY_BASE_URL,
-    generateMode: env.getModelGenerateMode(env.LLM_PRIMARY_MODEL),
+    modelName: Environment.LLM_PRIMARY_MODEL,
+    baseURL: Environment.LLM_PRIMARY_BASE_URL,
+    generateMode: Environment.getModelGenerateMode(Environment.LLM_PRIMARY_MODEL),
     purpose: MODEL_PURPOSES.PRIMARY,
   });
 
-  const secondaryModel = env.LLM_SECONDARY_MODEL || env.LLM_PRIMARY_MODEL;
-  const secondaryBaseUrl = env.LLM_SECONDARY_BASE_URL || env.LLM_PRIMARY_BASE_URL;
+  const secondaryModel = Environment.LLM_SECONDARY_MODEL || Environment.LLM_PRIMARY_MODEL;
+  const secondaryBaseUrl = Environment.LLM_SECONDARY_BASE_URL || Environment.LLM_PRIMARY_BASE_URL;
   modelConfigs.set(MODEL_PURPOSES.SECONDARY, {
     modelName: secondaryModel,
     baseURL: secondaryBaseUrl,
-    generateMode: env.getModelGenerateMode(secondaryModel),
+    generateMode: Environment.getModelGenerateMode(secondaryModel),
     purpose: MODEL_PURPOSES.SECONDARY,
   });
 
-  const simpleChatModel = env.LLM_SIMPLE_CHAT_MODEL || env.LLM_PRIMARY_MODEL;
-  const simpleChatBaseUrl = env.LLM_SIMPLE_CHAT_BASE_URL || env.LLM_PRIMARY_BASE_URL;
+  const simpleChatModel = Environment.LLM_SIMPLE_CHAT_MODEL || Environment.LLM_PRIMARY_MODEL;
+  const simpleChatBaseUrl = Environment.LLM_SIMPLE_CHAT_BASE_URL || Environment.LLM_PRIMARY_BASE_URL;
   modelConfigs.set(MODEL_PURPOSES.SIMPLE_CHAT, {
     modelName: simpleChatModel,
     baseURL: simpleChatBaseUrl,
-    generateMode: env.getModelGenerateMode(simpleChatModel),
+    generateMode: Environment.getModelGenerateMode(simpleChatModel),
     purpose: MODEL_PURPOSES.SIMPLE_CHAT,
   });
 
-  const extractionModel = env.LLM_EXTRACTION_MODEL || env.LLM_PRIMARY_MODEL;
-  const extractionBaseUrl = env.LLM_EXTRACTION_BASE_URL || env.LLM_PRIMARY_BASE_URL;
+  const extractionModel = Environment.LLM_EXTRACTION_MODEL || Environment.LLM_PRIMARY_MODEL;
+  const extractionBaseUrl = Environment.LLM_EXTRACTION_BASE_URL || Environment.LLM_PRIMARY_BASE_URL;
   modelConfigs.set(MODEL_PURPOSES.EXTRACTION, {
     modelName: extractionModel,
     baseURL: extractionBaseUrl,
-    generateMode: env.getModelGenerateMode(extractionModel),
+    generateMode: Environment.getModelGenerateMode(extractionModel),
     purpose: MODEL_PURPOSES.EXTRACTION,
   });
 }

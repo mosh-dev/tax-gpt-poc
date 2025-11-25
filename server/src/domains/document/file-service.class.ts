@@ -9,7 +9,7 @@ import path from 'path';
 import { randomUUID } from 'crypto';
 import { getStoragePath } from '@utils/storage';
 import { mongoRepository } from '@infrastructure/database/mongo-repository.class';
-import { env } from '@/env';
+import { Environment } from '@/environment';
 
 export interface UploadedFileInfo {
   fileId: string;
@@ -35,7 +35,7 @@ export class FileService {
     const fileId = path.basename(file.filename, path.extname(file.filename));
     const fileUrl = baseUrl
       ? `${baseUrl}/files/${file.filename}`
-      : `${env.BASE_URL}/files/${file.filename}`;
+      : `${Environment.BASE_URL}/files/${file.filename}`;
 
     const fileData = {
       fileId,
@@ -108,7 +108,7 @@ export class FileService {
     const fileId = randomUUID();
     const storedFilename = `${fileId}${path.extname(filename)}`;
     const storedPath = path.join(getStoragePath('files'), storedFilename);
-    const fileUrl = `${env.BASE_URL}/files/${storedFilename}`;
+    const fileUrl = `${Environment.BASE_URL}/files/${storedFilename}`;
 
     // Write file to disk
     const buffer = typeof content === 'string' ? Buffer.from(content, 'utf-8') : content;

@@ -4,9 +4,9 @@
  */
 
 import mongoose from 'mongoose';
-import { env } from '@/env';
+import { Environment } from '@/environment';
 
-const MONGODB_URI = env.MONGODB_URI;
+const MONGODB_URI = Environment.MONGODB_URI;
 
 /**
  * Connect to MongoDB

@@ -6,7 +6,7 @@
 import express, { Express, NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import { getStoragePath } from '@utils/storage';
-import { env } from '@/env';
+import { Environment } from '@/environment';
 import { initializeApp } from '@infrastructure/initialize';
 import { agentConfigRoutes } from '@api/routes/agent-config.routes';
 import { authRoutes } from '@api/routes/auth.routes';
@@ -83,7 +83,7 @@ export async function createExpressApp(): Promise<Express> {
   // This ensures the mastra instance is ready for the playground.
 
   // Initialize DI container
-  const container = initializeContainer(env.BASE_URL);
+  const container = initializeContainer(Environment.BASE_URL);
   console.log('[Express Setup] DI Container initialized');
 
   // Initialize AI Agent Service (uses the already-initialized mastra instance)
@@ -138,8 +138,8 @@ export async function createExpressApp(): Promise<Express> {
 
     res.status(500).json({
       error: 'Internal Server Error',
-      message: env.NODE_ENV === 'development' ? err.message : 'Something went wrong',
-      ...(env.NODE_ENV === 'development' && { stack: err.stack })
+      message: Environment.NODE_ENV === 'development' ? err.message : 'Something went wrong',
+      ...(Environment.NODE_ENV === 'development' && { stack: err.stack })
     });
   });
 
@@ -152,12 +152,12 @@ export async function createExpressApp(): Promise<Express> {
 export async function startExpressServer(app: Express): Promise<void> {
   return new Promise((resolve, reject) => {
     try {
-      const server = app.listen(env.SERVER_PORT, () => {
+      const server = app.listen(Environment.SERVER_PORT, () => {
         console.log(`\n`);
-        console.log(`[Express Server] Environment: ${env.NODE_ENV}`);
-        console.log(`[Express Server] API: ${env.BASE_URL}/api`);
-        console.log(`[Express Server] Health: ${env.BASE_URL}/api/health`);
-        console.log(`[Express Server] Files: ${env.BASE_URL}/files\n`);
+        console.log(`[Express Server] Environment: ${Environment.NODE_ENV}`);
+        console.log(`[Express Server] API: ${Environment.BASE_URL}/api`);
+        console.log(`[Express Server] Health: ${Environment.BASE_URL}/api/health`);
+        console.log(`[Express Server] Files: ${Environment.BASE_URL}/files\n`);
         resolve();
       });
 

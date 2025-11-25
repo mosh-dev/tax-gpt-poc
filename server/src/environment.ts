@@ -31,7 +31,7 @@ function getOptionalEnv(key: string): string | undefined {
  * Environment configuration object
  * All required variables are validated at module load time
  */
-export const env = {
+export const Environment = {
   // Server Configuration
   PORT: parseInt(getRequiredEnv('PORT'), 10),
   SERVER_PORT: parseInt(getOptionalEnv('SERVER_PORT') || getRequiredEnv('PORT'), 10),
@@ -96,5 +96,5 @@ export const env = {
 } as const;
 
 // Validate configuration at startup
-console.log(`[Config] Environment: ${env.NODE_ENV}`);
-console.log(`[Config] Base URL: ${env.BASE_URL}`);
+console.log(`[Config] Environment: ${Environment.NODE_ENV}`);
+console.log(`[Config] Base URL: ${Environment.BASE_URL}`);

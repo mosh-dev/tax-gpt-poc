@@ -1,6 +1,6 @@
 import { Memory } from '@mastra/memory';
 import { fastembed } from '@mastra/fastembed';
-import { env } from '@/env';
+import { Environment } from '@/environment';
 import { taxGptStorage } from '@/mastra/storage/tax-gpt-storage';
 import { taxGptVector } from '@/mastra/storage/tax-gpt-vector';
 
@@ -47,8 +47,8 @@ export function createMastraMemory(config: MemoryConfig): Memory {
  */
 export function createMemoryConfigFromEnv(): MemoryConfig {
   return {
-    mongoUri: env.MONGODB_URI,
-    dbName: env.MONGODB_DB_NAME,
-    enableVectorStorage: !env.DISABLE_VECTOR_STORAGE,
+    mongoUri: Environment.MONGODB_URI,
+    dbName: Environment.MONGODB_DB_NAME,
+    enableVectorStorage: !Environment.DISABLE_VECTOR_STORAGE,
   };
 }

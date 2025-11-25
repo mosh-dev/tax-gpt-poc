@@ -12,7 +12,7 @@ import { getStoragePath } from '@utils/storage';
 import { getRAGService } from '@domains/knowledge/rag-service.class';
 import { authMiddleware } from '../middleware/auth.middleware';
 import { fileService } from '@domains/document/file-service.class';
-import { env } from '@/env';
+import { Environment } from '@/environment';
 import fs from 'fs/promises';
 import { getErrorMessage } from '@utils/error-handler';
 
@@ -71,7 +71,7 @@ router.post('/upload', authMiddleware, upload.single('file'), async (req: Reques
     console.log(`[Knowledge API] Uploading file: ${file.originalname}`);
 
     // Save file using File Service
-    const savedFile = await fileService.saveFile(file, undefined, env.BASE_URL);
+    const savedFile = await fileService.saveFile(file, undefined, Environment.BASE_URL);
     const fileType = path.extname(file.originalname).substring(1) as 'txt' | 'md' | 'pdf';
 
     // Ingest file with RAG service

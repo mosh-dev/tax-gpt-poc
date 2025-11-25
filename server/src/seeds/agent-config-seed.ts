@@ -3,7 +3,7 @@
  * Seeds the database with default AI agent system instructions
  */
 
-import { env } from '@/env';
+import { Environment } from '@/environment';
 import { AgentConfig, IAgentConfig } from '@/mastra/agents/agent-config.model';
 import { DEFAULT_SYSTEM_INSTRUCTIONS } from '@/mastra/agents/tax-agent/system-instructions';
 
@@ -17,7 +17,7 @@ export async function seedAgentConfig(): Promise<void> {
     try {
         const existingAgentConfig = await AgentConfig.findOne().lean<IAgentConfig>();
         if (existingAgentConfig) {
-          if (!env.FORCE_SEED_SYSTEM_INSTRUCTION) {
+          if (!Environment.FORCE_SEED_SYSTEM_INSTRUCTION) {
             return;
           }
         }

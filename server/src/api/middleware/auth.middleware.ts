@@ -5,7 +5,7 @@
 
 import { Request, Response, NextFunction } from 'express';
 import jwt, { SignOptions } from 'jsonwebtoken';
-import { env } from '@/env';
+import { Environment } from '@/environment';
 
 export interface AuthRequest extends Request {
   user?: {
@@ -38,7 +38,7 @@ export function authMiddleware(req: AuthRequest, res: Response, next: NextFuncti
   const token = authHeader.split(' ')[1];
 
   try {
-    const decoded = jwt.verify(token, env.JWT_SECRET) as JwtPayload;
+    const decoded = jwt.verify(token, Environment.JWT_SECRET) as JwtPayload;
     req.user = {
       userId: decoded.userId,
       userName: decoded.userName
@@ -67,8 +67,8 @@ export function authMiddleware(req: AuthRequest, res: Response, next: NextFuncti
 export function generateAccessToken(userId: string, userName: string): string {
   return jwt.sign(
     { userId, userName },
-    env.JWT_SECRET,
-    { expiresIn: env.JWT_EXPIRES_IN } as SignOptions
+    Environment.JWT_SECRET,
+    { expiresIn: Environment.JWT_EXPIRES_IN } as SignOptions
   );
 }
 
@@ -78,8 +78,8 @@ export function generateAccessToken(userId: string, userName: string): string {
 export function generateRefreshToken(userId: string, userName: string): string {
   return jwt.sign(
     { userId, userName },
-    env.JWT_REFRESH_SECRET,
-    { expiresIn: env.JWT_REFRESH_EXPIRES_IN } as SignOptions
+    Environment.JWT_REFRESH_SECRET,
+    { expiresIn: Environment.JWT_REFRESH_EXPIRES_IN } as SignOptions
   );
 }
 
@@ -88,7 +88,7 @@ export function generateRefreshToken(userId: string, userName: string): string {
  */
 export function verifyRefreshToken(token: string): JwtPayload | null {
   try {
-    return jwt.verify(token, env.JWT_REFRESH_SECRET) as JwtPayload;
+    return jwt.verify(token, Environment.JWT_REFRESH_SECRET) as JwtPayload;
   } catch {
     return null;
   }
