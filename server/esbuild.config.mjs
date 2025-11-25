@@ -2,27 +2,11 @@ import esbuild from 'esbuild';
 import { nodeExternalsPlugin } from 'esbuild-node-externals';
 import { spawn } from 'child_process';
 
-const isWatch = process.argv.includes('--watch');
-let serverProcess = null;
-
-function startServer() {
-  if (serverProcess) {
-    serverProcess.kill();
-  }
-
-  console.log('🚀 Starting server...');
-  serverProcess = spawn('node', ['dist/app/server.mjs'], {
-    stdio: 'inherit'
-  });
-
-  serverProcess.on('error', (error) => {
-    console.error('Server error:', error);
-  });
-}
+const outPath = 'dist/app';
 
 const config = {
   entryPoints: ['src/server.ts'],
-  outfile: 'dist/app/server.mjs',
+  outfile: `${outPath}/server.mjs`,
   format: 'esm',
   platform: 'node',
   target: 'node20',
@@ -34,6 +18,24 @@ const config = {
     '.json': 'json'
   }
 };
+
+const isWatch = process.argv.includes('--watch');
+let serverProcess = null;
+
+function startServer() {
+  if (serverProcess) {
+    serverProcess.kill();
+  }
+
+  console.log('🚀 Starting server...');
+  serverProcess = spawn('node', [`${outPath}/server.mjs`], {
+    stdio: 'inherit'
+  });
+
+  serverProcess.on('error', (error) => {
+    console.error('Server error:', error);
+  });
+}
 
 if (isWatch) {
   const context = await esbuild.context({
