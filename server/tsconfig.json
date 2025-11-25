@@ -1,18 +1,30 @@
 {
   "compilerOptions": {
-    "target": "ESNext",
+    // Target & Module - Match Node 22 and esbuild ESM output
+    "target": "ES2022",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
+    "lib": ["ES2022"],
+
+    // Emit - esbuild handles transpilation, tsc is only for type checking
+    "noEmit": true,
+    "sourceMap": false,
+
+    // Type Checking
     "strict": true,
     "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+
+    // Interop
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "resolveJsonModule": true,
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
+
+    // Paths - IDE/editor support for aliases
     "baseUrl": "./src",
     "paths": {
       "@/*": ["./*"],
@@ -27,6 +39,7 @@
       "@shared/*": ["./shared/*"],
       "@domains/*": ["./domains/*"]
     },
+
     "types": ["node"]
   },
   "include": ["src/**/*"],
