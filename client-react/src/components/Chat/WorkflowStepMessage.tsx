@@ -7,25 +7,140 @@ import type { DragEvent, FormEvent } from 'react';
 import { useEffect, useState } from 'react';
 import { Check, FileText, Upload } from 'lucide-react';
 import type { ExtractedTaxData, PersonalInfo, TaxDocument, WorkflowStatus } from '../../types/common.types.ts';
-import { WORKFLOW_STEPS } from "../../constants/workflow.ts";
+import { WORKFLOW_STEPS, STEP_TITLES } from "../../constants/workflow.ts";
 
 interface WorkflowStepMessageProps {
   workflow: WorkflowStatus;
-  onSubmit: (stepId: string, data: any) => void;
+  onSubmit: (displayMessage: string, agentMessage: string) => void;
   onUploadFiles: (files: File[]) => Promise<TaxDocument[]>;
   onCancel?: () => void;
   isSubmitting: boolean;
   onRender?: () => void; // Callback to notify parent that UI has rendered
 }
 
+// Helper to get step title
+const getStepTitle = (stepId: string): string => {
+  return STEP_TITLES[stepId] || stepId;
+};
+
+// Format workflow step data as TWO separate messages: one for display, one for the agent
+const formatWorkflowMessage = (
+  runId: string,
+  stepId: string,
+  data: any
+): { displayMessage: string; agentMessage: string } => {
+  const stepTitle = getStepTitle(stepId);
+
+  // Build DISPLAY message (clean, user-friendly)
+  let displayMessage = '';
+
+  // Build AGENT message (with markers and instructions)
+  let agentMessage = `**Workflow Step: ${stepTitle}**\n\n`;
+  agentMessage += `[Workflow Context]\n`;
+  agentMessage += `- Run ID: ${runId}\n`;
+  agentMessage += `- Step ID: ${stepId}\n\n`;
+
+  switch (stepId) {
+    case WORKFLOW_STEPS.COLLECT_PERSONAL_INFO:
+      // Display: Clean summary
+      displayMessage = `**Personal Information Submitted**\n`;
+      displayMessage += `- Name: ${data.firstName} ${data.lastName}\n`;
+      displayMessage += `- Status: ${data.maritalStatus}\n`;
+      displayMessage += `- Children: ${data.numberOfChildren}\n`;
+      displayMessage += `- Location: ${data.canton}\n`;
+      displayMessage += `- Tax Year: ${data.taxYear}\n`;
+
+      // Agent: With markers and instructions
+      agentMessage += `**Personal Information:**\n`;
+      agentMessage += `- First Name: ${data.firstName}\n`;
+      agentMessage += `- Last Name: ${data.lastName}\n`;
+      agentMessage += `- Marital Status: ${data.maritalStatus}\n`;
+      agentMessage += `- Number of Children: ${data.numberOfChildren}\n`;
+      agentMessage += `- Canton: ${data.canton}\n`;
+      agentMessage += `- Tax Year: ${data.taxYear}\n`;
+      agentMessage += `\n**IMPORTANT: Call resume-workflow with this EXACT data:**\n`;
+      agentMessage += `- stepId: "${WORKFLOW_STEPS.COLLECT_PERSONAL_INFO}"\n`;
+      agentMessage += `- data: ${JSON.stringify(data)}\n`;
+      break;
+
+    case WORKFLOW_STEPS.UPLOAD_DOCUMENTS: {
+      const docs = data.documents || [];
+
+      // Display: Simple file list
+      displayMessage = `**Documents Uploaded**\n`;
+      displayMessage += `${docs.length} file(s) uploaded:\n`;
+      docs.forEach((d: TaxDocument) => {
+        displayMessage += `- ${d.fileName}\n`;
+      });
+
+      // Agent: With processing instructions
+      agentMessage += `**Uploaded Documents:** ${docs.length} file(s)\n`;
+      docs.forEach((d: TaxDocument) => {
+        agentMessage += `- ${d.fileName} (ID: ${d.fileId})\n`;
+      });
+      agentMessage += `\n**CRITICAL - Before resuming workflow:**\n`;
+      agentMessage += `1. Call process-documents tool with fileIds: [${docs.map(d => `"${d.fileId}"`).join(', ')}]\n`;
+      agentMessage += `2. Wait for OCR to complete successfully\n`;
+      agentMessage += `3. Then call resume-workflow with the EXACT data below:\n\n`;
+      agentMessage += `**Call resume-workflow with:**\n`;
+      agentMessage += `- stepId: "${WORKFLOW_STEPS.UPLOAD_DOCUMENTS}"\n`;
+      agentMessage += `- data: ${JSON.stringify(data)}\n`;
+      agentMessage += `\nDo NOT modify the stepId or data structure. Pass them exactly as shown above.\n`;
+      break;
+    }
+
+    case WORKFLOW_STEPS.REVIEW_EXTRACTED_DATA:
+      // Display: Confirmation only
+      displayMessage = `**Tax Data Confirmed**\n`;
+      displayMessage += `I've reviewed and confirmed the extracted tax data is correct.\n`;
+
+      // Agent: With resume instructions
+      agentMessage += `**Confirmed Tax Data**\n`;
+      agentMessage += `I confirm the extracted tax data is correct.\n`;
+      agentMessage += `\n**IMPORTANT: Call resume-workflow with this EXACT data:**\n`;
+      agentMessage += `- stepId: "${WORKFLOW_STEPS.REVIEW_EXTRACTED_DATA}"\n`;
+      agentMessage += `- data: ${JSON.stringify(data)}\n`;
+      break;
+
+    case WORKFLOW_STEPS.GENERATE_SUMMARY:
+      // Display: User choice
+      displayMessage = data.generatePdf
+        ? `**Requested PDF generation**`
+        : `**Completed without PDF**`;
+
+      // Agent: With resume instructions
+      agentMessage += data.generatePdf
+        ? `Please generate the PDF summary.\n`
+        : `Finish without PDF generation.\n`;
+      agentMessage += `\n**IMPORTANT: Call resume-workflow with this EXACT data:**\n`;
+      agentMessage += `- stepId: "${WORKFLOW_STEPS.GENERATE_SUMMARY}"\n`;
+      agentMessage += `- data: ${JSON.stringify(data)}\n`;
+      break;
+
+    default:
+      displayMessage = JSON.stringify(data, null, 2);
+      agentMessage += JSON.stringify(data, null, 2);
+  }
+
+  return { displayMessage, agentMessage };
+};
+
 export default function WorkflowStepMessage(props: WorkflowStepMessageProps) {
   const { workflow, onSubmit, onUploadFiles, onCancel, isSubmitting, onRender } = props;
-  const { currentStep, suspendPayload } = workflow;
+  const { currentStep, suspendPayload, runId } = workflow;
 
   // Notify parent when component renders/updates
   useEffect(() => {
     onRender?.();
   }, [currentStep, onRender]);
+
+  // Handle form submission - format messages then call parent
+  const handleFormSubmit = (data: any) => {
+    if (!currentStep) return;
+
+    const { displayMessage, agentMessage } = formatWorkflowMessage(runId, currentStep, data);
+    onSubmit(displayMessage, agentMessage);
+  };
 
   if (!currentStep) return null;
 
@@ -34,7 +149,7 @@ export default function WorkflowStepMessage(props: WorkflowStepMessageProps) {
       return (
         <PersonalInfoForm
           payload={suspendPayload}
-          onSubmit={(data) => onSubmit(currentStep, data)}
+          onSubmit={handleFormSubmit}
           onCancel={onCancel}
           isSubmitting={isSubmitting}
         />
@@ -44,7 +159,7 @@ export default function WorkflowStepMessage(props: WorkflowStepMessageProps) {
       return (
         <DocumentUploadForm
           payload={suspendPayload}
-          onSubmit={(data) => onSubmit(currentStep, data)}
+          onSubmit={handleFormSubmit}
           onUploadFiles={onUploadFiles}
           onCancel={onCancel}
           isSubmitting={isSubmitting}
@@ -57,7 +172,7 @@ export default function WorkflowStepMessage(props: WorkflowStepMessageProps) {
         <ReviewDataForm
           payload={suspendPayload}
           onCancel={onCancel}
-          onSubmit={(data) => onSubmit(currentStep, data)}
+          onSubmit={handleFormSubmit}
           isSubmitting={isSubmitting}
         />
       );
@@ -66,7 +181,7 @@ export default function WorkflowStepMessage(props: WorkflowStepMessageProps) {
       return (
         <SummaryForm
           payload={suspendPayload}
-          onSubmit={(data) => onSubmit(currentStep, data)}
+          onSubmit={handleFormSubmit}
           isSubmitting={isSubmitting}
         />
       );

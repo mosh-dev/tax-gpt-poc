@@ -9,21 +9,29 @@ interface SwissTaxData {
   [key: string]: any;
 }
 
+interface ToolResult {
+  success?: boolean;
+  data?: SwissTaxData;
+  scenario?: string;
+  [key: string]: any;
+}
+
 interface TaxDataModalProps {
   isOpen: boolean;
-  taxData: SwissTaxData | null;
-  scenario: string;
+  toolResult: ToolResult | null;
   onConfirm: () => void;
   onCancel: () => void;
 }
 
 export default function TaxDataModal({
   isOpen,
-  taxData,
-  scenario,
+  toolResult,
   onConfirm,
   onCancel
 }: TaxDataModalProps) {
+  // Extract data from tool result
+  const taxData = toolResult?.success ? toolResult.data : null;
+
   if (!isOpen || !taxData) return null;
 
   const formatCurrency = (amount: number | undefined): string => {
@@ -84,7 +92,7 @@ export default function TaxDataModal({
         <div className="space-y-1">
           {entries.map(([k, v]) => (
             <div key={k} className="text-sm">
-              <span className="text-gray-500 capitalize">{k.replace(/([A-Z])/g, ' $1').trim()}:</span>{' '}
+              <span className="text-gray-500 dark:text-gray-400 capitalize">{k.replace(/([A-Z])/g, ' $1').trim()}:</span>{' '}
               {formatSimpleValue(k, v)}
             </div>
           ))}
@@ -96,13 +104,13 @@ export default function TaxDataModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-      <div className="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
-          <h2 className="text-2xl font-bold text-gray-900">Tax Data Loaded</h2>
+        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Tax Data Loaded</h2>
           <button
             onClick={onCancel}
-            className="p-2 text-gray-500 hover:bg-gray-100 rounded-lg transition-colors"
+            className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -110,19 +118,13 @@ export default function TaxDataModal({
 
         {/* Content */}
         <div className="p-6">
-          <div className="mb-4">
-            <p className="text-sm text-gray-600">
-              Scenario: <span className="font-semibold text-gray-900">{scenario}</span>
-            </p>
-          </div>
-
           <div className="space-y-3">
             {Object.entries(taxData).map(([key, value]) => (
-              <div key={key} className="py-2 border-b border-gray-100">
-                <div className="text-gray-500 text-sm font-medium capitalize mb-1">
+              <div key={key} className="py-2 border-b border-gray-100 dark:border-gray-700">
+                <div className="text-gray-500 dark:text-gray-400 text-sm font-medium capitalize mb-1">
                   {key.replace(/([A-Z])/g, ' $1').trim()}
                 </div>
-                <div className="text-gray-900 font-semibold">
+                <div className="text-gray-900 dark:text-gray-100 font-semibold">
                   {renderValue(key, value)}
                 </div>
               </div>

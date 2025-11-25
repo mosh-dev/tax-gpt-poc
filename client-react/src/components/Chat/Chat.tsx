@@ -8,7 +8,7 @@ import WorkflowStepMessage from './WorkflowStepMessage';
 import ChatInput from './ChatInput';
 import MessageBubble from './MessageBubble';
 import LoadingBubble from './LoadingBubble';
-import { STEP_TITLES, TOOL_NAMES, WORKFLOW_IDS, WORKFLOW_STATUS, WORKFLOW_STEPS } from "../../constants/workflow.ts";
+import { TOOL_NAMES, WORKFLOW_IDS, WORKFLOW_STATUS } from "../../constants/workflow.ts";
 import { STREAM_EVENT_TYPES } from "../../constants/events.ts";
 import {
   handleConnectedEvent,
@@ -19,24 +19,7 @@ import {
   updateMessageAfterToolResult,
 } from '../../utils/chat/streamEventHandlers';
 import { handleWorkflowToolResult } from '../../utils/chat/workflowStreamHandlers';
-
-interface LocationState {
-  initialMessage?: string;
-  files?: File[]; // Raw File objects from Welcome (not uploaded yet)
-}
-
-interface ChatProps {
-  threadId: string;
-}
-
-interface SwissTaxData {
-  name?: string;
-  maritalStatus?: string;
-  income?: number;
-  deductions?: number;
-
-  [key: string]: any;
-}
+import type { LocationState, ChatProps, SendMessageOptions } from './Chat.types';
 
 export default function Chat({threadId}: ChatProps) {
   const navigate = useNavigate();
@@ -50,8 +33,7 @@ export default function Chat({threadId}: ChatProps) {
 
   // Tax data modal
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [pendingTaxData, setPendingTaxData] = useState<SwissTaxData | null>(null);
-  const [pendingScenario, setPendingScenario] = useState('');
+  const [pendingToolResult, setPendingToolResult] = useState<any>(null);
 
   // Workflow state - integrated into chat
   const [activeWorkflow, setActiveWorkflow] = useState<WorkflowStatus | null>(null);
@@ -284,11 +266,8 @@ export default function Chat({threadId}: ChatProps) {
   const handleToolResult = (event: StreamEvent, assistantMessage: Message) => {
     switch (event.toolName) {
       case TOOL_NAMES.GET_TAX_DATA:
-        if (event.result?.success && event.result?.data) {
-          setPendingTaxData(event.result.data);
-          setPendingScenario(event.result.scenario);
-          setIsModalOpen(true);
-        }
+        setPendingToolResult(event.result);
+        setIsModalOpen(true);
         break;
 
       case TOOL_NAMES.GENERATE_TAX_PDF:
@@ -320,36 +299,11 @@ export default function Chat({threadId}: ChatProps) {
     }
   };
 
-  // Handle workflow step submission - send through chat so LLM can process
-  const handleWorkflowStepSubmit = async (stepId: string, data: any) => {
+  // Handle workflow step submission - receives pre-formatted messages from WorkflowStepMessage
+  const handleWorkflowStepSubmit = async (displayMessage: string, agentMessage: string) => {
     if (!activeWorkflow) return;
 
-    console.log('[Workflow] Submitting step:', stepId);
-    console.log('[Workflow] Active workflow state:', {
-      currentStep: activeWorkflow.currentStep,
-      runId: activeWorkflow.runId,
-      status: activeWorkflow.status
-    });
-
-    // Validate that the step being submitted matches the current workflow step
-    if (stepId !== activeWorkflow.currentStep) {
-      console.error('[Workflow] Step mismatch detected!', {
-        submitting: stepId,
-        expected: activeWorkflow.currentStep
-      });
-      // Force sync by clearing workflow - user will need to restart
-      setActiveWorkflow(null);
-      setError('Workflow state mismatch detected. Please start a new workflow.');
-      return;
-    }
-
     setIsWorkflowSubmitting(true);
-
-    const { displayMessage, agentMessage } = formatWorkflowMessage(
-      activeWorkflow.runId,
-      stepId,
-      data
-    );
 
     // Keep workflow UI visible - backend will update to next step or clear on completion/error
     // DON'T clear activeWorkflow here to prevent UI flicker
@@ -369,108 +323,6 @@ export default function Chat({threadId}: ChatProps) {
     await streamChatMessage(displayMessage, threadId, undefined, undefined, agentMessage);
   };
 
-  // Format workflow step data as TWO separate messages: one for display, one for the agent
-  const formatWorkflowMessage = (
-    runId: string,
-    stepId: string,
-    data: any
-  ): { displayMessage: string; agentMessage: string } => {
-    const stepTitle = getStepTitle(stepId);
-
-    // Build DISPLAY message (clean, user-friendly)
-    let displayMessage = '';
-
-    // Build AGENT message (with markers and instructions)
-    let agentMessage = `**Workflow Step: ${stepTitle}**\n\n`;
-    agentMessage += `[Workflow Context]\n`;
-    agentMessage += `- Run ID: ${runId}\n`;
-    agentMessage += `- Step ID: ${stepId}\n\n`;
-
-    switch (stepId) {
-      case WORKFLOW_STEPS.COLLECT_PERSONAL_INFO:
-        // Display: Clean summary
-        displayMessage = `**Personal Information Submitted**\n`;
-        displayMessage += `- Name: ${data.firstName} ${data.lastName}\n`;
-        displayMessage += `- Status: ${data.maritalStatus}\n`;
-        displayMessage += `- Children: ${data.numberOfChildren}\n`;
-        displayMessage += `- Location: ${data.canton}\n`;
-        displayMessage += `- Tax Year: ${data.taxYear}\n`;
-
-        // Agent: With markers and instructions
-        agentMessage += `**Personal Information:**\n`;
-        agentMessage += `- First Name: ${data.firstName}\n`;
-        agentMessage += `- Last Name: ${data.lastName}\n`;
-        agentMessage += `- Marital Status: ${data.maritalStatus}\n`;
-        agentMessage += `- Number of Children: ${data.numberOfChildren}\n`;
-        agentMessage += `- Canton: ${data.canton}\n`;
-        agentMessage += `- Tax Year: ${data.taxYear}\n`;
-        agentMessage += `\n**IMPORTANT: Call resume-workflow with this EXACT data:**\n`;
-        agentMessage += `- stepId: "${WORKFLOW_STEPS.COLLECT_PERSONAL_INFO}"\n`;
-        agentMessage += `- data: ${JSON.stringify(data)}\n`;
-        break;
-
-      case WORKFLOW_STEPS.UPLOAD_DOCUMENTS: {
-        const docs = data.documents || [];
-
-        // Display: Simple file list
-        displayMessage = `**Documents Uploaded**\n`;
-        displayMessage += `${docs.length} file(s) uploaded:\n`;
-        docs.forEach((d: TaxDocument) => {
-          displayMessage += `- ${d.fileName}\n`;
-        });
-
-        // Agent: With processing instructions
-        agentMessage += `**Uploaded Documents:** ${docs.length} file(s)\n`;
-        docs.forEach((d: TaxDocument) => {
-          agentMessage += `- ${d.fileName} (ID: ${d.fileId})\n`;
-        });
-        agentMessage += `\n**CRITICAL - Before resuming workflow:**\n`;
-        agentMessage += `1. Call process-documents tool with fileIds: [${docs.map(d => `"${d.fileId}"`).join(', ')}]\n`;
-        agentMessage += `2. Wait for OCR to complete successfully\n`;
-        agentMessage += `3. Then call resume-workflow with the EXACT data below:\n\n`;
-        agentMessage += `**Call resume-workflow with:**\n`;
-        agentMessage += `- stepId: "${WORKFLOW_STEPS.UPLOAD_DOCUMENTS}"\n`;
-        agentMessage += `- data: ${JSON.stringify(data)}\n`;
-        agentMessage += `\nDo NOT modify the stepId or data structure. Pass them exactly as shown above.\n`;
-        break;
-      }
-
-      case WORKFLOW_STEPS.REVIEW_EXTRACTED_DATA:
-        // Display: Confirmation only
-        displayMessage = `**Tax Data Confirmed**\n`;
-        displayMessage += `I've reviewed and confirmed the extracted tax data is correct.\n`;
-
-        // Agent: With resume instructions
-        agentMessage += `**Confirmed Tax Data**\n`;
-        agentMessage += `I confirm the extracted tax data is correct.\n`;
-        agentMessage += `\n**IMPORTANT: Call resume-workflow with this EXACT data:**\n`;
-        agentMessage += `- stepId: "${WORKFLOW_STEPS.REVIEW_EXTRACTED_DATA}"\n`;
-        agentMessage += `- data: ${JSON.stringify(data)}\n`;
-        break;
-
-      case WORKFLOW_STEPS.GENERATE_SUMMARY:
-        // Display: User choice
-        displayMessage = data.generatePdf
-          ? `**Requested PDF generation**`
-          : `**Completed without PDF**`;
-
-        // Agent: With resume instructions
-        agentMessage += data.generatePdf
-          ? `Please generate the PDF summary.\n`
-          : `Finish without PDF generation.\n`;
-        agentMessage += `\n**IMPORTANT: Call resume-workflow with this EXACT data:**\n`;
-        agentMessage += `- stepId: "${WORKFLOW_STEPS.GENERATE_SUMMARY}"\n`;
-        agentMessage += `- data: ${JSON.stringify(data)}\n`;
-        break;
-
-      default:
-        displayMessage = JSON.stringify(data, null, 2);
-        agentMessage += JSON.stringify(data, null, 2);
-    }
-
-    return { displayMessage, agentMessage };
-  };
-
   // Handle file uploads for workflow
   const handleWorkflowUploadFiles = async (files: File[]): Promise<TaxDocument[]> => {
     const uploadedFiles = await apiService.uploadFiles(files, threadId);
@@ -480,17 +332,6 @@ export default function Chat({threadId}: ChatProps) {
       fileType: f.mimeType,
     }));
   };
-
-  // Helper to get step title
-  const getStepTitle = (stepId: string): string => {
-    return STEP_TITLES[stepId] || stepId;
-  };
-
-  // Options for unified send message function
-  interface SendMessageOptions {
-    replaceMessages?: boolean;  // true for initial, false for regular
-    onConnected?: (receivedThreadId?: string) => void;
-  }
 
   // Unified message sending function
   const sendChatMessage = async (
@@ -624,8 +465,7 @@ export default function Chat({threadId}: ChatProps) {
       {/* Tax Data Modal */}
       <TaxDataModal
         isOpen={isModalOpen}
-        taxData={pendingTaxData}
-        scenario={pendingScenario}
+        toolResult={pendingToolResult}
         onConfirm={() => setIsModalOpen(false)}
         onCancel={() => setIsModalOpen(false)}
       />
