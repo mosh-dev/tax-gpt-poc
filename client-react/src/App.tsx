@@ -67,10 +67,7 @@ function HomePage() {
       {threadId ? (
         <Chat key={threadId} threadId={threadId} />
       ) : (
-        <Welcome
-          onStartChat={() => {}}
-          onSendMessage={() => {}}
-        />
+        <Welcome/>
       )}
     </div>
   );

@@ -2,15 +2,8 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Sparkles, BarChart3, Lightbulb } from 'lucide-react';
 import ChatInput from '../Chat/ChatInput';
-import { apiService } from '../../services/api';
 import { useConversations } from '../../contexts/useConversations';
 import { v4 as uuidv4 } from 'uuid';
-
-// Props kept for backward compatibility but not used - Welcome handles its own navigation
-interface WelcomeProps {
-  onStartChat?: (message: string) => void;
-  onSendMessage?: (message: string, files: File[]) => void;
-}
 
 const starterPrompts = [
   {
@@ -42,7 +35,7 @@ const starterPrompts = [
   },
 ];
 
-export default function Welcome({ }: WelcomeProps) {
+export default function Welcome() {
   const navigate = useNavigate();
   const { loadConversations } = useConversations();
   const [isSending, setIsSending] = useState(false);
@@ -51,25 +44,15 @@ export default function Welcome({ }: WelcomeProps) {
     setIsSending(true);
 
     try {
-      // Upload files first if any
-      let fileIds: string[] = [];
-      let fileNames: string[] = [];
-      if (files.length > 0) {
-        fileNames = files.map(f => f.name);
-        const uploadedFiles = await apiService.uploadFiles(files);
-        fileIds = uploadedFiles.map(f => f.fileId);
-      }
-
       // Generate a new threadId
       const newThreadId = uuidv4();
 
-      // Navigate immediately to chat with initial message in state
+      // Navigate with files (not uploaded yet) - let Chat handle upload
       navigate(`/?threadId=${newThreadId}`, {
         replace: true,
         state: {
           initialMessage: message,
-          fileIds,
-          fileNames,
+          files: files,  // Pass File objects, Chat will upload on send
         }
       });
 

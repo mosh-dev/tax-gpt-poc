@@ -22,6 +22,7 @@ export class ChatController {
 
       // Use agentMessage if provided (workflow messages), otherwise use message
       const contentForAgent = agentMessage || message;
+      const contentForUser = message || agentMessage;
 
       // Validate request
       if (!contentForAgent || contentForAgent.trim().length === 0) {
@@ -43,6 +44,7 @@ export class ChatController {
       // Use contentForAgent (agentMessage || message) for LLM processing
       const requestDTO: StreamChatRequestDTO = {
         message: contentForAgent,
+        userMessage: contentForUser,
         conversationId: threadId || conversationId,
         conversationHistory,
       };

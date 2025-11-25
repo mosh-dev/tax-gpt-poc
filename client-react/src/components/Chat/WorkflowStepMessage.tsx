@@ -54,6 +54,7 @@ export default function WorkflowStepMessage({
           onUploadFiles={onUploadFiles}
           onCancel={onCancel}
           isSubmitting={isSubmitting}
+          onRender={onRender}
         />
       );
 
@@ -230,39 +231,76 @@ function DocumentUploadForm({
   onSubmit,
   onUploadFiles,
   onCancel,
-  isSubmitting
+  isSubmitting,
+  onRender
 }: {
   payload: any;
   onSubmit: (data: { documents: TaxDocument[] }) => void;
   onUploadFiles: (files: File[]) => Promise<TaxDocument[]>;
   onCancel?: () => void;
   isSubmitting: boolean;
+  onRender?: () => void;
 }) {
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const [uploadedDocs, setUploadedDocs] = useState<TaxDocument[]>([]);
   const [uploading, setUploading] = useState(false);
   const [dragOver, setDragOver] = useState(false);
 
-  const handleFiles = async (files: FileList | null) => {
+  // Trigger scroll when files are selected or uploaded and UI expands
+  useEffect(() => {
+    if (selectedFiles.length > 0 || uploadedDocs.length > 0) {
+      onRender?.();
+    }
+  }, [selectedFiles.length, uploadedDocs.length, onRender]);
+
+  const handleFiles = (files: FileList | null) => {
     if (!files || files.length === 0) return;
 
-    setUploading(true);
-    try {
-      const newDocs = await onUploadFiles(Array.from(files));
-      setUploadedDocs(prev => [...prev, ...newDocs]);
-    } catch (error) {
-      console.error('Upload failed:', error);
-    }
-    setUploading(false);
+    const filesArray = Array.from(files);
+
+    // Validate files (size/type) but DON'T upload yet
+    const validFiles = filesArray.filter(file => {
+      if (file.size > 20 * 1024 * 1024) {
+        console.error(`File ${file.name} exceeds 20MB`);
+        return false;
+      }
+      return true;
+    });
+
+    // Add to selected files (NOT uploaded yet)
+    setSelectedFiles(prev => [...prev, ...validFiles]);
   };
 
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     setDragOver(false);
-    handleFiles(e.dataTransfer.files).then();
+    handleFiles(e.dataTransfer.files);
   };
 
-  const handleSubmit = () => {
-    onSubmit({ documents: uploadedDocs });
+  const handleSubmit = async () => {
+    if (selectedFiles.length === 0 && uploadedDocs.length === 0) {
+      return;
+    }
+
+    // Upload selected files before submitting
+    let allDocs = uploadedDocs;
+    if (selectedFiles.length > 0) {
+      setUploading(true);
+      try {
+        const newDocs = await onUploadFiles(selectedFiles);
+        allDocs = [...uploadedDocs, ...newDocs];
+        setUploadedDocs(allDocs);
+        setSelectedFiles([]);  // Clear selected after upload
+      } catch (error) {
+        console.error('Upload failed:', error);
+        setUploading(false);
+        return;
+      }
+      setUploading(false);
+    }
+
+    // Submit with all uploaded docs
+    onSubmit({ documents: allDocs });
   };
 
   return (
@@ -304,6 +342,31 @@ function DocumentUploadForm({
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">PDF, JPG, PNG up to 20MB</p>
       </div>
 
+      {/* Pending files (selected but not uploaded) */}
+      {selectedFiles.length > 0 && (
+        <div className="space-y-2">
+          <p className="text-sm font-medium text-gray-700 dark:text-gray-300">
+            Ready to upload ({selectedFiles.length}):
+          </p>
+          {selectedFiles.map((file, idx) => (
+            <div key={idx} className="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 px-3 py-2 rounded-lg text-sm">
+              <FileText className="w-4 h-4" />
+              <span>{file.name}</span>
+              <span className="text-xs ml-auto">
+                {(file.size / 1024 / 1024).toFixed(2)} MB
+              </span>
+              <button
+                onClick={() => setSelectedFiles(prev => prev.filter((_, i) => i !== idx))}
+                className="ml-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-bold"
+                title="Remove file"
+              >
+                ×
+              </button>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Uploaded files list */}
       {uploadedDocs.length > 0 && (
         <div className="space-y-2">
@@ -337,18 +400,18 @@ function DocumentUploadForm({
         )}
         <button
           onClick={handleSubmit}
-          disabled={isSubmitting || uploading || uploadedDocs.length === 0}
+          disabled={isSubmitting || uploading || (selectedFiles.length === 0 && uploadedDocs.length === 0)}
           className={`${onCancel ? 'flex-1' : 'w-full'} bg-primary-600 dark:bg-primary-700 text-white py-2 px-4 rounded-lg hover:bg-primary-700 dark:hover:bg-primary-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2`}
         >
-          {isSubmitting ? (
+          {isSubmitting || uploading ? (
             <>
               <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-              Processing...
+              {uploading ? 'Uploading...' : 'Processing...'}
             </>
           ) : (
             <>
               <Check className="w-4 h-4" />
-              Continue with {uploadedDocs.length} document{uploadedDocs.length !== 1 ? 's' : ''}
+              Continue with {selectedFiles.length + uploadedDocs.length} document{(selectedFiles.length + uploadedDocs.length) !== 1 ? 's' : ''}
             </>
           )}
         </button>

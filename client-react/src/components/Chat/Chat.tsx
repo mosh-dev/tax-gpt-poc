@@ -22,8 +22,7 @@ import { handleWorkflowToolResult } from '../../utils/chat/workflowStreamHandler
 
 interface LocationState {
   initialMessage?: string;
-  fileIds?: string[];
-  fileNames?: string[]; // Original filenames for display
+  files?: File[]; // Raw File objects from Welcome (not uploaded yet)
 }
 
 interface ChatProps {
@@ -80,7 +79,7 @@ export default function Chat({threadId}: ChatProps) {
       setActiveWorkflow(null);
 
       // Send the initial message (agent will detect workflow intent from message)
-      sendInitialMessage(state.initialMessage, state.fileIds || [], state.fileNames || []).then();
+      sendInitialMessage(state.initialMessage, state.files || []).then();
     } else if (!state?.initialMessage && loadedThreadIdRef.current !== threadId) {
       // Normal conversation load (no initial message)
       // Use ref to prevent double execution in React StrictMode
@@ -194,7 +193,14 @@ export default function Chat({threadId}: ChatProps) {
         setError,
       };
 
-      for await (const event of apiService.streamChat(content, threadIdToUse, fileIds, agentMessage)) {
+      const streamEvents = apiService.streamChat({
+        message: content,
+        threadId: threadIdToUse,
+        fileIds: fileIds,
+        agentMessage: agentMessage
+      })
+
+      for await (const event of streamEvents) {
         let result: StreamEventResult;
 
         switch (event.type) {
@@ -481,22 +487,36 @@ export default function Chat({threadId}: ChatProps) {
   };
 
   // Send initial message from Welcome page navigation
-  const sendInitialMessage = async (message: string, fileIds: string[], fileNames: string[]) => {
-    // Build message content for agent (with fileIds)
-    let messageContent = message;
-    if (fileIds.length > 0) {
-      messageContent += '\n\n[Uploaded Files]';
-      fileIds.forEach(id => {
-        messageContent += `\n[fileId: ${id}]`;
-      });
+  const sendInitialMessage = async (message: string, files: File[] = []) => {
+    // Upload files first if provided
+    let fileIds: string[] = [];
+    if (files.length > 0) {
+      setIsUploading(true);
+      try {
+        const uploadedFiles = await apiService.uploadFiles(files, threadId || undefined);
+        fileIds = uploadedFiles.map(f => f.fileId);
+      } catch (err: any) {
+        setError(`Upload failed: ${err.message}`);
+        setIsUploading(false);
+        return;
+      }
+      setIsUploading(false);
     }
 
-    messageContent += ` [Context: threadId=${threadId}]`;
-
-    // Build display message for user (with filenames)
+    // Build display message for user (clean, with filenames) - stored in DB
     let userDisplayMessage = message;
-    if (fileNames.length > 0) {
-      userDisplayMessage += `\n\n📎 Attached: ${fileNames.join(', ')}`;
+    if (files.length > 0) {
+      const fileNames = files.map(f => f.name).join(', ');
+      userDisplayMessage += `\n\n📎 Attached: ${fileNames}`;
+    }
+
+    // Build agent message (with fileIds) - sent to agent only
+    let agentMessage = message;
+    if (fileIds.length > 0) {
+      agentMessage += '\n\n[Uploaded Files]';
+      fileIds.forEach(id => {
+        agentMessage += `\n[fileId: ${id}]`;
+      });
     }
 
     const userMessage: Message = {
@@ -510,9 +530,10 @@ export default function Chat({threadId}: ChatProps) {
     setIsLoading(true);
     setError(null);
 
-    await streamChatMessage(messageContent, threadId, fileIds, () => {
+    // Send display message for storage, agent message for processing
+    await streamChatMessage(userDisplayMessage, threadId, fileIds, () => {
       loadConversations();
-    });
+    }, agentMessage);
   };
 
   const sendMessage = async (message: string, files: File[]) => {
@@ -536,20 +557,20 @@ export default function Chat({threadId}: ChatProps) {
       setIsUploading(false);
     }
 
-    // Build message for agent (with fileIds)
-    let messageContent = message;
-    if (fileIds.length > 0) {
-      messageContent += '\n\n[Uploaded Files]';
-      fileIds.forEach(id => {
-        messageContent += `\n[fileId: ${id}]`;
-      });
-    }
-
-    // Build display message for user (with filenames)
+    // Build display message for user (clean, with filenames) - stored in DB
     let userDisplayMessage = message;
     if (files.length > 0) {
       const fileNames = files.map(f => f.name).join(', ');
       userDisplayMessage += `\n\n📎 Attached: ${fileNames}`;
+    }
+
+    // Build agent message (with fileIds) - sent to agent only
+    let agentMessage = message;
+    if (fileIds.length > 0) {
+      agentMessage += '\n\n[Uploaded Files]';
+      fileIds.forEach(id => {
+        agentMessage += `\n[fileId: ${id}]`;
+      });
     }
 
     const userMessage: Message = {
@@ -563,14 +584,14 @@ export default function Chat({threadId}: ChatProps) {
     setIsLoading(true);
     setError(null);
 
-    await streamChatMessage(messageContent, threadId, fileIds, (receivedThreadId) => {
+    await streamChatMessage(userDisplayMessage, threadId, fileIds, (receivedThreadId) => {
       // Capture threadId from server (for new conversations)
       if (receivedThreadId && !threadId) {
         console.log('[Chat] Received new threadId from server:', receivedThreadId);
         navigate(`/?threadId=${receivedThreadId}`, {replace: true});
         loadConversations();
       }
-    });
+    }, agentMessage);
   };
 
   return (
@@ -594,7 +615,6 @@ export default function Chat({threadId}: ChatProps) {
                 onUploadFiles={handleWorkflowUploadFiles}
                 onCancel={() => {
                   setActiveWorkflow(null);
-                  console.log('[Workflow] Skipped by user');
                 }}
                 isSubmitting={isWorkflowSubmitting}
                 onRender={scrollToBottom}

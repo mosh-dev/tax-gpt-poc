@@ -64,7 +64,8 @@ export class StreamChatUseCase {
       MessageId.generate(),
       conversationId,
       MessageRole.User(),
-      request.message
+      request.message,
+      request.userMessage,
     );
     await this.messageRepository.create(userMessage);
 
