@@ -10,12 +10,13 @@ interface ChatInputProps {
   placeholder?: string;
 }
 
-export default function ChatInput({
-                                    onSendMessage,
-                                    disabled,
-                                    isUploading,
-                                    placeholder = "Ask me about your Swiss tax retu..."
-                                  }: ChatInputProps) {
+export default function ChatInput(props: ChatInputProps) {
+  const {
+    onSendMessage,
+    disabled,
+    isUploading,
+    placeholder = "Ask me about your Swiss tax retu..."
+  } = props;
   const [message, setMessage] = useState('');
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -90,8 +91,7 @@ export default function ChatInput({
     <>
       {/* Selected Files */}
       {selectedFiles.length > 0 && (
-        <div className="mb-3 flex flex-wrap gap-2 max-w-4xl mx-auto bg-opacity-50 rounded-2xl p-8"
-             style={{ background: '#101828eb' }}>
+        <div className="mb-3 flex flex-wrap gap-2 max-w-4xl mx-auto bg-opacity-50 rounded-2xl p-8">
           {selectedFiles.map((file, index) => (
             <div key={index}
                  className="flex items-center gap-2 bg-gray-100 dark:bg-gray-800 px-3 py-2 rounded-lg shadow-lg">

@@ -16,7 +16,7 @@ export default function MessageBubble({ message, onButtonClick }: MessageBubbleP
   return (
     <div className={`flex mb-4 md:mb-6 ${message.role === 'user' ? 'justify-end' : ''}`}>
       <div
-        className={`relative max-w-full sm:max-w-xl md:max-w-2xl shadow-sm ${
+        className={`relative max-w-full sm:max-w-xl md:max-w-3xl shadow-sm overflow-y-auto ${
           message.role === 'user'
             ? 'bg-primary-600 dark:bg-primary-700 text-white rounded-2xl rounded-br-none shadow-primary-600/20 dark:shadow-primary-700/20'
             : 'bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-2xl rounded-tl-none shadow-gray-300/50 dark:shadow-gray-700/50'
