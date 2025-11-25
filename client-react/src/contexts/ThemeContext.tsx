@@ -1,6 +1,6 @@
-import React, { useEffect, useState, useMemo } from 'react';
 import type { ReactNode } from "react";
-import { ThemeContext, type Theme, type ResolvedTheme, type ThemeContextType } from './ThemeContextDefinition';
+import { useEffect, useMemo, useState } from 'react';
+import { type ResolvedTheme, type Theme, ThemeContext, type ThemeContextType } from './ThemeContextDefinition';
 
 const STORAGE_KEY = 'tax_gpt_theme_preference';
 

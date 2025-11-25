@@ -3,9 +3,10 @@
  * Renders workflow steps as interactive chat messages
  */
 
-import { useState, useEffect } from 'react';
-import { Upload, Check, FileText } from 'lucide-react';
-import type { WorkflowStatus, PersonalInfo, TaxDocument, ExtractedTaxData, FormEvent , DragEvent } from '../../types/common.types.ts';
+import type { DragEvent, FormEvent } from 'react';
+import { useEffect, useState } from 'react';
+import { Check, FileText, Upload } from 'lucide-react';
+import type { ExtractedTaxData, PersonalInfo, TaxDocument, WorkflowStatus } from '../../types/common.types.ts';
 import { WORKFLOW_STEPS } from "../../constants/workflow.ts";
 
 interface WorkflowStepMessageProps {
@@ -17,14 +18,8 @@ interface WorkflowStepMessageProps {
   onRender?: () => void; // Callback to notify parent that UI has rendered
 }
 
-export default function WorkflowStepMessage({
-  workflow,
-  onSubmit,
-  onUploadFiles,
-  onCancel,
-  isSubmitting,
-  onRender
-}: WorkflowStepMessageProps) {
+export default function WorkflowStepMessage(props: WorkflowStepMessageProps) {
+  const { workflow, onSubmit, onUploadFiles, onCancel, isSubmitting, onRender } = props;
   const { currentStep, suspendPayload } = workflow;
 
   // Notify parent when component renders/updates
@@ -86,12 +81,7 @@ export default function WorkflowStepMessage({
 }
 
 // Personal Info Form
-function PersonalInfoForm({
-  payload,
-  onSubmit,
-  onCancel,
-  isSubmitting
-}: {
+function PersonalInfoForm({ payload, onSubmit, onCancel, isSubmitting }: {
   payload: any;
   onSubmit: (data: PersonalInfo) => void;
   onCancel?: () => void;
@@ -113,7 +103,8 @@ function PersonalInfoForm({
 
   return (
     <div className="space-y-4">
-      <p className="text-gray-700 dark:text-gray-300 mb-4">{payload?.reason || 'Please provide your personal information:'}</p>
+      <p
+        className="text-gray-700 dark:text-gray-300 mb-4">{payload?.reason || 'Please provide your personal information:'}</p>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -144,7 +135,10 @@ function PersonalInfoForm({
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Marital Status</label>
             <select
               value={formData.maritalStatus}
-              onChange={(e) => setFormData({ ...formData, maritalStatus: e.target.value as PersonalInfo['maritalStatus'] })}
+              onChange={(e) => setFormData({
+                ...formData,
+                maritalStatus: e.target.value as PersonalInfo['maritalStatus']
+              })}
               className="w-full pl-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
             >
               <option value="single">Single</option>
@@ -154,7 +148,8 @@ function PersonalInfoForm({
             </select>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Number of Children</label>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Number of
+              Children</label>
             <input
               type="number"
               min="0"
@@ -213,7 +208,7 @@ function PersonalInfoForm({
               </>
             ) : (
               <>
-                <Check className="w-4 h-4" />
+                <Check className="w-4 h-4"/>
                 Continue
               </>
             )}
@@ -225,14 +220,7 @@ function PersonalInfoForm({
 }
 
 // Document Upload Form
-function DocumentUploadForm({
-  payload,
-  onSubmit,
-  onUploadFiles,
-  onCancel,
-  isSubmitting,
-  onRender
-}: {
+function DocumentUploadForm({ payload, onSubmit, onUploadFiles, onCancel, isSubmitting, onRender }: {
   payload: any;
   onSubmit: (data: { documents: TaxDocument[] }) => void;
   onUploadFiles: (files: File[]) => Promise<TaxDocument[]>;
@@ -319,17 +307,21 @@ function DocumentUploadForm({
 
       {/* Drop zone */}
       <div
-        onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+        onDragOver={(e) => {
+          e.preventDefault();
+          setDragOver(true);
+        }}
         onDragLeave={() => setDragOver(false)}
         onDrop={handleDrop}
         className={`border-2 border-dashed rounded-lg p-6 text-center transition-colors ${
           dragOver ? 'border-primary-500 bg-primary-50 dark:bg-primary-900/20' : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
         }`}
       >
-        <Upload className="w-8 h-8 mx-auto text-gray-400 dark:text-gray-500 mb-2" />
+        <Upload className="w-8 h-8 mx-auto text-gray-400 dark:text-gray-500 mb-2"/>
         <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Drag & drop files here, or</p>
         <label className="cursor-pointer">
-          <span className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium">browse files</span>
+          <span
+            className="text-primary-600 dark:text-primary-400 hover:text-primary-700 dark:hover:text-primary-300 font-medium">browse files</span>
           <input
             type="file"
             multiple
@@ -348,8 +340,9 @@ function DocumentUploadForm({
             Ready to upload ({selectedFiles.length}):
           </p>
           {selectedFiles.map((file, idx) => (
-            <div key={idx} className="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 px-3 py-2 rounded-lg text-sm">
-              <FileText className="w-4 h-4" />
+            <div key={idx}
+                 className="flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 px-3 py-2 rounded-lg text-sm">
+              <FileText className="w-4 h-4"/>
               <span>{file.name}</span>
               <span className="text-xs ml-auto">
                 {(file.size / 1024 / 1024).toFixed(2)} MB
@@ -371,10 +364,11 @@ function DocumentUploadForm({
         <div className="space-y-2">
           <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Uploaded files:</p>
           {uploadedDocs.map((doc, idx) => (
-            <div key={idx} className="flex items-center gap-2 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 px-3 py-2 rounded-lg text-sm">
-              <FileText className="w-4 h-4" />
+            <div key={idx}
+                 className="flex items-center gap-2 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 px-3 py-2 rounded-lg text-sm">
+              <FileText className="w-4 h-4"/>
               <span>{doc.fileName}</span>
-              <Check className="w-4 h-4 ml-auto" />
+              <Check className="w-4 h-4 ml-auto"/>
             </div>
           ))}
         </div>
@@ -382,7 +376,8 @@ function DocumentUploadForm({
 
       {uploading && (
         <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600 dark:border-primary-400"></div>
+          <div
+            className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary-600 dark:border-primary-400"></div>
           Uploading...
         </div>
       )}
@@ -409,8 +404,9 @@ function DocumentUploadForm({
             </>
           ) : (
             <>
-              <Check className="w-4 h-4" />
-              Continue with {selectedFiles.length + uploadedDocs.length} document{(selectedFiles.length + uploadedDocs.length) !== 1 ? 's' : ''}
+              <Check className="w-4 h-4"/>
+              Continue
+              with {selectedFiles.length + uploadedDocs.length} document{(selectedFiles.length + uploadedDocs.length) !== 1 ? 's' : ''}
             </>
           )}
         </button>
@@ -420,12 +416,7 @@ function DocumentUploadForm({
 }
 
 // Review Data Form
-function ReviewDataForm({
-  payload,
-  onSubmit,
-  onCancel,
-  isSubmitting
-}: {
+function ReviewDataForm({ payload, onSubmit, onCancel, isSubmitting }: {
   payload: any;
   onSubmit: (data: ExtractedTaxData) => void;
   onCancel?: () => void;
@@ -434,7 +425,15 @@ function ReviewDataForm({
   const [formData, setFormData] = useState<ExtractedTaxData>(
     payload?.extractedData || {
       income: { employment: 0, selfEmployment: 0, investments: 0, rental: 0, other: 0 },
-      deductions: { professionalExpenses: 0, insurance: 0, pillar3a: 0, childcare: 0, education: 0, donations: 0, other: 0 },
+      deductions: {
+        professionalExpenses: 0,
+        insurance: 0,
+        pillar3a: 0,
+        childcare: 0,
+        education: 0,
+        donations: 0,
+        other: 0
+      },
       wealth: { bankAccounts: 0, securities: 0, realEstate: 0, vehicles: 0, other: 0 },
       confirmed: false,
     }
@@ -464,7 +463,8 @@ function ReviewDataForm({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {Object.entries(formData.income).map(([key, value]) => (
             <div key={key}>
-              <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1 capitalize">{key.replace(/([A-Z])/g, ' $1')}</label>
+              <label
+                className="block text-xs text-gray-600 dark:text-gray-400 mb-1 capitalize">{key.replace(/([A-Z])/g, ' $1')}</label>
               <input
                 type="number"
                 value={value}
@@ -482,7 +482,8 @@ function ReviewDataForm({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {Object.entries(formData.deductions).map(([key, value]) => (
             <div key={key}>
-              <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1 capitalize">{key.replace(/([A-Z])/g, ' $1')}</label>
+              <label
+                className="block text-xs text-gray-600 dark:text-gray-400 mb-1 capitalize">{key.replace(/([A-Z])/g, ' $1')}</label>
               <input
                 type="number"
                 value={value}
@@ -500,7 +501,8 @@ function ReviewDataForm({
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {Object.entries(formData.wealth).map(([key, value]) => (
             <div key={key}>
-              <label className="block text-xs text-gray-600 dark:text-gray-400 mb-1 capitalize">{key.replace(/([A-Z])/g, ' $1')}</label>
+              <label
+                className="block text-xs text-gray-600 dark:text-gray-400 mb-1 capitalize">{key.replace(/([A-Z])/g, ' $1')}</label>
               <input
                 type="number"
                 value={value}
@@ -535,7 +537,7 @@ function ReviewDataForm({
             </>
           ) : (
             <>
-              <Check className="w-4 h-4" />
+              <Check className="w-4 h-4"/>
               Confirm & Calculate
             </>
           )}
@@ -546,11 +548,7 @@ function ReviewDataForm({
 }
 
 // Summary Form
-function SummaryForm({
-  payload,
-  onSubmit,
-  isSubmitting
-}: {
+function SummaryForm({ payload, onSubmit, isSubmitting }: {
   payload: any;
   onSubmit: (data: { generatePdf: boolean }) => void;
   isSubmitting: boolean;
@@ -569,19 +567,23 @@ function SummaryForm({
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
           <p className="text-xs text-gray-600 dark:text-gray-400">Gross Income</p>
-          <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">CHF {calculation.grossIncome?.toLocaleString()}</p>
+          <p
+            className="text-lg font-semibold text-gray-900 dark:text-gray-100">CHF {calculation.grossIncome?.toLocaleString()}</p>
         </div>
         <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
           <p className="text-xs text-gray-600 dark:text-gray-400">Total Deductions</p>
-          <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">CHF {calculation.totalDeductions?.toLocaleString()}</p>
+          <p
+            className="text-lg font-semibold text-gray-900 dark:text-gray-100">CHF {calculation.totalDeductions?.toLocaleString()}</p>
         </div>
         <div className="bg-gray-50 dark:bg-gray-700 p-3 rounded-lg">
           <p className="text-xs text-gray-600 dark:text-gray-400">Taxable Income</p>
-          <p className="text-lg font-semibold text-gray-900 dark:text-gray-100">CHF {calculation.taxableIncome?.toLocaleString()}</p>
+          <p
+            className="text-lg font-semibold text-gray-900 dark:text-gray-100">CHF {calculation.taxableIncome?.toLocaleString()}</p>
         </div>
         <div className="bg-primary-50 dark:bg-primary-900/30 p-3 rounded-lg">
           <p className="text-xs text-primary-600 dark:text-primary-400">Estimated Tax</p>
-          <p className="text-lg font-semibold text-primary-700 dark:text-primary-300">CHF {calculation.estimatedTax?.toLocaleString()}</p>
+          <p
+            className="text-lg font-semibold text-primary-700 dark:text-primary-300">CHF {calculation.estimatedTax?.toLocaleString()}</p>
         </div>
       </div>
 
@@ -622,7 +624,7 @@ function SummaryForm({
             </>
           ) : (
             <>
-              <FileText className="w-4 h-4" />
+              <FileText className="w-4 h-4"/>
               Generate PDF
             </>
           )}
