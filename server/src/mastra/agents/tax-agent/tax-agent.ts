@@ -5,7 +5,7 @@ import { AgentConfig } from '@/mastra/agents/agent-config.model';
 import { encode } from 'gpt-tokenizer';
 import { getCollection } from '@infrastructure/database/database-utils';
 import { MASTRA_COLLECTIONS } from '@shared/constants/database-collections';
-import { logLLMResponse, logStreamError } from '@shared/utils/logger';
+import { logLLMResponse, logStreamError } from '@utils/logger';
 import { getErrorMessage } from '@utils/error-handler';
 import { getTaxDataTool } from '@/mastra/agents/tax-agent/tools/get-tax-data';
 import { calculateDeductionsTool } from '@/mastra/agents/tax-agent/tools/calculate-deductions';

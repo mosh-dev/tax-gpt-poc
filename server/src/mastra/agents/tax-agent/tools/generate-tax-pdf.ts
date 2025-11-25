@@ -1,7 +1,7 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 import { generateTaxReturnPDF } from '@domains/document/pdf-generator';
-import { fileService } from '@domains/document/file-service';
+import { fileService } from '@domains/document/file-service.class';
 import { SwissTaxData } from '@domains/tax-extraction/swiss-tax-data.model';
 import { TOOL_IDS } from '@shared/constants/tool-ids';
 

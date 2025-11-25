@@ -5,11 +5,11 @@
 
 import { Request, Response } from 'express';
 import { getErrorMessage } from '@utils/error-handler';
-import { UploadFileUseCase } from '@core/application/use-cases/file/UploadFileUseCase';
-import { ProcessDocumentUseCase } from '@core/application/use-cases/file/ProcessDocumentUseCase';
-import { GetFileUseCase } from '@core/application/use-cases/file/GetFileUseCase';
-import { DeleteFileUseCase } from '@core/application/use-cases/file/DeleteFileUseCase';
-import { ProcessDocumentDTO, UploadFileDTO } from '@core/application/dtos/FileDTO';
+import { UploadFileUseCase } from '@domains/document/use-cases/upload-file-use-case.class';
+import { ProcessDocumentUseCase } from '@domains/document/use-cases/process-document-use-case.class';
+import { GetFileUseCase } from '@domains/document/use-cases/get-file-use-case.class';
+import { DeleteFileUseCase } from '@domains/document/use-cases/delete-file-use-case.class';
+import { ProcessDocumentDTO, UploadFileDTO } from '@domains/document/dtos/file-dto';
 
 export class FileController {
   constructor(

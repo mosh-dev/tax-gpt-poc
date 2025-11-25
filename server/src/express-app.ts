@@ -5,9 +5,9 @@
 
 import express, { Express, NextFunction, Request, Response } from 'express';
 import cors from 'cors';
-import { getStoragePath } from '@shared/utils/storage';
-import { env } from '@infrastructure/llm/env';
-import { initializeApp } from '@config/initialize';
+import { getStoragePath } from '@utils/storage';
+import { env } from '@/env';
+import { initializeApp } from '@infrastructure/initialize';
 import { agentConfigRoutes } from '@api/routes/agent-config.routes';
 import { authRoutes } from '@api/routes/auth.routes';
 import { employeeRoutes } from '@api/routes/employee.routes';
@@ -16,8 +16,8 @@ import { createFileRoutes } from '@api/routes/file.routes';
 import { createConversationRoutes } from '@api/routes/conversation.routes';
 import { createChatRoutes } from '@api/routes/chat.routes';
 import { initializeContainer } from '@/di/container';
-import { MastraAIAgentService } from '@infrastructure/services/ai/mastra-ai-agent-service';
-import { TesseractOCRService } from '@infrastructure/services/ocr/tesseract-ocr-service';
+import { MastraAIAgentService } from '@infrastructure/services/ai/mastra-ai-agent-service.class';
+import { TesseractOCRService } from '@infrastructure/services/ocr/tesseract-ocr-service.class';
 import { authMiddleware } from '@api/middleware/auth.middleware';
 import { Mastra } from '@mastra/core';
 import { workflowStorage } from '@/mastra/storage/workflow-storage';

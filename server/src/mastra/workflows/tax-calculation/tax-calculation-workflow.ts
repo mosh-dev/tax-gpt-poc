@@ -5,11 +5,11 @@
 
 import { createStep, createWorkflow } from '@mastra/core/workflows';
 import { z } from 'zod';
-import { fileService } from '@domains/document/file-service';
+import { fileService } from '@domains/document/file-service.class';
 import { generateTaxReturnPDF } from '@domains/document/pdf-generator';
 import { WORKFLOW_IDS, WORKFLOW_STEPS } from '@shared/constants/workflow';
 import { extractTaxData, type DocumentWithText } from '@domains/tax-extraction/tax-data-extraction.service';
-import { mongoRepository } from '@infrastructure/database/mongo-repository';
+import { mongoRepository } from '@infrastructure/database/mongo-repository.class';
 
 // === SCHEMA DEFINITIONS ===
 

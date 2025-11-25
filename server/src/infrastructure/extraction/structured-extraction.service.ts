@@ -2,8 +2,8 @@ import { z } from 'zod';
 import { generateObject } from 'ai';
 import { getGenerateMode, getModelByPurpose, getModelConfigs, MODEL_PURPOSES } from '@infrastructure/llm/llm';
 import { truncateToTokenLimit } from './token-manager';
-import { generateCacheKey, getCache } from './cache-manager';
 import type { ExtractionInput, ExtractionMetadata, ExtractionOptions } from './types';
+import { generateCacheKey, getCache } from '@infrastructure/extraction/cache-manager.class';
 
 const DEFAULT_MAX_TOKENS = 12000;
 

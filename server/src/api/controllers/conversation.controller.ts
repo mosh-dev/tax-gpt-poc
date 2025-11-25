@@ -5,9 +5,9 @@
 
 import { Request, Response } from 'express';
 import { getErrorMessage } from '@utils/error-handler';
-import { GetAllConversationsUseCase } from '@core/application/use-cases/conversation/GetAllConversationsUseCase';
-import { GetConversationHistoryUseCase } from '@core/application/use-cases/conversation/GetConversationHistoryUseCase';
-import { DeleteConversationUseCase } from '@core/application/use-cases/conversation/DeleteConversationUseCase';
+import { GetAllConversationsUseCase } from '@domains/conversation/use-cases/get-all-conversations-use-case.class';
+import { GetConversationHistoryUseCase } from '@domains/conversation/use-cases/get-conversation-history-use-case.class';
+import { DeleteConversationUseCase } from '@domains/conversation/use-cases/delete-conversation-use-case.class';
 
 export class ConversationController {
   constructor(
