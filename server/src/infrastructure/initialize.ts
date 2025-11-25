@@ -41,6 +41,7 @@ export async function initializeApp(): Promise<void> {
   console.log('[Initialize] Starting application initialization...');
 
   try {
+
     // Connect to database
     await connectDatabase();
 
@@ -58,11 +59,4 @@ export async function initializeApp(): Promise<void> {
   } finally {
     isInitializing = false;
   }
-}
-
-/**
- * Check if app is initialized
- */
-export function isAppInitialized(): boolean {
-  return isInitialized;
 }

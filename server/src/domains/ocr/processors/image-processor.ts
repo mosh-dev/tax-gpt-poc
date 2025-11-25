@@ -10,7 +10,7 @@ import path from 'path';
 import { BaseDocumentProcessor } from './base-processor';
 import { FileType, OCRConfig, PreprocessingOptions } from '../types';
 import { DEFAULT_OCR_CONFIG, DEFAULT_PREPROCESSING_OPTIONS } from '../config';
-import { getStoragePath } from '@utils/storage';
+import { getStoragePath } from '@/storage';
 import { OCRResultThree } from '@/types/ocr-result.types';
 
 export class ImageProcessor extends BaseDocumentProcessor {

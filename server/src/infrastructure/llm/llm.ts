@@ -1,5 +1,5 @@
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
-import { Environment } from '../../environment';
+import { Environment } from '@/environment';
 import { getLLMApiKey } from '@infrastructure/secrets/secrets.service';
 import type { LanguageModel } from "ai";
 

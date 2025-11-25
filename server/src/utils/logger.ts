@@ -4,7 +4,7 @@
  */
 
 
-import { getStoragePath } from '@utils/storage';
+import { getStoragePath } from '@/storage';
 import { createStream } from 'rotating-file-stream';
 import { existsSync, mkdirSync } from 'node:fs';
 import pino from "pino";

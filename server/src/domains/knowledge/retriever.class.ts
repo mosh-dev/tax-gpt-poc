@@ -4,7 +4,7 @@
  */
 
 import { LibSQLVector } from '@mastra/libsql';
-import { STORAGE_PATHS } from '@utils/storage';
+import { STORAGE_PATHS } from '@/storage';
 import { generateEmbedding } from './embedder';
 import { getErrorMessage } from '@utils/error-handler';
 

@@ -7,7 +7,7 @@
 import dotenv from 'dotenv';
 
 // Load environment variables
-dotenv.config({override: true});
+dotenv.config({ override: true });
 
 /**
  * Get required environment variable or throw error
@@ -56,25 +56,23 @@ export const Environment = {
 
   LLM_SIMPLE_CHAT_MODEL: getOptionalEnv('LLM_SIMPLE_CHAT_MODEL'),
   LLM_SIMPLE_CHAT_BASE_URL: getOptionalEnv('LLM_SIMPLE_CHAT_BASE_URL'),
-
-  getModelGenerateMode(modelName: string): 'tool' | 'json' {
-    const model = modelName.toLowerCase();
-
-    switch (true) {
-      case model.includes('gpt-4'):
-      case model.includes('gpt-3.5'):
-      case model.includes('gpt-5'):
-      case model.includes('claude'):
-      case model.includes('gemini'):
-        return 'tool';
-
-      default:
-        return 'json';
-    }
-  },
-
   get LLM_GENERATE_MODE(): 'tool' | 'json' {
-    return this.getModelGenerateMode(this.LLM_MODEL);
+    const getModelGenerateMode = (modelName: string): 'tool' | 'json' => {
+      const model = modelName.toLowerCase();
+
+      switch (true) {
+        case model.includes('gpt-4'):
+        case model.includes('gpt-3.5'):
+        case model.includes('gpt-5'):
+        case model.includes('claude'):
+        case model.includes('gemini'):
+          return 'tool';
+
+        default:
+          return 'json';
+      }
+    }
+    return getModelGenerateMode(this.LLM_MODEL);
   },
 
   // MongoDB Configuration

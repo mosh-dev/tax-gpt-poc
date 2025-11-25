@@ -12,7 +12,7 @@ import {
 } from '../middleware/auth.middleware';
 import { getErrorMessage } from '@utils/error-handler';
 import { Environment } from '@/environment';
-import { verify } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
 
 const router = Router();
 
@@ -154,7 +154,7 @@ router.get('/me', async (req: Request, res: Response) => {
   const token = authHeader.split(' ')[1];
 
   try {
-    const decoded = verify(token, Environment.JWT_SECRET) as { userId: string; userName: string };
+    const decoded = jwt.verify(token, Environment.JWT_SECRET) as { userId: string; userName: string };
 
     const user = await User.findOne({ userId: decoded.userId });
 

@@ -19,6 +19,7 @@ RUN apt-get update && apt-get install -y \
 # Copy package files
 COPY package.json ./
 COPY tsconfig.json ./
+COPY esbuild.config.mjs ./
 
 # Install dependencies
 RUN npm install
@@ -57,14 +58,13 @@ RUN npm install --omit=dev
 # Copy built output from builder
 COPY --from=builder /app/dist ./dist
 
-# Create centralized storage directories
-RUN mkdir -p storage/files \
-             storage/temp \
-             storage/tesseract-lang
-
 # Create non-root user
 RUN groupadd -g 1001 nodejs && \
     useradd -u 1001 -g nodejs -s /bin/bash -m nodejs
+
+# Create root storage directory (subdirs created by app at startup)
+RUN mkdir -p /storage && \
+    chown -R nodejs:nodejs /storage
 
 # Fix permissions
 RUN chown -R nodejs:nodejs /app
@@ -76,4 +76,4 @@ USER nodejs
 EXPOSE 3000
 
 # Start server
-CMD ["node", "dist/server.js"]
+CMD ["node", "dist/app/server.mjs"]

@@ -5,7 +5,7 @@
 
 import express, { Express, NextFunction, Request, Response } from 'express';
 import cors from 'cors';
-import { getStoragePath } from '@utils/storage';
+import { getStoragePath } from '@/storage';
 import { Environment } from '@/environment';
 import { initializeApp } from '@infrastructure/initialize';
 import { agentConfigRoutes } from '@api/routes/agent-config.routes';

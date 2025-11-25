@@ -5,7 +5,7 @@
 
 import fs from 'fs/promises';
 import path from 'path';
-import { getStoragePath } from '@utils/storage';
+import { getStoragePath } from '@/storage';
 import { IFileStorageService, StorageOptions, StoredFileInfo } from '@infrastructure/interfaces/file-storage-service.interface';
 
 export class LocalFileStorageService implements IFileStorageService {

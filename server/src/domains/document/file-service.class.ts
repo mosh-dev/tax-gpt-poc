@@ -7,7 +7,7 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { randomUUID } from 'crypto';
-import { getStoragePath } from '@utils/storage';
+import { getStoragePath } from '@/storage';
 import { mongoRepository } from '@infrastructure/database/mongo-repository.class';
 import { Environment } from '@/environment';
 

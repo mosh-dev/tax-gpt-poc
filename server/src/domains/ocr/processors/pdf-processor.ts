@@ -140,8 +140,8 @@ export class PDFProcessor extends BaseDocumentProcessor {
 
           // Render PDF page to canvas
           const renderContext = {
-            canvasContext: context,
-            canvas: canvas, // PDF.js also needs canvas reference
+            canvasContext: context as any,
+            canvas: canvas as any, // PDF.js also needs canvas reference
             viewport: viewport
           };
 
@@ -223,8 +223,8 @@ export class PDFProcessor extends BaseDocumentProcessor {
         const context = canvas.getContext('2d');
 
         await page.render({
-          canvasContext: context,
-          canvas: canvas,
+          canvasContext: context as any,
+          canvas: canvas as any,
           viewport: viewport
         }).promise;
 

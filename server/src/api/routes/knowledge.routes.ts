@@ -8,7 +8,7 @@ import { Router, Request, Response } from 'express';
 import multer from 'multer';
 import path from 'path';
 import { randomUUID } from 'crypto';
-import { getStoragePath } from '@utils/storage';
+import { getStoragePath } from '@/storage';
 import { getRAGService } from '@domains/knowledge/rag-service.class';
 import { authMiddleware } from '../middleware/auth.middleware';
 import { fileService } from '@domains/document/file-service.class';
