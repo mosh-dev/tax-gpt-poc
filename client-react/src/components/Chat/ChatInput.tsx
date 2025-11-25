@@ -1,6 +1,7 @@
 import type { KeyboardEvent } from 'react';
 import { type ChangeEvent, useEffect, useRef, useState } from 'react';
 import { Paperclip, Send, X } from 'lucide-react';
+import { Z_INDEX_CLASS } from '../../constants/zIndex';
 
 interface ChatInputProps {
   onSendMessage: (message: string, files: File[]) => void;
@@ -107,7 +108,7 @@ export default function ChatInput({
       )}
 
       {/* Input with attachment button inside textarea - Claude Chat style */}
-      <div className="px-4 py-4 z-30 max-w-4xl mx-auto relative">
+      <div className={`px-4 py-4 ${Z_INDEX_CLASS.BOTTOM_BAR} max-w-4xl mx-auto relative`}>
         <input
           ref={fileInputRef}
           type="file"

@@ -1,5 +1,6 @@
 import { X } from 'lucide-react';
-import { useEffect, useState, type ReactNode } from "react";
+import type { ReactNode } from "react";
+import { Modal } from '../common/Modal';
 
 interface SwissTaxData {
   name?: string;
@@ -29,31 +30,10 @@ export default function TaxDataModal({
   onConfirm,
   onCancel
 }: TaxDataModalProps) {
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [shouldRender, setShouldRender] = useState(false);
-
   // Extract data from tool result
   const taxData = toolResult?.success ? toolResult.data : null;
 
-  // Manage animation and mounting state
-  useEffect(() => {
-    if (isOpen) {
-      // Mount and then animate in
-      setShouldRender(true);
-      requestAnimationFrame(() => {
-        setIsAnimating(true);
-      });
-    } else {
-      // Animate out, then unmount after animation completes
-      setIsAnimating(false);
-      const timeout = setTimeout(() => {
-        setShouldRender(false);
-      }, 300); // Match transition duration
-      return () => clearTimeout(timeout);
-    }
-  }, [isOpen]);
-
-  if (!shouldRender || !taxData) return null;
+  if (!taxData) return null;
 
   const formatCurrency = (amount: number | undefined): string => {
     if (amount === undefined || amount === null) return 'CHF 0';
@@ -124,53 +104,43 @@ export default function TaxDataModal({
   };
 
   return (
-    <div
-      className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity duration-300 ${
-        isAnimating ? 'opacity-100' : 'opacity-0'
-      }`}
-    >
-      <div
-        className={`bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto transition-all duration-300 ${
-          isAnimating ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-        }`}
-      >
-        {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
-          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Tax Data Loaded</h2>
-          <button
-            onClick={onCancel}
-            className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
-          >
-            <X className="w-5 h-5" />
-          </button>
-        </div>
+    <Modal isOpen={isOpen} onClose={onCancel} className="max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+      {/* Header */}
+      <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700">
+        <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Tax Data Loaded</h2>
+        <button
+          onClick={onCancel}
+          className="p-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+        >
+          <X className="w-5 h-5" />
+        </button>
+      </div>
 
-        {/* Content */}
-        <div className="p-6">
-          <div className="space-y-3">
-            {Object.entries(taxData).map(([key, value]) => (
-              <div key={key} className="py-2 border-b border-gray-100 dark:border-gray-700">
-                <div className="text-gray-500 dark:text-gray-400 text-sm font-medium capitalize mb-1">
-                  {key.replace(/([A-Z])/g, ' $1').trim()}
-                </div>
-                <div className="text-gray-900 dark:text-gray-100 font-semibold">
-                  {renderValue(key, value)}
-                </div>
+      {/* Content */}
+      <div className="p-6">
+        <div className="space-y-3">
+          {Object.entries(taxData).map(([key, value]) => (
+            <div key={key} className="py-2 border-b border-gray-100 dark:border-gray-700">
+              <div className="text-gray-500 dark:text-gray-400 text-sm font-medium capitalize mb-1">
+                {key.replace(/([A-Z])/g, ' $1').trim()}
               </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Footer */}
-        <div className="p-6">
-          <button
-            onClick={onConfirm}
-            className="w-full px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-          >
-            Continue
-          </button>
+              <div className="text-gray-900 dark:text-gray-100 font-semibold">
+                {renderValue(key, value)}
+              </div>
+            </div>
+          ))}
         </div>
       </div>
-    </div>
+
+      {/* Footer */}
+      <div className="p-6">
+        <button
+          onClick={onConfirm}
+          className="w-full px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+        >
+          Continue
+        </button>
+      </div>
+    </Modal>
   );
 }

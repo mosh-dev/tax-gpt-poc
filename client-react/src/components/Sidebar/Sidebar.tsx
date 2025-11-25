@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Search, MessageSquare, Trash2, HelpCircle, FileText, LogOut, User, Settings, Users } from 'lucide-react';
 import type { Conversation } from '../../types/common.types.ts';
+import { Z_INDEX_CLASS } from '../../constants/zIndex';
+import { ANIMATION_CLASS } from '../../constants/animation';
 
 interface SidebarProps {
   conversations: Conversation[];
@@ -63,7 +65,7 @@ export default function Sidebar({
       {/* Backdrop for mobile overlay */}
       {isMobile && (
         <div
-          className={`fixed top-16 left-0 right-0 bottom-0 bg-black/50 z-40 transition-opacity duration-300 ${
+          className={`fixed top-16 left-0 right-0 bottom-0 bg-black/50 ${Z_INDEX_CLASS.OVERLAY} transition-opacity ${ANIMATION_CLASS.MODAL} ${
             isOpen ? 'opacity-100' : 'opacity-0 pointer-events-none'
           }`}
           onClick={onClose}
@@ -74,7 +76,7 @@ export default function Sidebar({
       {/* Sidebar */}
       <aside
         className={`
-          ${isMobile ? 'fixed top-16 left-0 bottom-0 z-50' : 'relative'}
+          ${isMobile ? `fixed top-16 left-0 bottom-0 ${Z_INDEX_CLASS.SIDEBAR}` : 'relative'}
           w-64
           ${isOpen ? 'translate-x-0 mr-0' : '-translate-x-full -mr-64'}
           bg-white dark:bg-gray-800

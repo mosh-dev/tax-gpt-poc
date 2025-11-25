@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { Message, TaxDocument, WorkflowStatus } from '../../types/common.types.ts';
 import { apiService } from '../../services/api';
@@ -7,6 +7,7 @@ import { useStreamChat } from '../../hooks/useStreamChat';
 import { useThreadManagement } from '../../hooks/useThreadManagement';
 import { useModalState } from '../../hooks/useModalState';
 import { useWorkflowState } from '../../hooks/useWorkflowState';
+import { useAutoScroll } from '../../hooks/useAutoScroll';
 import TaxDataModal from './TaxDataModal';
 import TaxWorkflowStep from './TaxWorkflowStep';
 import WorkflowContainer from './WorkflowContainer';
@@ -27,7 +28,7 @@ export default function Chat({threadId}: ChatProps) {
   const {loadConversations} = useConversations();
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<any | null>(null);
   const [isUploading, setIsUploading] = useState(false);
 
   // Tax data modal state
@@ -54,7 +55,8 @@ export default function Chat({threadId}: ChatProps) {
     isWorkflowSubmitting,
   });
 
-  const messagesEndRef = useRef<HTMLDivElement>(null);
+  // Auto-scroll to bottom when messages or loading state changes
+  const messagesEndRef = useAutoScroll<HTMLDivElement>([messages, isLoading]);
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({behavior: 'smooth'});
@@ -229,11 +231,6 @@ export default function Chat({threadId}: ChatProps) {
     loadConversation,
     sendInitialMessage,
   });
-
-  // Auto-scroll when messages or loading state changes
-  useEffect(() => {
-    scrollToBottom();
-  }, [messages, isLoading]);
 
   return (
     <div className="flex flex-col h-full min-h-0 relative">

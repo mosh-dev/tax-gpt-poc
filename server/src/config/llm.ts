@@ -1,6 +1,7 @@
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { env } from './env';
 import { getLLMApiKey } from '@services/secrets.service';
+import type { LanguageModel } from "ai";
 
 /**
  * LLM client instance (initialized after database connection)
@@ -54,6 +55,6 @@ function getLLMClient(): ReturnType<typeof createOpenAICompatible> {
 /**
  * Get the configured LLM model
  */
-export const getOpenAiModel = () => {
-  return getLLMClient()(env.LLM_MODEL);
+export const getOpenAiModel = (): LanguageModel => {
+  return getLLMClient().chatModel(env.LLM_MODEL);
 };

@@ -1,6 +1,7 @@
 import { type ChangeEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { apiService } from '../../services/api';
 import { knowledgeApi, type KnowledgeFile } from '../../services/knowledge-api';
+import { NOTIFICATION_DURATION } from '../../constants/animation';
 
 export default function AgentConfig() {
   const [instructions, setInstructions] = useState('');
@@ -137,8 +138,8 @@ export default function AgentConfig() {
         fileInputRef.current.value = '';
       }
 
-      // Hide success message after 5 seconds
-      setTimeout(() => setKbSuccess(null), 5000);
+      // Hide success message after configured duration
+      setTimeout(() => setKbSuccess(null), NOTIFICATION_DURATION.SUCCESS_LONG);
     } catch (err: any) {
       setKbError(err.message || 'Failed to upload files');
     } finally {
@@ -163,7 +164,7 @@ export default function AgentConfig() {
       await knowledgeApi.deleteFile(fileId);
       setKbSuccess(`File "${fileName}" deleted successfully`);
       await loadKnowledgeFiles();
-      setTimeout(() => setKbSuccess(null), 3000);
+      setTimeout(() => setKbSuccess(null), NOTIFICATION_DURATION.SUCCESS);
     } catch (err: any) {
       setKbError(err.message || 'Failed to delete file');
     }
@@ -178,7 +179,7 @@ export default function AgentConfig() {
       setOriginalInstructions(config.instructions);
       setLastUpdated(config.updatedAt);
       setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
+      setTimeout(() => setSuccess(false), NOTIFICATION_DURATION.SUCCESS);
     } catch (err: any) {
       setError(err.message || 'Failed to save agent configuration');
     } finally {
