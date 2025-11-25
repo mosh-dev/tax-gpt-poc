@@ -11,8 +11,8 @@ import { getTaxDataTool } from '@/mastra/agents/tax-agent/tools/get-tax-data';
 import { calculateDeductionsTool } from '@/mastra/agents/tax-agent/tools/calculate-deductions';
 import { generateTaxPDFTool } from '@/mastra/agents/tax-agent/tools/generate-tax-pdf';
 import { processDocumentsTool } from '@/mastra/agents/tax-agent/tools/process-documents-tool';
-import { startWorkflowTool } from '@/mastra/agents/tax-agent/tools/start-workflow-tool';
-import { resumeWorkflowTool } from '@/mastra/agents/tax-agent/tools/resume-workflow-tool';
+import { startTaxCalculationTool } from '@/mastra/agents/tax-agent/tools/start-tax-calculation-tool';
+import { resumeTaxCalculationTool } from '@/mastra/agents/tax-agent/tools/resume-tax-calculation-tool';
 import { searchKnowledgeTool } from '@/mastra/agents/tax-agent/tools/search-knowledge-tool';
 import { getOpenAiModel } from '@config/llm';
 import { ChunkType } from '@mastra/core/stream';
@@ -22,7 +22,7 @@ import { ChunkType } from '@mastra/core/stream';
  */
 export class TaxAgent {
   public readonly agent: Agent;
-  public readonly memory?: Memory;
+  private readonly memory?: Memory;
 
   constructor(instructions: string) {
     const model = getOpenAiModel();
@@ -58,8 +58,8 @@ export class TaxAgent {
         calculateDeductionsTool,
         generateTaxPDFTool,
         processDocumentsTool,
-        startWorkflowTool,
-        resumeWorkflowTool,
+        startTaxCalculationTool,
+        resumeTaxCalculationTool,
         searchKnowledgeTool,
       },
     });

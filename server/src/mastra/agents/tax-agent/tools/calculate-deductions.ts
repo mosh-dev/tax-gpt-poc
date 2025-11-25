@@ -1,11 +1,12 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
+import { TOOL_IDS } from '@constants/tool-ids';
 
 /**
  * Tool to calculate potential tax deductions for Canton Zurich
  */
 export const calculateDeductionsTool = createTool({
-  id: 'calculate-deductions',
+  id: TOOL_IDS.CALCULATE_DEDUCTIONS,
   description: 'Calculates potential tax deductions for Canton Zurich based on income and expenses. Use this when the user wants to know what deductions they can claim or optimize their tax situation.',
   inputSchema: z.object({
     income: z.number().describe('Total annual income in CHF'),

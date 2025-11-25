@@ -19,30 +19,36 @@ interface ModalProps {
  * Handles smooth enter/exit transitions
  */
 export const Modal = ({ isOpen, onClose, children, className = '' }: ModalProps) => {
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [shouldRender, setShouldRender] = useState(false);
+  function useModalAnimation(isOpen: boolean) {
+    const [shouldRender, setShouldRender] = useState(false);
+    const [isAnimating, setIsAnimating] = useState(false);
 
-  // Manage animation and mounting state
-  useEffect(() => {
-    if (isOpen) {
-      // Mount and then animate in
-      setShouldRender(true);
-      requestAnimationFrame(() => {
-        setIsAnimating(true);
-      });
-    } else {
-      // Animate out, then unmount after animation completes
-      setIsAnimating(false);
-      const timeout = setTimeout(() => {
-        setShouldRender(false);
-      }, ANIMATION_DURATION.MODAL);
-      return () => clearTimeout(timeout);
-    }
-  }, [isOpen]);
+    useEffect(() => {
+      let timeoutId: number;
 
-  if (!shouldRender) return null;
+      if (isOpen) {
+        // Mount the modal first
+        setShouldRender(true);
+        // Animate in on next frame
+        requestAnimationFrame(() => setIsAnimating(true));
+      } else if (shouldRender) {
+        // Animate out
+        setIsAnimating(false);
+        // After animation, unmount
+        timeoutId = setTimeout(() => setShouldRender(false), ANIMATION_DURATION.MODAL);
+      }
+      // Cleanup any pending timeout
+      return () => {
+        if (timeoutId) clearTimeout(timeoutId);
+      };
+    }, [isOpen, shouldRender]);
 
-  return (
+    return { shouldRender, isAnimating };
+  }
+
+  const { shouldRender, isAnimating } = useModalAnimation(isOpen);
+
+  return shouldRender ? (
     <div
       className={`fixed inset-0 ${Z_INDEX_CLASS.MODAL} flex items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity ${ANIMATION_CLASS.MODAL} ${
         isAnimating ? 'opacity-100' : 'opacity-0'
@@ -58,5 +64,5 @@ export const Modal = ({ isOpen, onClose, children, className = '' }: ModalProps)
         {children}
       </div>
     </div>
-  );
+  ) : null;
 };

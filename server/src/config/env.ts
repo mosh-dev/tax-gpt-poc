@@ -45,6 +45,22 @@ export const env = {
   LLM_BASE_URL: getRequiredEnv('LLM_BASE_URL'),
   LLM_MODEL: getRequiredEnv('LLM_MODEL'),
 
+  get LLM_GENERATE_MODE(): 'tool' | 'json' {
+    const model = this.LLM_MODEL.toLowerCase();
+
+    switch (true) {
+      case model.includes('gpt-4'):
+      case model.includes('gpt-3.5'):
+      case model.includes('gpt-5'):
+      case model.includes('claude'):
+      case model.includes('gemini'):
+        return 'tool';
+
+      default:
+        return 'json';
+    }
+  },
+
   // MongoDB Configuration
   MONGODB_URI: getRequiredEnv('MONGODB_URI'),
   MONGODB_DB_NAME: getRequiredEnv('MONGODB_DB_NAME'),

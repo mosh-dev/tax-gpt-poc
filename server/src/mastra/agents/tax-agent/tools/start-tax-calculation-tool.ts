@@ -7,9 +7,10 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 import { workflowService } from '@/mastra/workflows/tax-calculation/tax-calculation-workflow.service';
+import { TOOL_IDS } from '@constants/tool-ids';
 
-export const startWorkflowTool = createTool({
-  id: 'start-workflow',
+export const startTaxCalculationTool = createTool({
+  id: TOOL_IDS.START_TAX_CALCULATION,
   description: `Start a new tax calculation workflow. Use this tool when:
 - User wants to calculate their taxes
 - User wants to do a complete tax return

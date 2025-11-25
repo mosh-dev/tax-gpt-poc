@@ -34,11 +34,10 @@ const formatWorkflowMessage = (
   // Build DISPLAY message (clean, user-friendly)
   let displayMessage = '';
 
-  // Build AGENT message (with markers and instructions)
-  let agentMessage = `**Workflow Step: ${stepTitle}**\n\n`;
-  agentMessage += `[Workflow Context]\n`;
-  agentMessage += `- Run ID: ${runId}\n`;
-  agentMessage += `- Step ID: ${stepId}\n\n`;
+  // Build AGENT message (workflow context + data for LLM)
+  let agentMessage = `[Workflow Context: ${stepTitle}]\n`;
+  agentMessage += `Run ID: ${runId}\n`;
+  agentMessage += `Step ID: ${stepId}\n\n`;
 
   switch (stepId) {
     case WORKFLOW_STEPS.COLLECT_PERSONAL_INFO:
@@ -50,17 +49,15 @@ const formatWorkflowMessage = (
       displayMessage += `- Location: ${data.canton}\n`;
       displayMessage += `- Tax Year: ${data.taxYear}\n`;
 
-      // Agent: With markers and instructions
-      agentMessage += `**Personal Information:**\n`;
+      // Agent: Clean data presentation
+      agentMessage += `User provided:\n`;
       agentMessage += `- First Name: ${data.firstName}\n`;
       agentMessage += `- Last Name: ${data.lastName}\n`;
       agentMessage += `- Marital Status: ${data.maritalStatus}\n`;
       agentMessage += `- Number of Children: ${data.numberOfChildren}\n`;
       agentMessage += `- Canton: ${data.canton}\n`;
-      agentMessage += `- Tax Year: ${data.taxYear}\n`;
-      agentMessage += `\n**IMPORTANT: Call resume-workflow with this EXACT data:**\n`;
-      agentMessage += `- stepId: "${WORKFLOW_STEPS.COLLECT_PERSONAL_INFO}"\n`;
-      agentMessage += `- data: ${JSON.stringify(data)}\n`;
+      agentMessage += `- Tax Year: ${data.taxYear}\n\n`;
+      agentMessage += `Resume Data: ${JSON.stringify(data)}`;
       break;
 
     case WORKFLOW_STEPS.UPLOAD_DOCUMENTS: {
@@ -73,19 +70,13 @@ const formatWorkflowMessage = (
         displayMessage += `- ${d.fileName}\n`;
       });
 
-      // Agent: With processing instructions
-      agentMessage += `**Uploaded Documents:** ${docs.length} file(s)\n`;
+      // Agent: Documents uploaded - OCR needed before resuming
+      agentMessage += `Uploaded ${docs.length} document(s):\n`;
       docs.forEach((d: TaxDocument) => {
-        agentMessage += `- ${d.fileName} (ID: ${d.fileId})\n`;
+        agentMessage += `- ${d.fileName} (File ID: ${d.fileId})\n`;
       });
-      agentMessage += `\n**CRITICAL - Before resuming workflow:**\n`;
-      agentMessage += `1. Call process-documents tool with fileIds: [${docs.map(d => `"${d.fileId}"`).join(', ')}]\n`;
-      agentMessage += `2. Wait for OCR to complete successfully\n`;
-      agentMessage += `3. Then call resume-workflow with the EXACT data below:\n\n`;
-      agentMessage += `**Call resume-workflow with:**\n`;
-      agentMessage += `- stepId: "${WORKFLOW_STEPS.UPLOAD_DOCUMENTS}"\n`;
-      agentMessage += `- data: ${JSON.stringify(data)}\n`;
-      agentMessage += `\nDo NOT modify the stepId or data structure. Pass them exactly as shown above.\n`;
+      agentMessage += `\nFile IDs for OCR: [${docs.map(d => `"${d.fileId}"`).join(', ')}]\n`;
+      agentMessage += `Resume Data: ${JSON.stringify(data)}`;
       break;
     }
 
@@ -94,12 +85,9 @@ const formatWorkflowMessage = (
       displayMessage = `**Tax Data Confirmed**\n`;
       displayMessage += `I've reviewed and confirmed the extracted tax data is correct.\n`;
 
-      // Agent: With resume instructions
-      agentMessage += `**Confirmed Tax Data**\n`;
-      agentMessage += `I confirm the extracted tax data is correct.\n`;
-      agentMessage += `\n**IMPORTANT: Call resume-workflow with this EXACT data:**\n`;
-      agentMessage += `- stepId: "${WORKFLOW_STEPS.REVIEW_EXTRACTED_DATA}"\n`;
-      agentMessage += `- data: ${JSON.stringify(data)}\n`;
+      // Agent: Data confirmed
+      agentMessage += `User confirmed the extracted tax data.\n\n`;
+      agentMessage += `Resume Data: ${JSON.stringify(data)}`;
       break;
 
     case WORKFLOW_STEPS.GENERATE_SUMMARY:
@@ -108,13 +96,11 @@ const formatWorkflowMessage = (
         ? `**Requested PDF generation**`
         : `**Completed without PDF**`;
 
-      // Agent: With resume instructions
+      // Agent: User's choice
       agentMessage += data.generatePdf
-        ? `Please generate the PDF summary.\n`
-        : `Finish without PDF generation.\n`;
-      agentMessage += `\n**IMPORTANT: Call resume-workflow with this EXACT data:**\n`;
-      agentMessage += `- stepId: "${WORKFLOW_STEPS.GENERATE_SUMMARY}"\n`;
-      agentMessage += `- data: ${JSON.stringify(data)}\n`;
+        ? `User requested PDF generation.\n\n`
+        : `User finished without PDF.\n\n`;
+      agentMessage += `Resume Data: ${JSON.stringify(data)}`;
       break;
 
     default:

@@ -1,13 +1,14 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 import { Employee } from '@models/employee.model';
+import { TOOL_IDS } from '@constants/tool-ids';
 
 /**
  * Tool to retrieve Swiss tax data by searching employee name
  * Fetches employee tax information from the database
  */
 export const getTaxDataTool = createTool({
-  id: 'get-tax-data',
+  id: TOOL_IDS.GET_TAX_DATA,
   description: 'Retrieves Swiss tax data by searching for an employee by name. Use this tool when the user asks for their tax data, wants to load their tax information, or needs to see their current tax situation. First search by name, then if multiple results are found, present them to the user to choose.',
   inputSchema: z.object({
     searchName: z.string().optional().describe('Name to search for (searches both first and last name). Leave empty to list all available profiles.'),

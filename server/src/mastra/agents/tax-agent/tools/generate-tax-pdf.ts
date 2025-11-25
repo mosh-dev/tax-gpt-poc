@@ -3,14 +3,15 @@ import { z } from 'zod';
 import { generateTaxReturnPDF } from '@services/pdf-generator';
 import { fileService } from '@services/file-service';
 import { SwissTaxData } from '@models/swiss-tax-data.model';
+import { TOOL_IDS } from '@constants/tool-ids';
 
 /**
  * Tool to generate a PDF document of calculated tax data
  * Creates a comprehensive tax return summary PDF for Canton Zurich
  */
 export const generateTaxPDFTool = createTool({
-  id: 'generate-tax-pdf',
-  description: 'Generates a PDF document containing a comprehensive tax return summary with income, deductions, and wealth information for Canton Zurich In English. Use this when the user asks to generate, create, or download a PDF of their tax data or tax return summary. And Use English Language',
+  id: TOOL_IDS.GENERATE_TAX_PDF,
+  description: 'Generates a PDF document containing a comprehensive tax return summary with income, deductions, and wealth information for Canton Zurich In English. Use this when the user asks to generate, create, or download a PDF of their tax data or tax return summary. And Use English Language. IMPORTANT: When presenting the result to the user, format the download link as markdown: [fileName](downloadUrl). Never show raw URLs.',
   inputSchema: z.object({
     taxData: z.object({
       taxYear: z.number(),

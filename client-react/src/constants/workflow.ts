@@ -24,8 +24,8 @@ export const TOOL_NAMES = {
   GENERATE_TAX_PDF: 'generateTaxPDFTool',
   SEARCH_KNOWLEDGE_BASE: 'searchKnowledgeTool',
   PROCESS_DOCUMENTS: 'processDocumentsTool',
-  START_WORKFLOW: 'startWorkflowTool',
-  RESUME_WORKFLOW: 'resumeWorkflowTool',
+  START_WORKFLOW: 'startTaxCalculationTool',
+  RESUME_WORKFLOW: 'resumeTaxCalculationTool',
 } as const;
 
 // Workflow Statuses

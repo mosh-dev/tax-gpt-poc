@@ -7,9 +7,10 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 import { workflowService } from '@/mastra/workflows/tax-calculation/tax-calculation-workflow.service';
+import { TOOL_IDS } from '@constants/tool-ids';
 
-export const resumeWorkflowTool = createTool({
-  id: 'resume-workflow',
+export const resumeTaxCalculationTool = createTool({
+  id: TOOL_IDS.RESUME_TAX_CALCULATION,
   description: `Resume a suspended tax calculation workflow with user data. Use this tool when:
 - User has provided their personal information (firstName, lastName, maritalStatus, etc.)
 - User has uploaded documents
