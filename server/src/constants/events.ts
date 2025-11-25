@@ -1,6 +1,6 @@
 /**
  * Stream Event Types
- * Constants for SSE streaming events from the backend
+ * Constants for SSE streaming events sent to the client
  */
 export const STREAM_EVENT_TYPES = {
   CONNECTED: 'connected',
@@ -12,6 +12,20 @@ export const STREAM_EVENT_TYPES = {
 } as const;
 
 export type StreamEventType = typeof STREAM_EVENT_TYPES[keyof typeof STREAM_EVENT_TYPES];
+
+/**
+ * Mastra Event Types
+ * Event types received from Mastra AI framework
+ */
+export const MASTRA_EVENT_TYPES = {
+  TEXT_DELTA: 'text-delta',
+  TOOL_CALL: 'tool-call',
+  TOOL_RESULT: 'tool-result',
+  FINISH: 'finish',
+  ERROR: 'error',
+} as const;
+
+export type MastraEventType = typeof MASTRA_EVENT_TYPES[keyof typeof MASTRA_EVENT_TYPES];
 
 /**
  * Message Role Types

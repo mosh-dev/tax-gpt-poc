@@ -24,7 +24,8 @@
       "@agent/*": ["./agent/*"],
       "@models/*": ["./models/*"],
       "@services/*": ["./services/*"],
-      "@utils/*": ["./utils/*"]
+      "@utils/*": ["./utils/*"],
+      "@constants/*": ["./constants/*"]
     },
     "types": ["node"]
   },

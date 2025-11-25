@@ -11,6 +11,7 @@ import { MessageId } from '@core/domain/value-objects/MessageId';
 import { MessageRole } from '@core/domain/value-objects/MessageRole';
 import { TaxGptMessage } from '@core/domain/entities/TaxGptMessage';
 import { TaxGptConversation } from '@core/domain/entities/TaxGptConversation';
+import { STREAM_EVENT_TYPES, MASTRA_EVENT_TYPES } from '@constants/events';
 
 export class StreamChatUseCase {
   constructor(
@@ -68,7 +69,7 @@ export class StreamChatUseCase {
     try {
       // Send initial event with threadId (for client compatibility)
       yield {
-        type: 'connected',
+        type: STREAM_EVENT_TYPES.CONNECTED,
         threadId: conversationId.value,
         conversationId: conversationId.value,
         timestamp: new Date().toISOString(),
@@ -86,14 +87,14 @@ export class StreamChatUseCase {
         const eventType = event.type as string;
 
         switch (eventType) {
-          case 'text-delta': {
+          case MASTRA_EVENT_TYPES.TEXT_DELTA: {
             // Extract text content from various possible locations
             const textContent = event.content || (event as any).payload?.text || (event as any).textDelta || '';
             assistantContent += textContent;
 
             // Map to 'chunk' type for client
             yield {
-              type: 'chunk',
+              type: STREAM_EVENT_TYPES.CHUNK,
               content: textContent,
               conversationId: conversationId.value,
               timestamp: new Date().toISOString(),
@@ -101,7 +102,7 @@ export class StreamChatUseCase {
             break;
           }
 
-          case 'tool-call': {
+          case MASTRA_EVENT_TYPES.TOOL_CALL: {
             const toolName = event.toolName || (event as any).payload?.toolName;
             const toolCallId = event.toolCallId || (event as any).payload?.toolCallId;
             const args = event.args || (event as any).payload?.args;
@@ -111,7 +112,7 @@ export class StreamChatUseCase {
             }
 
             yield {
-              type: 'tool-call',
+              type: STREAM_EVENT_TYPES.TOOL_CALL,
               toolName,
               toolCallId,
               args,
@@ -121,7 +122,7 @@ export class StreamChatUseCase {
             break;
           }
 
-          case 'tool-result': {
+          case MASTRA_EVENT_TYPES.TOOL_RESULT: {
             const toolCallId = event.toolCallId || (event as any).payload?.toolCallId;
             const result = event.result || (event as any).payload?.result;
             const toolName = event.toolName || (event as any).payload?.toolName;
@@ -134,7 +135,7 @@ export class StreamChatUseCase {
             }
 
             yield {
-              type: 'tool-result',
+              type: STREAM_EVENT_TYPES.TOOL_RESULT,
               toolCallId,
               toolName,
               result,
@@ -144,18 +145,18 @@ export class StreamChatUseCase {
             break;
           }
 
-          case 'finish': {
+          case MASTRA_EVENT_TYPES.FINISH: {
             yield {
-              type: 'done',
+              type: STREAM_EVENT_TYPES.DONE,
               conversationId: conversationId.value,
               timestamp: new Date().toISOString(),
             };
             break;
           }
 
-          case 'error': {
+          case MASTRA_EVENT_TYPES.ERROR: {
             yield {
-              type: 'error',
+              type: STREAM_EVENT_TYPES.ERROR,
               error: event.error || (event as any).payload?.error || 'Unknown error',
               conversationId: conversationId.value,
               timestamp: new Date().toISOString(),
@@ -185,7 +186,7 @@ export class StreamChatUseCase {
     } catch (error: any) {
       console.error('[StreamChatUseCase] Error:', error);
       yield {
-        type: 'error',
+        type: STREAM_EVENT_TYPES.ERROR,
         error: error.message || 'An error occurred during chat',
         conversationId: conversationId.value,
         timestamp: new Date().toISOString(),

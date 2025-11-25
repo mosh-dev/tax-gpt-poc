@@ -5,14 +5,14 @@
   "main": "server/dist/index.js",
   "scripts": {
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client:wait\"",
+    "mastra-dev": "concurrently \"cd server && npm run dev:mastra\" \"npm run dev:client:wait\"",
     "dev:server": "cd server && npm run dev",
     "dev:client": "cd client-react && npm run dev",
     "dev:client:wait": "wait-on http://localhost:3000/api/health && npm run dev:client",
     "build": "npm run build:server && npm run build:client",
     "build:server": "cd server && npm run build",
     "build:client": "cd client-react && npm run build",
-    "start": "cd server && npm start",
-    "devmastra-client": "concurrently \"cd server && npm run dev:mastra\" \"npm run dev:client:wait\""
+    "start": "cd server && npm start"
   },
   "devDependencies": {
     "concurrently": "^9.0.1",

@@ -1,6 +1,7 @@
 // Types and interfaces for the application
 
 import type { Dispatch, SetStateAction } from 'react';
+import { MESSAGE_ROLES, STREAM_EVENT_TYPES, type MessageRole } from '../constants/events';
 
 export interface Conversation {
   conversationId: string;
@@ -20,7 +21,7 @@ export interface Conversation {
 
 export interface Message {
   conversationId: string;
-  role: 'user' | 'assistant' | 'system';
+  role: MessageRole;
   content: string;
   displayContent?: string;
   fileIds?: string[];
@@ -44,6 +45,9 @@ export interface Message {
   }>;
 }
 
+// Re-export MESSAGE_ROLES for convenience
+export { MESSAGE_ROLES };
+
 export interface FileMetadata {
   fileId: string;
   originalName: string;
@@ -63,17 +67,13 @@ export interface FileMetadata {
   conversationId?: string;
 }
 
+// Stream event types - extends core types with additional Mastra event types
 export type StreamEventType =
-  | 'connected'
-  | 'chunk'
+  | (typeof STREAM_EVENT_TYPES)[keyof typeof STREAM_EVENT_TYPES]
   | 'reasoning'
   | 'reasoning-finish'
   | 'step-finish'
   | 'text-finish'
-  | 'tool-call'
-  | 'tool-result'
-  | 'done'
-  | 'error'
   | 'unknown';
 
 export interface StreamEvent {
@@ -89,6 +89,9 @@ export interface StreamEvent {
   raw?: any;
   threadId?: string; // For 'connected' event
 }
+
+// Re-export STREAM_EVENT_TYPES for convenience
+export { STREAM_EVENT_TYPES };
 
 // Workflow types for human-in-the-loop tax calculation
 export interface WorkflowStatus {

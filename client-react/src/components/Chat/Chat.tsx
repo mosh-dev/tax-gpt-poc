@@ -486,63 +486,26 @@ export default function Chat({threadId}: ChatProps) {
     return STEP_TITLES[stepId] || stepId;
   };
 
-  // Send initial message from Welcome page navigation
-  const sendInitialMessage = async (message: string, files: File[] = []) => {
-    // Upload files first if provided
-    let fileIds: string[] = [];
-    if (files.length > 0) {
-      setIsUploading(true);
-      try {
-        const uploadedFiles = await apiService.uploadFiles(files, threadId || undefined);
-        fileIds = uploadedFiles.map(f => f.fileId);
-      } catch (err: any) {
-        setError(`Upload failed: ${err.message}`);
-        setIsUploading(false);
-        return;
-      }
-      setIsUploading(false);
-    }
+  // Options for unified send message function
+  interface SendMessageOptions {
+    replaceMessages?: boolean;  // true for initial, false for regular
+    onConnected?: (receivedThreadId?: string) => void;
+  }
 
-    // Build display message for user (clean, with filenames) - stored in DB
-    let userDisplayMessage = message;
-    if (files.length > 0) {
-      const fileNames = files.map(f => f.name).join(', ');
-      userDisplayMessage += `\n\n📎 Attached: ${fileNames}`;
-    }
+  // Unified message sending function
+  const sendChatMessage = async (
+    message: string,
+    files: File[],
+    options: SendMessageOptions = {}
+  ) => {
+    const { replaceMessages = false, onConnected } = options;
 
-    // Build agent message (with fileIds) - sent to agent only
-    let agentMessage = message;
-    if (fileIds.length > 0) {
-      agentMessage += '\n\n[Uploaded Files]';
-      fileIds.forEach(id => {
-        agentMessage += `\n[fileId: ${id}]`;
-      });
-    }
-
-    const userMessage: Message = {
-      conversationId: threadId,
-      role: 'user',
-      content: userDisplayMessage,
-      createdAt: new Date().toISOString(),
-    };
-
-    setMessages([userMessage]);
-    setIsLoading(true);
-    setError(null);
-
-    // Send display message for storage, agent message for processing
-    await streamChatMessage(userDisplayMessage, threadId, fileIds, () => {
-      loadConversations();
-    }, agentMessage);
-  };
-
-  const sendMessage = async (message: string, files: File[]) => {
-    // Prevent sending if streaming or workflow active
+    // Guard conditions - prevent sending if streaming or workflow active
     if (!message.trim() || isLoading || isUploading || isStreaming || activeWorkflow) {
       return;
     }
 
-    // Upload files first
+    // Upload files first if provided
     let fileIds: string[] = [];
     if (files.length > 0) {
       setIsUploading(true);
@@ -580,18 +543,40 @@ export default function Chat({threadId}: ChatProps) {
       createdAt: new Date().toISOString(),
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    // Replace or append messages based on options
+    if (replaceMessages) {
+      setMessages([userMessage]);
+    } else {
+      setMessages(prev => [...prev, userMessage]);
+    }
+
     setIsLoading(true);
     setError(null);
 
-    await streamChatMessage(userDisplayMessage, threadId, fileIds, (receivedThreadId) => {
-      // Capture threadId from server (for new conversations)
-      if (receivedThreadId && !threadId) {
-        console.log('[Chat] Received new threadId from server:', receivedThreadId);
-        navigate(`/?threadId=${receivedThreadId}`, {replace: true});
-        loadConversations();
+    // Send display message for storage, agent message for processing
+    await streamChatMessage(userDisplayMessage, threadId, fileIds, onConnected, agentMessage);
+  };
+
+  // Send initial message from Welcome page navigation
+  const sendInitialMessage = async (message: string, files: File[] = []) => {
+    return sendChatMessage(message, files, {
+      replaceMessages: true,
+      onConnected: () => loadConversations()
+    });
+  };
+
+  const sendMessage = async (message: string, files: File[]) => {
+    return sendChatMessage(message, files, {
+      replaceMessages: false,
+      onConnected: (receivedThreadId) => {
+        // Capture threadId from server (for new conversations)
+        if (receivedThreadId && !threadId) {
+          console.log('[Chat] Received new threadId from server:', receivedThreadId);
+          navigate(`/?threadId=${receivedThreadId}`, {replace: true});
+          loadConversations();
+        }
       }
-    }, agentMessage);
+    });
   };
 
   return (
