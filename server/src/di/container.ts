@@ -2,10 +2,10 @@
  * Dependency Injection Container
  * Wires all dependencies together
  */
-import { MongoConversationRepository } from '@infrastructure/database/mongodb/repositories/MongoConversationRepository';
-import { MongoMessageRepository } from '@infrastructure/database/mongodb/repositories/MongoMessageRepository';
-import { MongoFileRepository } from '@infrastructure/database/mongodb/repositories/MongoFileRepository';
-import { LocalFileStorageService } from '@infrastructure/services/storage/LocalFileStorageService';
+import { MongoConversationRepository } from '@infrastructure/database/mongodb/repositories/mongo-conversation-repository';
+import { MongoMessageRepository } from '@infrastructure/database/mongodb/repositories/mongo-message-repository';
+import { MongoFileRepository } from '@infrastructure/database/mongodb/repositories/mongo-file-repository';
+import { LocalFileStorageService } from '@infrastructure/services/storage/local-file-storage-service';
 import { IFileStorageService } from '@core/application/services/IFileStorageService';
 import { IMessageRepository } from '@core/domain/repositories/IMessageRepository';
 import { IConversationRepository } from '@core/domain/repositories/IConversationRepository';

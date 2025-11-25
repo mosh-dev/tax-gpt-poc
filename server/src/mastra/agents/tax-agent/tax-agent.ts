@@ -1,11 +1,11 @@
 import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
 import { createMastraMemory, createMemoryConfigFromEnv } from '@/mastra/helpers/mastra-memory.helper';
-import { AgentConfig } from '@models/agent-config.model';
+import { AgentConfig } from '@/mastra/agents/agent-config.model';
 import { encode } from 'gpt-tokenizer';
-import { getCollection } from '@config/database-utils';
-import { MASTRA_COLLECTIONS } from '@config/database-collections';
-import { logLLMResponse, logStreamError } from '@config/logger';
+import { getCollection } from '@infrastructure/database/database-utils';
+import { MASTRA_COLLECTIONS } from '@shared/constants/database-collections';
+import { logLLMResponse, logStreamError } from '@shared/utils/logger';
 import { getErrorMessage } from '@utils/error-handler';
 import { getTaxDataTool } from '@/mastra/agents/tax-agent/tools/get-tax-data';
 import { calculateDeductionsTool } from '@/mastra/agents/tax-agent/tools/calculate-deductions';
@@ -14,7 +14,7 @@ import { processDocumentsTool } from '@/mastra/agents/tax-agent/tools/process-do
 import { startTaxCalculationTool } from '@/mastra/agents/tax-agent/tools/start-tax-calculation-tool';
 import { resumeTaxCalculationTool } from '@/mastra/agents/tax-agent/tools/resume-tax-calculation-tool';
 import { searchKnowledgeTool } from '@/mastra/agents/tax-agent/tools/search-knowledge-tool';
-import { getOpenAiModel } from '@config/llm';
+import { getOpenAiModel } from '@infrastructure/llm/llm';
 import { ChunkType } from '@mastra/core/stream';
 
 /**

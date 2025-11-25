@@ -1,6 +1,6 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
-import { TOOL_IDS } from '@constants/tool-ids';
+import { TOOL_IDS } from '@shared/constants/tool-ids';
 
 /**
  * Tool to calculate potential tax deductions for Canton Zurich

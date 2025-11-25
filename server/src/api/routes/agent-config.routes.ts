@@ -4,7 +4,7 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { AgentConfig } from '@models/agent-config.model';
+import { AgentConfig } from '@/mastra/agents/agent-config.model';
 import { getErrorMessage } from '@utils/error-handler';
 import { invalidateTaxAgent } from '@/mastra/agents/tax-agent/tax-agent.handler';
 

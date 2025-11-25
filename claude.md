@@ -77,7 +77,7 @@ AI tax assistant for Canton Zurich, Switzerland with local LLM.
 - `mastra_scorers` - Mastra scorers
 - `mastra_ai_spans` - AI execution spans
 
-**Important:** All collection names are centralized in `config/database-collections.ts`. Use these constants instead of hardcoded strings.
+**Important:** All collection names are centralized in `database-collections.ts`. Use these constants instead of hardcoded strings.
 
 ## Current Status
 

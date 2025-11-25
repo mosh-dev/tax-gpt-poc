@@ -11,7 +11,7 @@ import { MessageId } from '@core/domain/value-objects/MessageId';
 import { MessageRole } from '@core/domain/value-objects/MessageRole';
 import { TaxGptMessage } from '@core/domain/entities/TaxGptMessage';
 import { TaxGptConversation } from '@core/domain/entities/TaxGptConversation';
-import { STREAM_EVENT_TYPES, MASTRA_EVENT_TYPES } from '@constants/events';
+import { STREAM_EVENT_TYPES, MASTRA_EVENT_TYPES } from '@shared/constants/events';
 
 export class StreamChatUseCase {
   constructor(

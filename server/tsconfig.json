@@ -25,7 +25,8 @@
       "@models/*": ["./models/*"],
       "@services/*": ["./services/*"],
       "@utils/*": ["./utils/*"],
-      "@constants/*": ["./constants/*"]
+      "@shared/*": ["./shared/*"],
+      "@domains/*": ["./domains/*"]
     },
     "types": ["node"]
   },

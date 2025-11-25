@@ -4,7 +4,7 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { Employee } from '@models/employee.model';
+import { Employee } from '@domains/tax-extraction/employee.model';
 import { getErrorMessage } from '@utils/error-handler';
 
 const router = Router();

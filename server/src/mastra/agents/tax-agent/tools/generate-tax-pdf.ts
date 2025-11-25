@@ -1,9 +1,9 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
-import { generateTaxReturnPDF } from '@services/pdf-generator';
-import { fileService } from '@services/file-service';
-import { SwissTaxData } from '@models/swiss-tax-data.model';
-import { TOOL_IDS } from '@constants/tool-ids';
+import { generateTaxReturnPDF } from '@domains/document/pdf-generator';
+import { fileService } from '@domains/document/file-service';
+import { SwissTaxData } from '@domains/tax-extraction/swiss-tax-data.model';
+import { TOOL_IDS } from '@shared/constants/tool-ids';
 
 /**
  * Tool to generate a PDF document of calculated tax data

@@ -4,7 +4,7 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { User } from '@models/user.model';
+import { User } from '@domains/user/user.model';
 import {
   generateAccessToken,
   generateRefreshToken,
@@ -153,7 +153,7 @@ router.get('/me', async (req: Request, res: Response) => {
 
   try {
     const jwt = await import('jsonwebtoken');
-    const { env } = await import('@config/env');
+    const { env } = await import('@infrastructure/llm/env');
 
     const decoded = jwt.default.verify(token, env.JWT_SECRET) as { userId: string; userName: string };
 

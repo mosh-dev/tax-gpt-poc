@@ -3,7 +3,7 @@
  * Uses Clean Architecture with DI container
  */
 
-import { env } from '@config/env';
+import { env } from '@infrastructure/llm/env';
 import { getErrorMessage } from '@utils/error-handler';
 import { createExpressApp, startExpressServer } from '@/express-app';
 

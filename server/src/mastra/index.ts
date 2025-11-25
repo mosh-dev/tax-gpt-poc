@@ -1,5 +1,5 @@
 import { getMastra } from '@/mastra/mastra-instance';
-import { env } from '@config/env';
+import { env } from '@infrastructure/llm/env';
 import { createExpressApp, startExpressServer } from '@/express-app';
 import { Mastra } from '@mastra/core';
 

@@ -4,8 +4,8 @@
  * Can be safely called multiple times (idempotent)
  */
 
-import { connectDatabase } from '@config/database';
-import { initializeLLMClient } from '@config/llm';
+import { connectDatabase } from '@infrastructure/database/database';
+import { initializeLLMClient } from '@infrastructure/llm/llm';
 import { runAllSeeds } from '@/seeds/run-seed';
 
 /**

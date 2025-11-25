@@ -7,7 +7,7 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 import { workflowService } from '@/mastra/workflows/tax-calculation/tax-calculation-workflow.service';
-import { TOOL_IDS } from '@constants/tool-ids';
+import { TOOL_IDS } from '@shared/constants/tool-ids';
 
 export const resumeTaxCalculationTool = createTool({
   id: TOOL_IDS.RESUME_TAX_CALCULATION,
