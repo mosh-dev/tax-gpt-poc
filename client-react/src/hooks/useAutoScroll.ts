@@ -10,14 +10,12 @@ import { useEffect, useRef } from 'react';
  * @param dependencies - Array of values that trigger scroll when changed
  * @returns Ref to attach to the scroll target element
  */
-export const useAutoScroll = <T extends HTMLElement = HTMLDivElement>(
-  dependencies: any[]
-) => {
+export const useAutoScroll = <T extends HTMLElement = HTMLDivElement>(dependencies: any) => {
   const ref = useRef<T>(null);
 
   useEffect(() => {
     ref.current?.scrollIntoView({ behavior: 'smooth' });
-  }, dependencies);
+  }, [dependencies]);
 
   return ref;
 };
