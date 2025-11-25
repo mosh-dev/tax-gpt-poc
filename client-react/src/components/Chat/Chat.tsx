@@ -10,6 +10,16 @@ import MessageBubble from './MessageBubble';
 import LoadingBubble from './LoadingBubble';
 import { STEP_TITLES, TOOL_NAMES, WORKFLOW_IDS, WORKFLOW_STATUS, WORKFLOW_STEPS } from "../../constants/workflow.ts";
 import { STREAM_EVENT_TYPES } from "../../constants/events.ts";
+import {
+  handleConnectedEvent,
+  handleChunkEvent,
+  handleToolCallEvent,
+  handleDoneEvent,
+  handleErrorEvent,
+  updateMessageAfterToolResult,
+} from '../../utils/chat/streamEventHandlers';
+import { handleWorkflowToolResult } from '../../utils/chat/workflowStreamHandlers';
+import type { StreamContext, StreamEventResult } from '../../utils/chat/types';
 
 interface LocationState {
   initialMessage?: string;
@@ -145,6 +155,7 @@ export default function Chat({threadId}: ChatProps) {
 
   /**
    * Unified SSE streaming handler - consolidates all chat streaming logic
+   * Orchestrates stream processing and delegates to specialized handlers
    */
   const streamChatMessage = async (
     content: string,
@@ -163,109 +174,94 @@ export default function Chat({threadId}: ChatProps) {
     let firstChunk = false;
     let streamCompleted = false;
     let hasError = false;
-    try {
 
-      setIsStreaming(true); // Disable input while streaming
+    try {
+      setIsStreaming(true);
+
+      // Create context for event handlers
+      const context: StreamContext = {
+        assistantMessage,
+        firstChunk,
+        setMessages,
+        setIsLoading,
+        setError,
+      };
 
       for await (const event of apiService.streamChat(content, threadIdToUse, fileIds, agentMessage)) {
+        let result: StreamEventResult;
+
         switch (event.type) {
           case STREAM_EVENT_TYPES.CONNECTED:
-            console.log('[Chat] Connected with threadId:', event.threadId);
-            onConnected?.(event.threadId);
+            result = handleConnectedEvent(event, onConnected);
             break;
 
           case STREAM_EVENT_TYPES.CHUNK:
-            if (event.content) {
-              assistantMessage.content += event.content;
-              if (!firstChunk && assistantMessage.content.trim().length > 0) {
-                setMessages(prev => [...prev, {...assistantMessage}]);
-                setIsLoading(false);
-                firstChunk = true;
-              } else if (firstChunk) {
-                setMessages(prev => [...prev.slice(0, -1), {...assistantMessage}]);
-              }
+            result = handleChunkEvent(event, { ...context, firstChunk });
+            if (result.firstChunk !== undefined) {
+              firstChunk = result.firstChunk;
             }
             break;
 
           case STREAM_EVENT_TYPES.TOOL_CALL:
-            console.log('Tool called:', event.toolName);
+            result = handleToolCallEvent(event);
             break;
 
           case STREAM_EVENT_TYPES.TOOL_RESULT:
+            // Generic tool handling (modals, PDF downloads, etc.)
             handleToolResult(event, assistantMessage);
 
-            // Handle workflow state updates
-            if (event.toolName === TOOL_NAMES.START_WORKFLOW || event.toolName === TOOL_NAMES.RESUME_WORKFLOW) {
-              const result = event.result;
-              console.log('[Workflow] Tool result received:', event.toolName, result);
+            // Workflow-specific handling
+            handleWorkflowToolResult(
+              event,
+              threadIdToUse,
+              setActiveWorkflow,
+              setIsWorkflowSubmitting
+            );
 
-              // Handle successful workflow progression
-              if (result?.success && !result?.completed && result?.runId) {
-                const workflowStatus = {
-                  runId: result.runId,
-                  threadId: threadIdToUse,
-                  workflowId: WORKFLOW_IDS.TAX_CALCULATION,
-                  status: WORKFLOW_STATUS.SUSPENDED,
-                  currentStep: result.nextStep || result.currentStep,
-                  suspendPayload: result.suspendPayload,
-                  createdAt: new Date().toISOString(),
-                  updatedAt: new Date().toISOString(),
-                };
-                setActiveWorkflow(workflowStatus);
-                setIsWorkflowSubmitting(false); // Clear submitting state - new step is ready
-                console.log('[Workflow] Updated:', workflowStatus.currentStep);
-              }
-              // Handle workflow completion
-              else if (result?.success && result?.completed) {
-                setActiveWorkflow(null);
-                setIsWorkflowSubmitting(false); // Clear submitting state
-                console.log('[Workflow] Completed');
-              }
-              // Handle workflow errors - clear workflow state
-              else if (result?.success === false) {
-                setActiveWorkflow(null);
-                setIsWorkflowSubmitting(false); // Clear submitting state
-                console.log('[Workflow] Error:', result.error || result.message);
-                // Error message will be shown by the assistant
-              }
-            }
-
-            // Only add message and clear loader if there's visible content
-            if (!firstChunk && assistantMessage.content.trim().length > 0) {
-              setMessages(prev => [...prev, {...assistantMessage}]);
-              setIsLoading(false);
-              firstChunk = true;
-            } else if (firstChunk) {
-              setMessages(prev => [...prev.slice(0, -1), {...assistantMessage}]);
-            }
-            // If no content yet, keep loader visible and wait for text chunks
+            // Update message state after tool result
+            firstChunk = updateMessageAfterToolResult(
+              assistantMessage,
+              firstChunk,
+              setMessages,
+              setIsLoading
+            );
+            result = { shouldContinue: true };
             break;
 
           case STREAM_EVENT_TYPES.DONE:
-            console.log('Stream completed');
             streamCompleted = true;
+            result = handleDoneEvent();
             break;
 
           case STREAM_EVENT_TYPES.ERROR:
             hasError = true;
-            setError(event.error || 'Stream error occurred');
+            result = handleErrorEvent(event, { ...context, firstChunk });
             break;
+
+          default:
+            result = { shouldContinue: true };
+        }
+
+        // Check if we should abort
+        if (result.shouldContinue === false) {
+          break;
         }
       }
 
+      // Handle case where stream completed but no content was received
       if (!firstChunk && streamCompleted && !hasError) {
         setError('No response received from assistant');
       }
     } catch (err: any) {
       setError(err.message || 'Failed to send message');
     } finally {
-      // Only clear loading if no content was received
-      // Otherwise, let the first chunk/tool-result clear it
+      // Clear loading state if no content was received
       if (!firstChunk) {
         setIsLoading(false);
       }
-      setIsStreaming(false); // Re-enable input after streaming completes
-      // Safety: Clear workflow submitting state if it wasn't cleared by tool-result
+      setIsStreaming(false);
+
+      // Safety: Clear workflow submitting state if not already cleared
       if (isWorkflowSubmitting) {
         setIsWorkflowSubmitting(false);
       }
