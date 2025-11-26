@@ -6,7 +6,7 @@
   "main": "dist/app/server.mjs",
   "scripts": {
     "server:build": "tsc --noEmit && node esbuild.config.mjs",
-    "server:build:inb": "cross-env NODE_ENV=inb tsc --noEmit && node esbuild.config.mjs",
+    "server:build:inb": "tsc --noEmit && cross-env NODE_ENV=inb node esbuild.config.mjs",
     "server:dev": "tsc-watch --noEmit --onSuccess \"node esbuild.config.mjs --watch\"",
     "server:start": "node dist/app/server.mjs",
     "server:lint": "eslint src/**/*.ts",
