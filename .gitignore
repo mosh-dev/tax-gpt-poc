@@ -30,16 +30,6 @@ Thumbs.db
 
 # Storage (server/storage/)
 /server/storage/*
-!/server/storage/.gitkeep
-!/server/storage/files/
-/server/storage/files/*
-!/server/storage/files/.gitkeep
-!/server/storage/temp/
-/server/storage/temp/*
-!/server/storage/temp/.gitkeep
-!/server/storage/tesseract-lang/
-/server/storage/tesseract-lang/*
-!/server/storage/tesseract-lang/.gitkeep
 
 # Tesseract language data (in case it ends up elsewhere)
 *.traineddata

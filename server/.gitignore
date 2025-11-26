@@ -24,7 +24,7 @@ dist/
 Thumbs.db
 
 # Storage
-storage/
+/storage/*
 
 # Tesseract language data
 *.traineddata
