@@ -7,7 +7,6 @@
  */
 
 import { BaseDocumentProcessor } from './base-processor';
-import { FileType, OCRConfig } from '../types';
 import { ImageProcessor } from './image-processor';
 import { DEFAULT_OCR_CONFIG } from '../config';
 import path from 'path';
@@ -17,6 +16,7 @@ import type { TextItem } from 'pdfjs-dist/types/src/display/api';
 import { createCanvas } from 'canvas';
 import { PDFParse } from 'pdf-parse';
 import { OCRResultThree } from '@/types/ocr-result.types';
+import { FileType, OCRConfig } from '@infrastructure/ocr/ocr.types';
 
 export class PDFProcessor extends BaseDocumentProcessor {
   protected supportedTypes: FileType[] = ['pdf'];

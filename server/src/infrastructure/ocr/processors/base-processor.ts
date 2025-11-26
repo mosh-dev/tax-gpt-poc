@@ -2,11 +2,10 @@
  * Base Document Processor
  * Abstract base class for document processors
  */
-
-import { DocumentProcessor, FileType, OCRConfig, ProcessingStatus } from '../types';
 import path from 'path';
 import fs from 'fs/promises';
 import { OCRResultThree } from '@/types/ocr-result.types';
+import { DocumentProcessor, FileType, OCRConfig, ProcessingStatus } from '@infrastructure/ocr/ocr.types';
 
 export abstract class BaseDocumentProcessor implements DocumentProcessor {
   /**

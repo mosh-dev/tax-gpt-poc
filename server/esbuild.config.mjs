@@ -1,6 +1,7 @@
 import esbuild from 'esbuild';
-import {nodeExternalsPlugin} from 'esbuild-node-externals';
-import {spawn} from 'child_process';
+import { nodeExternalsPlugin } from 'esbuild-node-externals';
+import tscPlugin from "esbuild-plugin-tsc";
+import { spawn } from 'child_process';
 
 const outPath = 'dist/app';
 
@@ -12,7 +13,10 @@ const config = {
   target: 'node20',
   sourcemap: true,
   bundle: true,
-  plugins: [nodeExternalsPlugin()],
+  plugins: [
+    nodeExternalsPlugin(),
+    tscPlugin()
+  ],
   loader: {
     '.ts': 'ts',
     '.json': 'json'
@@ -20,12 +24,7 @@ const config = {
   banner: {
     js: `import "reflect-metadata";`
   },
-  define: {
-    "Reflect.decorate": "Reflect.decorate",
-    "Reflect.metadata": "Reflect.metadata",
-    "Reflect.defineMetadata": "Reflect.defineMetadata",
-    "Reflect.getMetadata": "Reflect.getMetadata"
-  }
+  tsconfig: 'tsconfig.json'
 };
 
 const isWatch = process.argv.includes('--watch');

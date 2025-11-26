@@ -1,4 +1,5 @@
-import { OCRMetadata, ProcessingStatus } from '@infrastructure/ocr/types';
+import { OCRMetadata, ProcessingStatus } from '@infrastructure/ocr/ocr.types';
+
 
 export interface OCRResultOne {
   text: string;
@@ -15,6 +16,7 @@ export interface OCRResultTwo {
   language?: string;
   wordCount?: number;
   processingTime?: number;
+
   [key: string]: any;
 }
 

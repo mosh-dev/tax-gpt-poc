@@ -7,8 +7,9 @@
 import { connectDatabase } from '@infrastructure/database/connection';
 import { initializeLLMClient } from '@infrastructure/ai/llm-client';
 import { runAllSeeds } from '@/scripts/seeds/run-seed';
+import { container } from 'tsyringe';
+import { TOKENS } from '@/app/container.tokens';
 import { Environment } from '@config/environment';
-import { initializeContainer } from '@/app/container-tsyringe';
 
 /**
  * Tracks if initialization has completed
@@ -43,10 +44,9 @@ export async function initializeApp(): Promise<void> {
   console.log('[Initialize] Starting application initialization...');
 
   try {
-
-    // Initialize DI container
-    initializeContainer(Environment.BASE_URL);
     console.log('[Express Setup] DI Container initialized');
+
+    container.register(TOKENS.BASE_URL, { useValue: Environment.BASE_URL });
 
     // Connect to database
     await connectDatabase();

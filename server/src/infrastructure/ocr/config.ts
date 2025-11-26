@@ -3,7 +3,7 @@
  * Centralized configuration for OCR processing
  */
 
-import { OCRConfig, PreprocessingOptions, SupportedLanguage } from './types';
+import { OCRConfig, PreprocessingOptions, SupportedLanguage } from '@infrastructure/ocr/ocr.types';
 
 /**
  * Default OCR configuration

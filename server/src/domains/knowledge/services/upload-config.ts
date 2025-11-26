@@ -16,12 +16,12 @@ import { KNOWLEDGE_BASE_CONFIG, isAllowedFileExtension, isAllowedMimeType } from
  * Saves files to the centralized storage directory with UUID-based filenames
  */
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
+  destination: (_, _file, cb) => {
     const filesDir = getStoragePath('files');
     void fs.mkdir(filesDir, { recursive: true })
       .then(() => cb(null, filesDir));
   },
-  filename: (req, file, cb) => {
+  filename: (_, file, cb) => {
     // Generate unique filename with UUID (File Service pattern)
     const fileId = randomUUID();
     const ext = path.extname(file.originalname);
@@ -33,7 +33,7 @@ const storage = multer.diskStorage({
  * Multer file filter
  * Validates file types and MIME types
  */
-const fileFilter: multer.Options['fileFilter'] = (req, file, cb) => {
+const fileFilter: multer.Options['fileFilter'] = (_, file, cb) => {
   const extname = isAllowedFileExtension(file.originalname);
   const mimeOk = isAllowedMimeType(file.mimetype);
 

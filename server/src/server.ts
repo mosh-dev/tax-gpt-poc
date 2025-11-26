@@ -1,4 +1,3 @@
-import "reflect-metadata";
 import { Environment } from '@config/environment';
 import { getErrorMessage } from '@utils/error-handler';
 import { createExpressApp, startExpressServer } from '@/app/app';

@@ -1,4 +1,4 @@
-import "reflect-metadata";
+import 'reflect-metadata';
 
 import { getMastra } from '@/mastra/mastra-instance';
 import { Environment } from '@config/environment';

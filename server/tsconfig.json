@@ -22,7 +22,6 @@
     // Decorators for TSyringe
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
-    "useDefineForClassFields": false,
 
     // Interop
     "esModuleInterop": true,

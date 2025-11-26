@@ -10,7 +10,6 @@ import knowledgeRoutes from '@api/routes/knowledge.routes';
 import { createFileRoutes } from '@api/routes/file.routes';
 import { createConversationRoutes } from '@api/routes/conversation.routes';
 import { createChatRoutes } from '@api/routes/chat.routes';
-import { container } from '@/app/container-tsyringe';
 import { ConversationController } from '@api/controllers/conversation.controller';
 import { ChatController } from '@api/controllers/chat.controller';
 import { FileController } from '@api/controllers/file.controller';
@@ -23,6 +22,7 @@ import { Observability } from '@mastra/observability';
 import { setMastra } from '@/mastra/mastra-instance';
 import { getOrCreateTaxAgent } from '@/mastra/agents/tax-agent/tax-agent.handler';
 import { MAX_BODY_SIZE } from '@/shared/constants/file-upload';
+import { container } from 'tsyringe';
 
 /**
  * Create and configure Express application

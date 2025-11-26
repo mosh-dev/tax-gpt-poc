@@ -6,11 +6,11 @@
 import { injectable } from 'tsyringe';
 
 import path from 'path';
-import { DocumentProcessor, FileType, OCRConfig, SupportedLanguage } from './types';
 import { DEFAULT_OCR_CONFIG, getOCRConfig, getSwissCantonLanguage } from './config';
 import { ImageProcessor } from '@infrastructure/ocr/processors/image-processor';
 import { PDFProcessor } from '@infrastructure/ocr/processors/pdf-processor';
 import { OCRResultThree } from '@/types/ocr-result.types';
+import { DocumentProcessor, FileType, OCRConfig, SupportedLanguage } from '@infrastructure/ocr/ocr.types';
 
 @injectable()
 export class OCRService {

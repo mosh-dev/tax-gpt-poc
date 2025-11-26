@@ -5,11 +5,11 @@
   "type": "module",
   "main": "dist/app/server.mjs",
   "scripts": {
-    "server:build": "node esbuild.config.mjs && copyfiles -u 1 \"src/assets/**/*\" dist/app",
-    "server:dev": "node esbuild.config.mjs --watch",
+    "server:build": "tsc --noEmit && node esbuild.config.mjs && copyfiles -u 1 \"src/assets/**/*\" dist/app",
+    "server:dev": "tsc --noEmit && node esbuild.config.mjs --watch",
     "server:start": "node dist/app/server.mjs",
     "server:lint": "eslint src/**/*.ts",
-    "server:mastra": "cross-env MASTRA_START_SERVER=true mastra dev --dir src/mastra"
+    "server:mastra": "tsc --noEmit && cross-env MASTRA_START_SERVER=true mastra dev --dir src/mastra"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^1.0.27",
@@ -24,6 +24,7 @@
     "canvas": "~3.2.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
+    "esbuild-plugin-tsc": "^0.5.0",
     "express": "^5.1.0",
     "gpt-tokenizer": "^3.4.0",
     "jsonwebtoken": "^9.0.2",
