@@ -6,7 +6,7 @@ import { MongoFileRepository } from '@infrastructure/database/mongodb/repositori
 import { TesseractOCRService } from '@infrastructure/ocr/tesseract-ocr.service';
 import { ProcessDocumentDTO, ProcessDocumentResultDTO } from '@domains/document/dtos/file-dto';
 import { FileId } from '@domains/document/value-objects/file-id.class';
-import { injectFromContainer } from '@/app/di-container/container-helper';
+import { injectFromContainer } from '@/app/di-container/container';
 
 export class ProcessDocumentUseCase {
   private fileRepository = injectFromContainer(MongoFileRepository);

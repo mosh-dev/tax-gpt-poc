@@ -5,12 +5,11 @@
 
 import { Router } from 'express';
 import { ChatController } from '@api/controllers/chat.controller';
+import { injectFromContainer } from '@/app/di-container/container';
 
-export function createChatRoutes(controller: ChatController): Router {
-  const router = Router();
+const router = Router();
 
-  // POST /api/chat/stream-with-tools - Stream chat with SSE
-  router.post('/stream-with-tools', (req, res) => controller.streamChat(req, res));
+// POST /api/chat/stream-with-tools - Stream chat with SSE
+router.post('/stream-with-tools', (req, res) => injectFromContainer(ChatController).streamChat(req, res));
 
-  return router;
-}
+export const chatRoutes = router;

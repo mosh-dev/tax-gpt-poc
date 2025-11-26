@@ -4,7 +4,7 @@
  */
 import { MongoConversationRepository } from '@infrastructure/database/mongodb/repositories/mongo-conversation.repository';
 import { ConversationListDTO } from '@domains/conversation/dtos/conversation-dto';
-import { injectFromContainer } from '@/app/di-container/container-helper';
+import { injectFromContainer } from '@/app/di-container/container';
 
 export class GetAllConversationsUseCase {
   private conversationRepository = injectFromContainer(MongoConversationRepository);

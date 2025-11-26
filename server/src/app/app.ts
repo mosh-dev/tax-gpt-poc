@@ -6,13 +6,8 @@ import { initializeApp } from '@/app/initialize';
 import { agentConfigRoutes } from '@api/routes/agent-config.routes';
 import { authRoutes } from '@api/routes/auth.routes';
 import { employeeRoutes } from '@api/routes/employee.routes';
-import knowledgeRoutes from '@api/routes/knowledge.routes';
-import { createFileRoutes } from '@api/routes/file.routes';
-import { createConversationRoutes } from '@api/routes/conversation.routes';
-import { createChatRoutes } from '@api/routes/chat.routes';
-import { ConversationController } from '@api/controllers/conversation.controller';
-import { ChatController } from '@api/controllers/chat.controller';
-import { FileController } from '@api/controllers/file.controller';
+import { conversationRoutes } from '@api/routes/conversation.routes';
+import { chatRoutes } from '@api/routes/chat.routes';
 import { authMiddleware } from '@api/middleware/auth.middleware';
 import { Mastra } from '@mastra/core';
 import { workflowStorage } from '@/mastra/storage/workflow-storage';
@@ -22,7 +17,8 @@ import { Observability } from '@mastra/observability';
 import { setMastra } from '@/mastra/mastra-instance';
 import { getOrCreateTaxAgent } from '@/mastra/agents/tax-agent/tax-agent.handler';
 import { MAX_BODY_SIZE } from '@/shared/constants/file-upload';
-import { injectFromContainer } from '@/app/di-container/container-helper';
+import { knowledgeRoutes } from '@api/routes/knowledge.routes';
+import { fileRoutes } from '@api/routes/file.routes';
 
 /**
  * Create and configure Express application
@@ -70,22 +66,11 @@ export async function createExpressApp(): Promise<Express> {
     });
   });
 
-  // Resolve controllers from DI container (all dependencies auto-injected!)
-  const conversationController = injectFromContainer(ConversationController);
-  const chatController = injectFromContainer(ChatController);
-  const fileController = injectFromContainer(FileController);
-
-  // Setup routes
-  const conversationRoutes = createConversationRoutes(conversationController);
-  const chatRoutes = createChatRoutes(chatController);
-  const fileRoutes = createFileRoutes(fileController);
-
   // Mount public routes (no auth required)
   app.use('/api/auth', authRoutes);
 
   // Serve static files (no auth required for file downloads)
-  const filesPath = getStoragePath('files');
-  app.use('/files', express.static(filesPath));
+  app.use('/files', express.static(getStoragePath('files')));
 
   // Mount protected routes (auth required)
   app.use('/api/chat/conversations', authMiddleware, conversationRoutes);
@@ -93,7 +78,7 @@ export async function createExpressApp(): Promise<Express> {
   app.use('/api/files', authMiddleware, fileRoutes);
   app.use('/api/agent-config', authMiddleware, agentConfigRoutes);
   app.use('/api/employees', authMiddleware, employeeRoutes);
-  app.use('/api/knowledge', knowledgeRoutes); // Knowledge routes have auth middleware built-in
+  app.use('/api/knowledge', knowledgeRoutes);
 
   console.log('[Express Setup] Routes configured');
 

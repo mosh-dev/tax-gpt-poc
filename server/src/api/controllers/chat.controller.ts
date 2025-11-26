@@ -6,7 +6,7 @@ import { Request, Response } from 'express';
 import { getErrorMessage } from '@utils/error-handler';
 import { StreamChatUseCase } from '@domains/conversation/use-cases/stream-chat.use-case';
 import { StreamChatRequestDTO } from '@domains/conversation/dtos/chat-dto';
-import { injectFromContainer } from '@/app/di-container/container-helper';
+import { injectFromContainer } from '@/app/di-container/container';
 
 export class ChatController {
   private streamChatUseCase = injectFromContainer(StreamChatUseCase);

@@ -5,7 +5,7 @@
 import { MongoFileRepository } from '@infrastructure/database/mongodb/repositories/mongo-file.repository';
 import { LocalFileStorageService } from '@infrastructure/storage/local-file-storage.service';
 import { FileId } from '@domains/document/value-objects/file-id.class';
-import { injectFromContainer } from '@/app/di-container/container-helper';
+import { injectFromContainer } from '@/app/di-container/container';
 
 export class DeleteFileUseCase {
   private fileRepository = injectFromContainer(MongoFileRepository);

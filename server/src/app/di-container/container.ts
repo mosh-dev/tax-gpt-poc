@@ -1,11 +1,5 @@
-import { asClass, asValue, createContainer, InjectionMode } from 'awilix';
-
-const containerHelper = createContainer({
-  injectionMode: InjectionMode.PROXY,
-  strict: true,
-});
-
-const symbolRegistry = new Map<string, symbol>();
+import { asClass, asValue } from 'awilix';
+import { containerRegistry, symbolRegistry } from '@/app/di-container/container-registry';
 
 function getSymbol(key: string): symbol {
   if (!symbolRegistry.has(key)) {
@@ -29,7 +23,7 @@ export function registerToContainer<T>(refOrKey: any, value?: T): symbol {
   }
 
   const symbol = getSymbol(key);
-  containerHelper.register({
+  containerRegistry.register({
     [symbol]: registration
   });
 
@@ -48,5 +42,9 @@ export function injectFromContainer<T>(refOrKey: any): T {
   }
 
   const symbol = getSymbol(key);
-  return containerHelper.resolve<T>(symbol);
+  try {
+    return containerRegistry.resolve<T>(symbol);
+  } catch {
+    throw new Error(`injectFromContainer must be called from a injection context: ${key}`);
+  }
 }

@@ -1,4 +1,4 @@
-import { registerToContainer } from '@/app/di-container/container-helper';
+import { registerToContainer } from '@/app/di-container/container';
 
 import { ConversationController } from '@api/controllers/conversation.controller';
 import { ChatController } from '@api/controllers/chat.controller';
@@ -32,6 +32,14 @@ import { MongoFileRepository } from '@infrastructure/database/mongodb/repositori
 import { MongoMessageRepository } from '@infrastructure/database/mongodb/repositories/mongo-message.repository';
 
 import { Environment } from '@config/environment';
+import { createContainer, InjectionMode } from 'awilix';
+
+export const containerRegistry = createContainer({
+  injectionMode: InjectionMode.PROXY,
+  strict: true,
+});
+
+export const symbolRegistry = new Map<string, symbol>();
 
 export function registerApplicationComponents() {
   registerToContainer(ConversationController);
