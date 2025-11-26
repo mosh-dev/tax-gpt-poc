@@ -2,16 +2,18 @@
  * Get Conversation History Use Case
  * Retrieves conversation with all messages
  */
-import { IConversationRepository } from '@infrastructure/database/mongodb/repositories/interfaces/conversation-repository.interface';
+import { injectable } from 'tsyringe';
+import { MongoConversationRepository } from '@infrastructure/database/mongodb/repositories/mongo-conversation.repository';
 import { ConversationHistoryDTO } from '@domains/conversation/dtos/message-dto';
-import { IMessageRepository } from '@infrastructure/database/mongodb/repositories/interfaces/message-repository.interface';
+import { MongoMessageRepository } from '@infrastructure/database/mongodb/repositories/mongo-message.repository';
 import { ConversationId } from '@domains/conversation/value-objects/conversation-id.class';
 
 
+@injectable()
 export class GetConversationHistoryUseCase {
   constructor(
-    private conversationRepository: IConversationRepository,
-    private messageRepository: IMessageRepository
+    private conversationRepository: MongoConversationRepository,
+    private messageRepository: MongoMessageRepository
   ) {}
 
   async execute(conversationId: string, limit: number = 200): Promise<ConversationHistoryDTO> {

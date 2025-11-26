@@ -1,13 +1,8 @@
-/**
- * Express Application Setup
- * Reusable Express configuration that can be used by both server.ts and mastra/index.ts
- */
-
 import express, { Express, NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import { getStoragePath } from '@config/storage';
 import { Environment } from '@config/environment';
-import { initializeApp } from '@/app/bootstrap/initialize';
+import { initializeApp } from '@/app/initialize';
 import { agentConfigRoutes } from '@api/routes/agent-config.routes';
 import { authRoutes } from '@api/routes/auth.routes';
 import { employeeRoutes } from '@api/routes/employee.routes';
@@ -15,9 +10,10 @@ import knowledgeRoutes from '@api/routes/knowledge.routes';
 import { createFileRoutes } from '@api/routes/file.routes';
 import { createConversationRoutes } from '@api/routes/conversation.routes';
 import { createChatRoutes } from '@api/routes/chat.routes';
-import { initializeContainer } from '@/app/container';
-import { MastraAIAgentService } from '@infrastructure/ai/mastra-ai-agent.service';
-import { TesseractOCRService } from '@infrastructure/ocr/tesseract-ocr.service';
+import { container } from '@/app/container-tsyringe';
+import { ConversationController } from '@api/controllers/conversation.controller';
+import { ChatController } from '@api/controllers/chat.controller';
+import { FileController } from '@api/controllers/file.controller';
 import { authMiddleware } from '@api/middleware/auth.middleware';
 import { Mastra } from '@mastra/core';
 import { workflowStorage } from '@/mastra/storage/workflow-storage';
@@ -37,7 +33,7 @@ export async function createExpressApp(): Promise<Express> {
   await initializeApp();
   const taxAgentWrapper = await getOrCreateTaxAgent();
   const mastra = new Mastra({
-    agents: {taxAgent: taxAgentWrapper.agent},
+    agents: { taxAgent: taxAgentWrapper.agent },
     storage: workflowStorage,
     workflows: {
       taxCalculation: taxCalculationWorkflow,
@@ -47,7 +43,7 @@ export async function createExpressApp(): Promise<Express> {
       level: 'info',
     }),
     observability: new Observability({
-      default: {enabled: true},
+      default: { enabled: true },
     }),
   });
   setMastra(mastra);
@@ -56,10 +52,7 @@ export async function createExpressApp(): Promise<Express> {
   const app: Express = express();
 
   // Middleware
-  app.use(cors({
-    origin: true, // Allow any origin
-    credentials: true
-  }));
+  app.use(cors({ origin: true, credentials: true }));
   app.use(express.json({ limit: MAX_BODY_SIZE }));
   app.use(express.urlencoded({ extended: true, limit: MAX_BODY_SIZE }));
 
@@ -78,33 +71,15 @@ export async function createExpressApp(): Promise<Express> {
     });
   });
 
-  // Initialize and wire dependencies
-  // Note: Database connection, seeds, LLM client, and tax agent
-  // are all initialized in mastra.ts when it's imported.
-  // This ensures the mastra instance is ready for the playground.
-
-  // Initialize DI container
-  const container = initializeContainer(Environment.BASE_URL);
-  console.log('[Express Setup] DI Container initialized');
-
-  // Initialize AI Agent Service (uses the already-initialized mastra instance)
-  const aiAgentService = new MastraAIAgentService();
-  container.setAIAgentService(aiAgentService);
-  console.log('[Express Setup] AI Agent Service initialized');
-
-  // Wire OCR service
-  const ocrService = new TesseractOCRService();
-  container.setOCRService(ocrService);
-  console.log('[Express Setup] OCR Service initialized');
+  // Resolve controllers from DI container (all dependencies auto-injected!)
+  const conversationController = container.resolve(ConversationController);
+  const chatController = container.resolve(ChatController);
+  const fileController = container.resolve(FileController);
 
   // Setup routes
-  const conversationRoutes = createConversationRoutes(container.conversationController);
-  const chatRoutes = container.chatController
-    ? createChatRoutes(container.chatController)
-    : express.Router();
-  const fileRoutes = container.fileController
-    ? createFileRoutes(container.fileController)
-    : express.Router();
+  const conversationRoutes = createConversationRoutes(conversationController);
+  const chatRoutes = createChatRoutes(chatController);
+  const fileRoutes = createFileRoutes(fileController);
 
   // Mount public routes (no auth required)
   app.use('/api/auth', authRoutes);

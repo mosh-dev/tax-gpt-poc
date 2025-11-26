@@ -2,9 +2,10 @@
  * Stream Chat Use Case
  * Handles streaming chat with AI agent
  */
-import { IConversationRepository } from '@infrastructure/database/mongodb/repositories/interfaces/conversation-repository.interface';
-import { IMessageRepository } from '@infrastructure/database/mongodb/repositories/interfaces/message-repository.interface';
-import { IAIAgentService } from '@infrastructure/interfaces/ai-agent-service.interface';
+import { injectable } from 'tsyringe';
+import { MongoConversationRepository } from '@infrastructure/database/mongodb/repositories/mongo-conversation.repository';
+import { MongoMessageRepository } from '@infrastructure/database/mongodb/repositories/mongo-message.repository';
+import { MastraAIAgentService } from '@infrastructure/ai/mastra-ai-agent.service';
 import { StreamChatRequestDTO, StreamEventDTO } from '@domains/conversation/dtos/chat-dto';
 import { ConversationId } from '@domains/conversation/value-objects/conversation-id.class';
 import { MessageId } from '@domains/conversation/value-objects/message-id.class';
@@ -13,11 +14,12 @@ import { TaxGptMessage } from '@domains/conversation/entities/tax-gpt-message.cl
 import { TaxGptConversation } from '@domains/conversation/entities/tax-gpt-conversation.class';
 import { STREAM_EVENT_TYPES, MASTRA_EVENT_TYPES } from '@shared/constants/events';
 
+@injectable()
 export class StreamChatUseCase {
   constructor(
-    private conversationRepository: IConversationRepository,
-    private messageRepository: IMessageRepository,
-    private aiAgentService: IAIAgentService
+    private conversationRepository: MongoConversationRepository,
+    private messageRepository: MongoMessageRepository,
+    private aiAgentService: MastraAIAgentService
   ) {}
 
   /**

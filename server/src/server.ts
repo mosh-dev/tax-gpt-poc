@@ -1,11 +1,7 @@
-/**
- * Tax-GPT Server - Clean Architecture Entry Point
- * Uses Clean Architecture with DI container
- */
-
+import "reflect-metadata";
 import { Environment } from '@config/environment';
 import { getErrorMessage } from '@utils/error-handler';
-import { createExpressApp, startExpressServer } from '@/app/bootstrap/app';
+import { createExpressApp, startExpressServer } from '@/app/app';
 
 /**
  * Start server

@@ -2,46 +2,19 @@
  * Knowledge Service
  * Orchestration layer for knowledge base operations
  */
+import { injectable } from 'tsyringe';
 
 import { ragService } from './rag.service';
 import { fileService } from '@domains/document/services/file.service';
 import { Environment } from '@config/environment';
 import path from 'path';
+import type {
+  UploadFileParams,
+  ListFilesResult,
+  DeleteFileResult
+} from '@domains/knowledge/knowledge.types';
 
-export interface UploadFileParams {
-  file: Express.Multer.File;
-  onProgress?: (stage: 'extracting' | 'chunking' | 'embedding', progress: number, message: string) => void;
-}
-
-export interface UploadFileResult {
-  success: boolean;
-  uploadId?: string;
-  fileId: string;
-  fileName: string;
-  error?: string;
-}
-
-export interface KnowledgeFileInfo {
-  id: string;
-  name: string;
-  type: string;
-  size: number;
-  chunkCount: number;
-  uploadedAt: Date;
-  downloadUrl?: string;
-}
-
-export interface ListFilesResult {
-  success: boolean;
-  count: number;
-  files: KnowledgeFileInfo[];
-}
-
-export interface DeleteFileResult {
-  success: boolean;
-  message: string;
-}
-
+@injectable()
 export class KnowledgeService {
   /**
    * Upload and process a knowledge base file

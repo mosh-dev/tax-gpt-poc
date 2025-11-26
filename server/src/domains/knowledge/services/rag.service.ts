@@ -2,6 +2,7 @@
  * RAG Service
  * Main service for knowledge base ingestion and retrieval
  */
+import { injectable } from 'tsyringe';
 
 import { v4 as uuidv4 } from 'uuid';
 import { PDFParse } from 'pdf-parse';
@@ -14,28 +15,12 @@ import {
   VectorDocument,
   vectorStoreService
 } from '@infrastructure/vector-store/vector-store.service';
-
-export interface IngestResult {
-  fileId: string;
-  fileName: string;
-  chunkCount: number;
-  vectorIds: string[];
-  stats: {
-    totalChunks: number;
-    avgChunkSize: number;
-    estimatedTokens: number;
-  };
-}
-
-export interface SearchOptions {
-  topK?: number;
-  minScore?: number;
-  fileId?: string;
-}
+import type { IngestResult, SearchOptions } from '@domains/knowledge/rag.types';
 
 /**
  * RAG Service for knowledge base management
  */
+@injectable()
 export class RAGService {
   private vectorStore = vectorStoreService;
 

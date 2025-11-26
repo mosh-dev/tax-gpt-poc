@@ -10,7 +10,10 @@
       "Bash(npm run build:client:*)",
       "Bash(npm ls:*)",
       "WebSearch",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(npm run server:build:*)",
+      "Bash(npm install:*)",
+      "Bash(python migrate-to-injectable.py:*)"
     ],
     "deny": [],
     "ask": []

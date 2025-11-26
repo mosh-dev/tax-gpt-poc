@@ -13,7 +13,7 @@ const router = Router();
  * GET /api/employees
  * Get all active employees with their tax data
  */
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', async (_: Request, res: Response) => {
   try {
     const employees = await Employee.find({ isActive: true })
       .sort({ scenarioId: 1 })
@@ -46,7 +46,7 @@ router.get('/', async (req: Request, res: Response) => {
  * GET /api/employees/scenarios
  * Get list of available scenarios (summary view)
  */
-router.get('/scenarios', async (req: Request, res: Response) => {
+router.get('/scenarios', async (_: Request, res: Response) => {
   try {
     const employees = await Employee.find({ isActive: true })
       .sort({ scenarioId: 1 })

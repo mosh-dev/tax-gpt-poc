@@ -1,11 +1,11 @@
 import esbuild from 'esbuild';
-import { nodeExternalsPlugin } from 'esbuild-node-externals';
-import { spawn } from 'child_process';
+import {nodeExternalsPlugin} from 'esbuild-node-externals';
+import {spawn} from 'child_process';
 
 const outPath = 'dist/app';
 
 const config = {
-  entryPoints: ['src/app/bootstrap/server.ts'],
+  entryPoints: ['src/server.ts'],
   outfile: `${outPath}/server.mjs`,
   format: 'esm',
   platform: 'node',
@@ -16,6 +16,15 @@ const config = {
   loader: {
     '.ts': 'ts',
     '.json': 'json'
+  },
+  banner: {
+    js: `import "reflect-metadata";`
+  },
+  define: {
+    "Reflect.decorate": "Reflect.decorate",
+    "Reflect.metadata": "Reflect.metadata",
+    "Reflect.defineMetadata": "Reflect.defineMetadata",
+    "Reflect.getMetadata": "Reflect.getMetadata"
   }
 };
 
@@ -39,23 +48,18 @@ function startServer() {
 
 if (isWatch) {
   const context = await esbuild.context({
-    ...config,
-    plugins: [
-      ...config.plugins,
-      {
-        name: 'restart-server',
-        setup(build) {
-          build.onEnd((result) => {
-            if (result.errors.length === 0) {
-              console.log('✓ Build completed successfully');
-              startServer();
-            } else {
-              console.error('Build failed with errors');
-            }
-          });
-        }
+    ...config, plugins: [...config.plugins, {
+      name: 'restart-server', setup(build) {
+        build.onEnd((result) => {
+          if (result.errors.length === 0) {
+            console.log('✓ Build completed successfully');
+            startServer();
+          } else {
+            console.error('Build failed with errors');
+          }
+        });
       }
-    ]
+    }]
   });
 
   await context.watch();

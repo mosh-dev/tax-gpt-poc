@@ -2,6 +2,7 @@
  * Conversation Controller
  * Handles HTTP requests for conversation operations
  */
+import { injectable } from 'tsyringe';
 
 import { Request, Response } from 'express';
 import { getErrorMessage } from '@utils/error-handler';
@@ -9,6 +10,7 @@ import { GetAllConversationsUseCase } from '@domains/conversation/use-cases/get-
 import { GetConversationHistoryUseCase } from '@domains/conversation/use-cases/get-conversation-history.use-case';
 import { DeleteConversationUseCase } from '@domains/conversation/use-cases/delete-conversation.use-case';
 
+@injectable()
 export class ConversationController {
   constructor(
     private getAllConversationsUseCase: GetAllConversationsUseCase,

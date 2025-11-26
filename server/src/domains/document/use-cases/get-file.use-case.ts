@@ -2,12 +2,14 @@
  * Get File Use Case
  * Retrieves file metadata
  */
-import { IFileRepository } from '@infrastructure/database/mongodb/repositories/interfaces/file-repository.interface';
+import { injectable } from 'tsyringe';
+import { MongoFileRepository } from '@infrastructure/database/mongodb/repositories/mongo-file.repository';
 import { FileDTO } from '@domains/document/dtos/file-dto';
 import { FileId } from '@domains/document/value-objects/file-id.class';
 
+@injectable()
 export class GetFileUseCase {
-  constructor(private fileRepository: IFileRepository) {}
+  constructor(private fileRepository: MongoFileRepository) {}
 
   async execute(fileId: string): Promise<FileDTO> {
     const id = FileId.create(fileId);

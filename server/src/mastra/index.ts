@@ -1,6 +1,8 @@
+import "reflect-metadata";
+
 import { getMastra } from '@/mastra/mastra-instance';
 import { Environment } from '@config/environment';
-import { createExpressApp, startExpressServer } from '@/app/bootstrap/app';
+import { createExpressApp, startExpressServer } from '@/app/app';
 import { Mastra } from '@mastra/core';
 
 const isMastraPlayground = Environment.MASTRA_START_SERVER;

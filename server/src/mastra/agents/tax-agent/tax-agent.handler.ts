@@ -76,12 +76,3 @@ export async function invalidateTaxAgent(): Promise<void> {
   taxAgentInstance = null;
   needsRefresh = true;
 }
-
-/**
- * Initialize tax agent at startup
- * Creates the singleton instance with instructions from DB
- */
-export async function initializeTaxAgent(): Promise<void> {
-  await getOrCreateTaxAgent();
-  console.log('[TaxAgent] Agent initialized successfully');
-}

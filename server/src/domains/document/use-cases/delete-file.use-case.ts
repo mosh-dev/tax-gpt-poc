@@ -2,14 +2,16 @@
  * Delete File Use Case
  * Deletes file from storage and database
  */
-import { IFileRepository } from '@infrastructure/database/mongodb/repositories/interfaces/file-repository.interface';
-import { IFileStorageService } from '@infrastructure/interfaces/file-storage-service.interface';
+import { injectable } from 'tsyringe';
+import { MongoFileRepository } from '@infrastructure/database/mongodb/repositories/mongo-file.repository';
+import { LocalFileStorageService } from '@infrastructure/storage/local-file-storage.service';
 import { FileId } from '@domains/document/value-objects/file-id.class';
 
+@injectable()
 export class DeleteFileUseCase {
   constructor(
-    private fileRepository: IFileRepository,
-    private fileStorageService: IFileStorageService
+    private fileRepository: MongoFileRepository,
+    private fileStorageService: LocalFileStorageService
   ) {}
 
   async execute(fileId: string): Promise<void> {

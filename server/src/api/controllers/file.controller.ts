@@ -2,6 +2,7 @@
  * File Controller
  * Handles HTTP requests for file operations
  */
+import { injectable } from 'tsyringe';
 
 import { Request, Response } from 'express';
 import { getErrorMessage } from '@utils/error-handler';
@@ -11,6 +12,7 @@ import { GetFileUseCase } from '@domains/document/use-cases/get-file.use-case';
 import { DeleteFileUseCase } from '@domains/document/use-cases/delete-file.use-case';
 import { ProcessDocumentDTO, UploadFileDTO } from '@domains/document/dtos/file-dto';
 
+@injectable()
 export class FileController {
   constructor(
     private uploadFileUseCase: UploadFileUseCase,

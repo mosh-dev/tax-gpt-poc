@@ -2,15 +2,17 @@
  * Process Document Use Case
  * Handles OCR processing of uploaded documents
  */
-import { IFileRepository } from '@infrastructure/database/mongodb/repositories/interfaces/file-repository.interface';
-import { IOCRService } from '@infrastructure/interfaces/ocr-service.interface';
+import { injectable } from 'tsyringe';
+import { MongoFileRepository } from '@infrastructure/database/mongodb/repositories/mongo-file.repository';
+import { TesseractOCRService } from '@infrastructure/ocr/tesseract-ocr.service';
 import { ProcessDocumentDTO, ProcessDocumentResultDTO } from '@domains/document/dtos/file-dto';
 import { FileId } from '@domains/document/value-objects/file-id.class';
 
+@injectable()
 export class ProcessDocumentUseCase {
   constructor(
-    private fileRepository: IFileRepository,
-    private ocrService: IOCRService
+    private fileRepository: MongoFileRepository,
+    private ocrService: TesseractOCRService
   ) {}
 
   async execute(data: ProcessDocumentDTO): Promise<ProcessDocumentResultDTO> {

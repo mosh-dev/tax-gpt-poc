@@ -2,18 +2,20 @@
  * Upload File Use Case
  * Handles file upload and storage
  */
-import { IFileRepository } from '@infrastructure/database/mongodb/repositories/interfaces/file-repository.interface';
-import { IFileStorageService } from '@infrastructure/interfaces/file-storage-service.interface';
+import { injectable } from 'tsyringe';
+import { MongoFileRepository } from '@infrastructure/database/mongodb/repositories/mongo-file.repository';
+import { LocalFileStorageService } from '@infrastructure/storage/local-file-storage.service';
 import { FileDTO, UploadFileDTO } from '@domains/document/dtos/file-dto';
 import { FileId } from '@domains/document/value-objects/file-id.class';
 import { FileMetadata } from '@domains/document/value-objects/file-metadata.class';
 import { ConversationId } from '@domains/conversation/value-objects/conversation-id.class';
 import { TaxGptFile } from '@domains/document/entities/tax-gpt-file.class';
 
+@injectable()
 export class UploadFileUseCase {
   constructor(
-    private fileRepository: IFileRepository,
-    private fileStorageService: IFileStorageService
+    private fileRepository: MongoFileRepository,
+    private fileStorageService: LocalFileStorageService
   ) {
   }
 

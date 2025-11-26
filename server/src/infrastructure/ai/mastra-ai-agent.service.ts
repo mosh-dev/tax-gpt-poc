@@ -1,6 +1,8 @@
+import { injectable } from 'tsyringe';
 import { IAIAgentService, StreamEvent } from '@infrastructure/interfaces/ai-agent-service.interface';
 import { getOrCreateTaxAgent } from '@/mastra/agents/tax-agent/tax-agent.handler';
 
+@injectable()
 export class MastraAIAgentService implements IAIAgentService {
   async* streamChat(message: string, threadId: string, resourceId?: string): AsyncIterable<StreamEvent> {
     if (!threadId) {

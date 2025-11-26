@@ -1,37 +1,22 @@
 /**
- * Vector Retriever
+ * Vector Store Service
  * Persistent vector storage using LibSQL
  */
+import { injectable } from 'tsyringe';
 
 import { LibSQLVector } from '@mastra/libsql';
 import { STORAGE_PATHS } from '@config/storage';
 import { generateEmbedding } from '@infrastructure/embedding/embedding.service';
 import { getErrorMessage } from '@utils/error-handler';
+import type { VectorDocument, SearchResult } from './vector-store.types';
 
-export interface VectorDocument {
-  id: string;
-  content: string;
-  embedding: number[];
-  metadata: {
-    fileId: string;
-    fileName: string;
-    chunkIndex: number;
-    totalChunks: number;
-    [key: string]: any;
-  };
-}
-
-export interface SearchResult {
-  id: string;
-  content: string;
-  score: number; // Similarity score (higher is better)
-  metadata: VectorDocument['metadata'];
-}
+export type { VectorDocument, SearchResult };
 
 /**
  * Vector Store Service
  * Uses LibSQL for persistent vector storage
  */
+@injectable()
 export class VectorStoreService {
   private vector: LibSQLVector;
   private initialized: boolean = false;

@@ -2,12 +2,14 @@
  * Chat Controller
  * Handles HTTP requests for chat operations (SSE streaming)
  */
+import { injectable } from 'tsyringe';
 
 import { Request, Response } from 'express';
 import { getErrorMessage } from '@utils/error-handler';
 import { StreamChatUseCase } from '@domains/conversation/use-cases/stream-chat.use-case';
 import { StreamChatRequestDTO } from '@domains/conversation/dtos/chat-dto';
 
+@injectable()
 export class ChatController {
   constructor(private streamChatUseCase: StreamChatUseCase) {}
 
