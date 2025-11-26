@@ -3,8 +3,8 @@ import { Memory } from '@mastra/memory';
 import { createMastraMemory, createMemoryConfigFromEnv } from '@/mastra/helpers/mastra-memory.helper';
 import { AgentConfig } from '@domains/agent-config/models/agent-config.model';
 import { encode } from 'gpt-tokenizer';
-import { getCollection } from '@infrastructure/database/database-utils';
-import { MASTRA_COLLECTIONS } from '@shared/constants/database-collections';
+import { getCollection } from '@infrastructure/database/utils';
+import { MASTRA_COLLECTIONS } from '@config/database-collections';
 import { logLLMResponse, logStreamError } from '@utils/logger';
 import { getErrorMessage } from '@utils/error-handler';
 import { getTaxDataTool } from '@/mastra/agents/tax-agent/tools/get-tax-data';
@@ -15,7 +15,7 @@ import { startTaxCalculationTool } from '@/mastra/agents/tax-agent/tools/start-t
 import { resumeTaxCalculationTool } from '@/mastra/agents/tax-agent/tools/resume-tax-calculation-tool';
 import { searchKnowledgeTool } from '@/mastra/agents/tax-agent/tools/search-knowledge-tool';
 import { searchGeneralTool } from '@/mastra/agents/tax-agent/tools/search-general-tool';
-import { getOpenAiModel } from '@infrastructure/llm/llm';
+import { getOpenAiModel } from '@infrastructure/services/ai/llm-client';
 import { ChunkType } from '@mastra/core/stream';
 
 /**

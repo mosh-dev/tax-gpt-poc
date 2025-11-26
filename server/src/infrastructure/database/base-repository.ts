@@ -6,7 +6,7 @@
 
 import { FileData, FileModel } from '@domains/document/models/file.model';
 import { ObjectMap } from '@/types/common.types';
-import { connectDatabase, isDatabaseConnected } from '@infrastructure/database/database';
+import { connectDatabase, isDatabaseConnected } from '@infrastructure/database/connection';
 
 export interface CreateFileData {
   fileId: string;

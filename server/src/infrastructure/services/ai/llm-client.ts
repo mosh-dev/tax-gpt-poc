@@ -1,6 +1,6 @@
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
-import { Environment } from '@/environment';
-import { getLLMApiKey } from '@infrastructure/secrets/secrets.service';
+import { Environment } from '@config/environment';
+import { getLLMApiKey } from '@infrastructure/config/secrets/secrets.service';
 import type { LanguageModel } from "ai";
 
 export const MODEL_PURPOSES = {

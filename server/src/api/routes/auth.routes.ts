@@ -11,7 +11,7 @@ import {
   verifyRefreshToken
 } from '../middleware/auth.middleware';
 import { getErrorMessage } from '@utils/error-handler';
-import { Environment } from '@/environment';
+import { Environment } from '@config/environment';
 import jwt from 'jsonwebtoken';
 
 const router = Router();

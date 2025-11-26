@@ -5,7 +5,7 @@ import { spawn } from 'child_process';
 const outPath = 'dist/app';
 
 const config = {
-  entryPoints: ['src/server.ts'],
+  entryPoints: ['src/app/bootstrap/server.ts'],
   outfile: `${outPath}/server.mjs`,
   format: 'esm',
   platform: 'node',

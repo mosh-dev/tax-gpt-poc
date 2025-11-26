@@ -7,9 +7,9 @@
 import fs from 'fs/promises';
 import path from 'path';
 import { randomUUID } from 'crypto';
-import { getStoragePath } from '@/storage';
-import { mongoRepository } from '@infrastructure/database/mongo-repository.class';
-import { Environment } from '@/environment';
+import { getStoragePath } from '@config/storage';
+import { mongoRepository } from '@infrastructure/database/base-repository';
+import { Environment } from '@config/environment';
 
 export interface UploadedFileInfo {
   fileId: string;

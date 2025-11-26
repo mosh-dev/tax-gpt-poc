@@ -1,4 +1,4 @@
-import { STORAGE_PATHS } from '@/storage';
+import { STORAGE_PATHS } from '@config/storage';
 import { LibSQLVector } from '@mastra/libsql';
 
 const vectorDbPath = 'file:' + STORAGE_PATHS.vectors;

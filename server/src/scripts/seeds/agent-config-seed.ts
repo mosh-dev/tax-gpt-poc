@@ -3,7 +3,7 @@
  * Seeds the database with default AI agent system instructions
  */
 
-import { Environment } from '@/environment';
+import { Environment } from '@config/environment';
 import { AgentConfig, IAgentConfig } from '@domains/agent-config/models/agent-config.model';
 import { DEFAULT_SYSTEM_INSTRUCTIONS } from '@/mastra/agents/tax-agent/system-instructions';
 

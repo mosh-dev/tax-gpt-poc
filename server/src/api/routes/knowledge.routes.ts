@@ -2,9 +2,9 @@ import { Router, Request, Response } from 'express';
 import { randomUUID } from 'crypto';
 import { authMiddleware } from '../middleware/auth.middleware';
 import { getErrorMessage } from '@utils/error-handler';
-import { progressManager } from '@domains/knowledge/progress-manager';
-import { knowledgeUpload } from '@domains/knowledge/upload-config';
-import { knowledgeService } from '@domains/knowledge/knowledge.service';
+import { progressManager } from '@infrastructure/services/knowledge/progress-manager';
+import { knowledgeUpload } from '@infrastructure/services/knowledge/upload-config';
+import { knowledgeService } from '@infrastructure/services/knowledge/knowledge.service';
 
 const router = Router();
 

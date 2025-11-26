@@ -3,8 +3,8 @@
  * Manages workflow runs and their state
  * All workflow state is persisted to MongoDB via Mastra's workflowStorage
  */
-import { getCollection } from '@infrastructure/database/database-utils';
-import { MASTRA_COLLECTIONS } from '@shared/constants/database-collections';
+import { getCollection } from '@infrastructure/database/utils';
+import { MASTRA_COLLECTIONS } from '@config/database-collections';
 import { getErrorMessage } from '@utils/error-handler';
 import { WORKFLOW_IDS } from '@shared/constants/workflow';
 import { getMastra } from '@/mastra/mastra-instance';

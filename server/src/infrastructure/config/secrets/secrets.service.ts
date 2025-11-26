@@ -3,8 +3,8 @@
  * Manages retrieval and caching of secrets from the database
  */
 
-import { Secret } from '@infrastructure/secrets/secret.model';
-import { isDatabaseConnected } from '@infrastructure/database/database';
+import { Secret } from '@infrastructure/config/secrets/secret.model';
+import { isDatabaseConnected } from '@infrastructure/database/connection';
 import { getErrorMessage } from '@utils/error-handler';
 
 /**

@@ -5,11 +5,11 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { PDFParse } from 'pdf-parse';
-import { KnowledgeBase } from '@domains/knowledge/knowledge-base.model';
+import { KnowledgeBase } from '@infrastructure/services/knowledge/knowledge-base.model';
 import { chunkDocument, getChunkStats } from './chunker';
 import { generateEmbeddings } from './embedder';
 import fs from 'fs/promises';
-import { getVectorStore, SearchResult, VectorDocument } from '@domains/knowledge/retriever.class';
+import { getVectorStore, SearchResult, VectorDocument } from '@infrastructure/services/knowledge/retriever.class';
 
 export interface IngestResult {
   fileId: string;

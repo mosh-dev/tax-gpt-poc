@@ -1,6 +1,6 @@
 // Create MongoDB storage for workflow snapshots
 import { MongoDBStore } from '@mastra/mongodb';
-import { Environment } from '@/environment';
+import { Environment } from '@config/environment';
 
 export const workflowStorage = new MongoDBStore({
   id: 'tax-gpt-workflow-storage',

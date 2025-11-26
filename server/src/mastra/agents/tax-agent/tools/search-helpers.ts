@@ -4,7 +4,7 @@
  */
 
 import { z } from 'zod';
-import { getRAGService } from '@domains/knowledge/rag-service.class';
+import { getRAGService } from '@infrastructure/services/knowledge/rag-service.class';
 
 export interface SearchOptions {
   topK?: number;

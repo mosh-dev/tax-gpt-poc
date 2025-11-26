@@ -5,7 +5,7 @@
  */
 
 import { z } from 'zod';
-import { extractStructuredData } from '@infrastructure/extraction/structured-extraction.service';
+import { extractStructuredData } from '@infrastructure/services/ai/extraction/structured-extraction.service';
 
 // Schema for extracted tax data
 const taxDataSchema = z.object({

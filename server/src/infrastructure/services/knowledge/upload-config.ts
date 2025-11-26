@@ -6,7 +6,7 @@
 import multer from 'multer';
 import path from 'path';
 import { randomUUID } from 'crypto';
-import { getStoragePath } from '@/storage';
+import { getStoragePath } from '@config/storage';
 import fs from 'fs/promises';
 import { MAX_KNOWLEDGE_FILE_SIZE } from '@/shared/constants/file-upload';
 import { KNOWLEDGE_BASE_CONFIG, isAllowedFileExtension, isAllowedMimeType } from '@/shared/constants/knowledge-base';

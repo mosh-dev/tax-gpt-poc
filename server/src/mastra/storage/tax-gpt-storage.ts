@@ -1,5 +1,5 @@
 import { MongoDBStore } from '@mastra/mongodb';
-import { Environment } from '@/environment';
+import { Environment } from '@config/environment';
 
 // Base MongoDB store for chat history (works with local MongoDB)
 export const taxGptStorage = new MongoDBStore({

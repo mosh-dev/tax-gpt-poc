@@ -4,8 +4,8 @@
  */
 
 import { getRAGService } from './rag-service.class';
-import { fileService } from '@domains/document/file-service.class';
-import { Environment } from '@/environment';
+import { fileService } from '@infrastructure/services/document/file-service.class';
+import { Environment } from '@config/environment';
 import path from 'path';
 
 export interface UploadFileParams {

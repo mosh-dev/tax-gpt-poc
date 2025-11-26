@@ -1,9 +1,9 @@
 import { z } from 'zod';
 import { generateObject } from 'ai';
-import { getGenerateMode, getModelByPurpose, getModelConfigs, MODEL_PURPOSES } from '@infrastructure/llm/llm';
+import { getGenerateMode, getModelByPurpose, getModelConfigs, MODEL_PURPOSES } from '@infrastructure/services/ai/llm-client';
 import { truncateToTokenLimit } from './token-manager';
 import type { ExtractionInput, ExtractionMetadata, ExtractionOptions } from './types';
-import { generateCacheKey, getCache } from '@infrastructure/extraction/cache-manager.class';
+import { generateCacheKey, getCache } from '@infrastructure/services/ai/extraction/cache-manager.class';
 
 const DEFAULT_MAX_TOKENS = 12000;
 

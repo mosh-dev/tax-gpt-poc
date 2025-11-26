@@ -1,6 +1,6 @@
 import { Memory } from '@mastra/memory';
 import { fastembed } from '@mastra/fastembed';
-import { Environment } from '@/environment';
+import { Environment } from '@config/environment';
 import { taxGptStorage } from '@/mastra/storage/tax-gpt-storage';
 import { taxGptVector } from '@/mastra/storage/tax-gpt-vector';
 

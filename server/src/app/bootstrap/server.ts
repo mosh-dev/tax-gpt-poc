@@ -3,9 +3,9 @@
  * Uses Clean Architecture with DI container
  */
 
-import { Environment } from '@/environment';
+import { Environment } from '@config/environment';
 import { getErrorMessage } from '@utils/error-handler';
-import { createExpressApp, startExpressServer } from '@/express-app';
+import { createExpressApp, startExpressServer } from '@/app/bootstrap/app';
 
 /**
  * Start server

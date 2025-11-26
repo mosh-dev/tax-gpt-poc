@@ -3,8 +3,8 @@
  * Export all seed functions
  */
 
-import { seedAgentConfig } from '@/seeds/agent-config-seed';
-import { seedEmployees } from '@/seeds/employee-seed';
+import { seedAgentConfig } from '@/scripts/seeds/agent-config-seed';
+import { seedEmployees } from '@/scripts/seeds/employee-seed';
 
 /**
  * Run all seed scripts

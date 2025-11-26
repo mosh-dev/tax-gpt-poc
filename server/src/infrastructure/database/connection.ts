@@ -4,7 +4,7 @@
  */
 
 import mongoose from 'mongoose';
-import { Environment } from '@/environment';
+import { Environment } from '@config/environment';
 
 const MONGODB_URI = Environment.MONGODB_URI;
 

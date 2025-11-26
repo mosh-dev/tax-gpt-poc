@@ -10,7 +10,7 @@ import fs from 'fs';
 import { getPathInfo } from '@utils/path-utils';
 
 const { dirName } = getPathInfo(import.meta.url);
-export const STORAGE_ROOT = join(dirName, '../../storage');
+export const STORAGE_ROOT = join(dirName, '../../../storage');
 
 // Storage subdirectories
 export const STORAGE_PATHS = {
