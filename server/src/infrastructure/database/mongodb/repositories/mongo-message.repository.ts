@@ -4,7 +4,7 @@
  */
 import { IMessageRepository } from '@infrastructure/database/mongodb/repositories/interfaces/message-repository.interface';
 import { TaxGptMessage } from '@domains/conversation/entities/tax-gpt-message.class';
-import { MessageMapper } from '@infrastructure/database/mongodb/mappers/message-mapper.class';
+import { MessageMapper } from '@infrastructure/database/mongodb/mappers/message.mapper';
 import { MessageModel } from '@domains/conversation/models/message.model';
 import { MessageId } from '@domains/conversation/value-objects/message-id.class';
 import { ConversationId } from '@domains/conversation/value-objects/conversation-id.class';

@@ -5,7 +5,7 @@
 
 import { Request, Response } from 'express';
 import { getErrorMessage } from '@utils/error-handler';
-import { StreamChatUseCase } from '@domains/conversation/use-cases/stream-chat-use-case.class';
+import { StreamChatUseCase } from '@domains/conversation/use-cases/stream-chat.use-case';
 import { StreamChatRequestDTO } from '@domains/conversation/dtos/chat-dto';
 
 export class ChatController {

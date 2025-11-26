@@ -15,7 +15,7 @@ import { startTaxCalculationTool } from '@/mastra/agents/tax-agent/tools/start-t
 import { resumeTaxCalculationTool } from '@/mastra/agents/tax-agent/tools/resume-tax-calculation-tool';
 import { searchKnowledgeTool } from '@/mastra/agents/tax-agent/tools/search-knowledge-tool';
 import { searchGeneralTool } from '@/mastra/agents/tax-agent/tools/search-general-tool';
-import { getOpenAiModel } from '@infrastructure/services/ai/llm-client';
+import { getOpenAiModel } from '@infrastructure/ai/llm-client';
 import { ChunkType } from '@mastra/core/stream';
 
 /**

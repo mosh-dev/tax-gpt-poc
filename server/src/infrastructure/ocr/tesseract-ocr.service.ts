@@ -2,7 +2,7 @@
  * Tesseract OCR Service Adapter
  * Implements IOCRService using the existing OCRService
  */
-import { ocrService } from '@infrastructure/services/ocr/ocr-service.class';
+import { ocrService } from '@infrastructure/ocr/ocr.service';
 import { IOCRService, OCROptions } from '@infrastructure/interfaces/ocr-service.interface';
 import { OCRResultOne } from '@/types/ocr-result.types';
 

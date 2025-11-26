@@ -1,4 +1,4 @@
-import { OCRMetadata, ProcessingStatus } from '@infrastructure/services/ocr/types';
+import { OCRMetadata, ProcessingStatus } from '@infrastructure/ocr/types';
 
 export interface OCRResultOne {
   text: string;

@@ -3,8 +3,8 @@
  * Orchestration layer for knowledge base operations
  */
 
-import { getRAGService } from './rag-service.class';
-import { fileService } from '@infrastructure/services/document/file-service.class';
+import { ragService } from './rag.service';
+import { fileService } from '@domains/document/services/file.service';
 import { Environment } from '@config/environment';
 import path from 'path';
 
@@ -60,7 +60,6 @@ export class KnowledgeService {
     const fileType = path.extname(file.originalname).substring(1) as 'txt' | 'md' | 'pdf';
 
     // Process file with RAG service (this runs asynchronously with progress callbacks)
-    const ragService = getRAGService();
     const result = await ragService.ingestFile(
       savedFile.storedPath,
       {
@@ -86,7 +85,6 @@ export class KnowledgeService {
    * List all knowledge base files
    */
   async listFiles(): Promise<ListFilesResult> {
-    const ragService = getRAGService();
     const files = await ragService.listFiles();
 
     // Fetch download URLs from File service
@@ -123,7 +121,6 @@ export class KnowledgeService {
     console.log(`[KnowledgeService] Deleting file: ${fileId}`);
 
     // Delete vectors from RAG service
-    const ragService = getRAGService();
     await ragService.deleteFile(fileId);
 
     // Delete file from File service (handles physical file + DB)

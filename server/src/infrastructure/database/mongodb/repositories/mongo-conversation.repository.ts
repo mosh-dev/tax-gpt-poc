@@ -4,7 +4,7 @@
  */
 import { IConversationRepository } from '@infrastructure/database/mongodb/repositories/interfaces/conversation-repository.interface';
 import { TaxGptConversation } from '@domains/conversation/entities/tax-gpt-conversation.class';
-import { ConversationMapper } from '@infrastructure/database/mongodb/mappers/conversation-mapper.class';
+import { ConversationMapper } from '@infrastructure/database/mongodb/mappers/conversation.mapper';
 import { ConversationId } from '@domains/conversation/value-objects/conversation-id.class';
 import { ConversationModel } from '@domains/conversation/models/conversation.model';
 

@@ -5,7 +5,7 @@
 
 import { LibSQLVector } from '@mastra/libsql';
 import { STORAGE_PATHS } from '@config/storage';
-import { generateEmbedding } from './embedder';
+import { generateEmbedding } from '@infrastructure/embedding/embedding.service';
 import { getErrorMessage } from '@utils/error-handler';
 
 export interface VectorDocument {
@@ -29,10 +29,10 @@ export interface SearchResult {
 }
 
 /**
- * Vector Store Manager
+ * Vector Store Service
  * Uses LibSQL for persistent vector storage
  */
-export class VectorStore {
+export class VectorStoreService {
   private vector: LibSQLVector;
   private initialized: boolean = false;
   private readonly indexName = 'knowledge_base';
@@ -238,15 +238,5 @@ export class VectorStore {
   }
 }
 
-// Singleton instance
-let vectorStoreInstance: VectorStore | null = null;
-
-/**
- * Get singleton vector store instance
- */
-export function getVectorStore(): VectorStore {
-  if (!vectorStoreInstance) {
-    vectorStoreInstance = new VectorStore();
-  }
-  return vectorStoreInstance;
-}
+// Export singleton instance
+export const vectorStoreService = new VectorStoreService();

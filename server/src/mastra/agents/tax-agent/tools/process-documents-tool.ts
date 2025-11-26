@@ -8,7 +8,7 @@ import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 import stringify from 'safe-stable-stringify';
 import { mongoRepository } from '@infrastructure/database/base-repository';
-import { ocrService } from '@infrastructure/services/ocr/ocr-service.class';
+import { ocrService } from '@infrastructure/ocr/ocr.service';
 
 /**
  * Safely serialize any value to ensure it's JSON-safe

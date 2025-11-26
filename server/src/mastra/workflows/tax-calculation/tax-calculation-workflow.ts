@@ -5,8 +5,8 @@
 
 import { createStep, createWorkflow } from '@mastra/core/workflows';
 import { z } from 'zod';
-import { fileService } from '@infrastructure/services/document/file-service.class';
-import { generateTaxReturnPDF } from '@infrastructure/services/document/pdf-generator';
+import { fileService } from '@domains/document/services/file.service';
+import { generateTaxReturnPDF } from '@domains/document/services/pdf-generator';
 import { WORKFLOW_IDS, WORKFLOW_STEPS } from '@shared/constants/workflow';
 import { extractTaxData, type DocumentWithText } from '@domains/tax-extraction/tax-data-extraction.service';
 import { mongoRepository } from '@infrastructure/database/base-repository';

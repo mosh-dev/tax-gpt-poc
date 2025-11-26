@@ -4,7 +4,7 @@
  */
 
 import { z } from 'zod';
-import { getRAGService } from '@infrastructure/services/knowledge/rag-service.class';
+import { ragService } from '@domains/knowledge/services/rag.service';
 
 export interface SearchOptions {
   topK?: number;
@@ -55,7 +55,6 @@ export async function executeKnowledgeSearch(
   try {
     console.log(`[${toolName}] Searching for: "${query}"`);
 
-    const ragService = getRAGService();
     const results = await ragService.searchKnowledge(query, {
       topK: options.topK || 5,
       minScore: options.minScore || 0.5,

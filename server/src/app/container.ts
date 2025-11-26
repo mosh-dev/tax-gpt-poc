@@ -2,25 +2,25 @@
  * Dependency Injection Container
  * Wires all dependencies together
  */
-import { MongoConversationRepository } from '@infrastructure/database/mongodb/repositories/mongo-conversation-repository.class';
-import { MongoMessageRepository } from '@infrastructure/database/mongodb/repositories/mongo-message-repository.class';
-import { MongoFileRepository } from '@infrastructure/database/mongodb/repositories/mongo-file-repository.class';
-import { LocalFileStorageService } from '@infrastructure/services/storage/local-file-storage-service.class';
+import { MongoConversationRepository } from '@infrastructure/database/mongodb/repositories/mongo-conversation.repository';
+import { MongoMessageRepository } from '@infrastructure/database/mongodb/repositories/mongo-message.repository';
+import { MongoFileRepository } from '@infrastructure/database/mongodb/repositories/mongo-file.repository';
+import { LocalFileStorageService } from '@infrastructure/storage/local-file-storage.service';
 import { IFileStorageService } from '@infrastructure/interfaces/file-storage-service.interface';
 import { IMessageRepository } from '@infrastructure/database/mongodb/repositories/interfaces/message-repository.interface';
 import { IConversationRepository } from '@infrastructure/database/mongodb/repositories/interfaces/conversation-repository.interface';
 import { IFileRepository } from '@infrastructure/database/mongodb/repositories/interfaces/file-repository.interface';
 import { IAIAgentService } from '@infrastructure/interfaces/ai-agent-service.interface';
 import { IOCRService } from '@infrastructure/interfaces/ocr-service.interface';
-import { GetAllConversationsUseCase } from '@domains/conversation/use-cases/get-all-conversations-use-case.class';
-import { GetConversationHistoryUseCase } from '@domains/conversation/use-cases/get-conversation-history-use-case.class';
-import { DeleteConversationUseCase } from '@domains/conversation/use-cases/delete-conversation-use-case.class';
-import { CreateConversationUseCase } from '@domains/conversation/use-cases/create-conversation-use-case.class';
-import { StreamChatUseCase } from '@domains/conversation/use-cases/stream-chat-use-case.class';
-import { UploadFileUseCase } from '@domains/document/use-cases/upload-file-use-case.class';
-import { ProcessDocumentUseCase } from '@domains/document/use-cases/process-document-use-case.class';
-import { GetFileUseCase } from '@domains/document/use-cases/get-file-use-case.class';
-import { DeleteFileUseCase } from '@domains/document/use-cases/delete-file-use-case.class';
+import { GetAllConversationsUseCase } from '@domains/conversation/use-cases/get-all-conversations.use-case';
+import { GetConversationHistoryUseCase } from '@domains/conversation/use-cases/get-conversation-history.use-case';
+import { DeleteConversationUseCase } from '@domains/conversation/use-cases/delete-conversation.use-case';
+import { CreateConversationUseCase } from '@domains/conversation/use-cases/create-conversation.use-case';
+import { StreamChatUseCase } from '@domains/conversation/use-cases/stream-chat.use-case';
+import { UploadFileUseCase } from '@domains/document/use-cases/upload-file.use-case';
+import { ProcessDocumentUseCase } from '@domains/document/use-cases/process-document.use-case';
+import { GetFileUseCase } from '@domains/document/use-cases/get-file.use-case';
+import { DeleteFileUseCase } from '@domains/document/use-cases/delete-file.use-case';
 import { ConversationController } from '@api/controllers/conversation.controller';
 import { ChatController } from '@api/controllers/chat.controller';
 import { FileController } from '@api/controllers/file.controller';

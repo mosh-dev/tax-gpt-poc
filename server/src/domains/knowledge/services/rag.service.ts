@@ -5,11 +5,15 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import { PDFParse } from 'pdf-parse';
-import { KnowledgeBase } from '@infrastructure/services/knowledge/knowledge-base.model';
+import { KnowledgeBase } from '@domains/knowledge/models/knowledge-base.model';
 import { chunkDocument, getChunkStats } from './chunker';
-import { generateEmbeddings } from './embedder';
+import { generateEmbeddings } from '@infrastructure/embedding/embedding.service';
 import fs from 'fs/promises';
-import { getVectorStore, SearchResult, VectorDocument } from '@infrastructure/services/knowledge/retriever.class';
+import {
+  SearchResult,
+  VectorDocument,
+  vectorStoreService
+} from '@infrastructure/vector-store/vector-store.service';
 
 export interface IngestResult {
   fileId: string;
@@ -33,7 +37,7 @@ export interface SearchOptions {
  * RAG Service for knowledge base management
  */
 export class RAGService {
-  private vectorStore = getVectorStore();
+  private vectorStore = vectorStoreService;
 
   /**
    * Ingest a knowledge base file (txt, md, pdf)
@@ -219,15 +223,5 @@ export class RAGService {
   }
 }
 
-// Singleton instance
-let ragServiceInstance: RAGService | null = null;
-
-/**
- * Get singleton RAG service instance
- */
-export function getRAGService(): RAGService {
-  if (!ragServiceInstance) {
-    ragServiceInstance = new RAGService();
-  }
-  return ragServiceInstance;
-}
+// Export singleton instance
+export const ragService = new RAGService();
