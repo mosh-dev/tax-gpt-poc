@@ -28,7 +28,7 @@ RUN npm install
 COPY src ./src
 
 # Build TypeScript
-RUN npm run build
+RUN npm run server:build
 
 
 
@@ -76,4 +76,4 @@ USER nodejs
 EXPOSE 3000
 
 # Start server
-CMD ["node", "dist/app/server.mjs"]
+CMD ["npm", "run", "server:start"]
