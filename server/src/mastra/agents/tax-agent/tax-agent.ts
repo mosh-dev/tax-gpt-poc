@@ -50,6 +50,7 @@ export class TaxAgent {
     console.log(`  - (Assuming $0.003/1K input tokens - adjust for your model)`);
 
     this.agent = new Agent({
+      id: 'zurich-tax-assistant',
       name: 'zurich-tax-assistant',
       instructions: instructions,
       model: model,
