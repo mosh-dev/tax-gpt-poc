@@ -1,4 +1,4 @@
-import { registerToContainer } from '@/app/di-container/container';
+import { registerToContainer } from '@/app/di-container/container-helper';
 
 import { ConversationController } from '@api/controllers/conversation.controller';
 import { ChatController } from '@api/controllers/chat.controller';

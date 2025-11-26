@@ -8,7 +8,7 @@ import { MongoConversationRepository } from '@infrastructure/database/mongodb/re
 import { MongoMessageRepository } from '@infrastructure/database/mongodb/repositories/mongo-message.repository';
 import { MastraAIAgentService } from '@infrastructure/ai/mastra-ai-agent.service';
 import { ConversationId } from '@domains/conversation/value-objects/conversation-id.class';
-import { injectFromContainer } from '@/app/di-container/container';
+import { injectFromContainer } from '@/app/di-container/container-helper';
 
 export class DeleteConversationUseCase {
   private conversationRepository = injectFromContainer(MongoConversationRepository);

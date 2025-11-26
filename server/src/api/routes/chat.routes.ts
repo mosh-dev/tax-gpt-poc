@@ -5,7 +5,7 @@
 
 import { Router } from 'express';
 import { ChatController } from '@api/controllers/chat.controller';
-import { injectFromContainer } from '@/app/di-container/container';
+import { injectFromContainer } from '@/app/di-container/container-helper';
 
 const router = Router();
 

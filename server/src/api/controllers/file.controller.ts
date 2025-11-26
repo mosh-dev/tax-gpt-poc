@@ -9,7 +9,7 @@ import { ProcessDocumentUseCase } from '@domains/document/use-cases/process-docu
 import { GetFileUseCase } from '@domains/document/use-cases/get-file.use-case';
 import { DeleteFileUseCase } from '@domains/document/use-cases/delete-file.use-case';
 import { ProcessDocumentDTO, UploadFileDTO } from '@domains/document/dtos/file-dto';
-import { injectFromContainer } from '@/app/di-container/container';
+import { injectFromContainer } from '@/app/di-container/container-helper';
 
 export class FileController {
   private uploadFileUseCase = injectFromContainer(UploadFileUseCase);

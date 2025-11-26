@@ -6,7 +6,7 @@ import { MongoConversationRepository } from '@infrastructure/database/mongodb/re
 import { ConversationHistoryDTO } from '@domains/conversation/dtos/message-dto';
 import { MongoMessageRepository } from '@infrastructure/database/mongodb/repositories/mongo-message.repository';
 import { ConversationId } from '@domains/conversation/value-objects/conversation-id.class';
-import { injectFromContainer } from '@/app/di-container/container';
+import { injectFromContainer } from '@/app/di-container/container-helper';
 
 
 export class GetConversationHistoryUseCase {

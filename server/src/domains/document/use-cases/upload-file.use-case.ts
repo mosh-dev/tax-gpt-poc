@@ -9,7 +9,7 @@ import { FileId } from '@domains/document/value-objects/file-id.class';
 import { FileMetadata } from '@domains/document/value-objects/file-metadata.class';
 import { ConversationId } from '@domains/conversation/value-objects/conversation-id.class';
 import { TaxGptFile } from '@domains/document/entities/tax-gpt-file.class';
-import { injectFromContainer } from '@/app/di-container/container';
+import { injectFromContainer } from '@/app/di-container/container-helper';
 
 export class UploadFileUseCase {
   private fileRepository = injectFromContainer(MongoFileRepository);

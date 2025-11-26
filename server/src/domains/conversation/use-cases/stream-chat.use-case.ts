@@ -12,7 +12,7 @@ import { MessageRole } from '@domains/conversation/value-objects/message-role.cl
 import { TaxGptMessage } from '@domains/conversation/entities/tax-gpt-message.class';
 import { TaxGptConversation } from '@domains/conversation/entities/tax-gpt-conversation.class';
 import { STREAM_EVENT_TYPES, MASTRA_EVENT_TYPES } from '@shared/constants/events';
-import { injectFromContainer } from '@/app/di-container/container';
+import { injectFromContainer } from '@/app/di-container/container-helper';
 
 export class StreamChatUseCase {
   private conversationRepository = injectFromContainer(MongoConversationRepository);

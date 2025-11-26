@@ -6,7 +6,7 @@ import { MongoConversationRepository } from '@infrastructure/database/mongodb/re
 import { ConversationDTO, CreateConversationDTO } from '@domains/conversation/dtos/conversation-dto';
 import { TaxGptConversation } from '@domains/conversation/entities/tax-gpt-conversation.class';
 import { ConversationId } from '@domains/conversation/value-objects/conversation-id.class';
-import { injectFromContainer } from '@/app/di-container/container';
+import { injectFromContainer } from '@/app/di-container/container-helper';
 
 export class CreateConversationUseCase {
   private conversationRepository = injectFromContainer(MongoConversationRepository);

@@ -2,7 +2,7 @@ import { Router } from 'express';
 import multer from 'multer';
 import { FileController } from '@api/controllers/file.controller';
 import { MAX_FILE_SIZE } from '@/shared/constants/file-upload';
-import { injectFromContainer } from '@/app/di-container/container';
+import { injectFromContainer } from '@/app/di-container/container-helper';
 
 const upload = multer({
   storage: multer.memoryStorage(),

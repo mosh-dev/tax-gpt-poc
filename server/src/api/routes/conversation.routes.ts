@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { ConversationController } from '@api/controllers/conversation.controller';
-import { injectFromContainer } from '@/app/di-container/container';
+import { injectFromContainer } from '@/app/di-container/container-helper';
 
 const router = Router();
 

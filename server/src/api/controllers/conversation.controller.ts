@@ -7,7 +7,7 @@ import { getErrorMessage } from '@utils/error-handler';
 import { GetAllConversationsUseCase } from '@domains/conversation/use-cases/get-all-conversations.use-case';
 import { GetConversationHistoryUseCase } from '@domains/conversation/use-cases/get-conversation-history.use-case';
 import { DeleteConversationUseCase } from '@domains/conversation/use-cases/delete-conversation.use-case';
-import { injectFromContainer } from '@/app/di-container/container';
+import { injectFromContainer } from '@/app/di-container/container-helper';
 
 export class ConversationController {
   private getAllConversationsUseCase = injectFromContainer(GetAllConversationsUseCase);
