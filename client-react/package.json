@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "client:dev": "vite",
-    "client:build": "tsc -b && vite build --mode dev",
+    "client:build": "tsc -b && vite build",
+    "client:build:inb": "tsc -b && vite build --mode inb",
     "client:lint": "eslint .",
     "client:preview": "vite preview"
   },

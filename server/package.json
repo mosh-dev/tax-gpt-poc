@@ -5,8 +5,9 @@
   "type": "module",
   "main": "dist/app/server.mjs",
   "scripts": {
-    "server:build": "tsc --noEmit && node esbuild.config.mjs && copyfiles -u 1 \"src/assets/**/*\" dist/app",
-    "server:dev": "tsc --noEmit && node esbuild.config.mjs --watch",
+    "server:build": "tsc --noEmit && node esbuild.config.mjs",
+    "server:build:inb": "cross-env NODE_ENV=inb tsc --noEmit && node esbuild.config.mjs",
+    "server:dev": "tsc-watch --noEmit --onSuccess \"node esbuild.config.mjs --watch\"",
     "server:start": "node dist/app/server.mjs",
     "server:lint": "eslint src/**/*.ts",
     "server:mastra": "tsc --noEmit && cross-env MASTRA_START_SERVER=true mastra dev --dir src/mastra"
@@ -25,7 +26,6 @@
     "canvas": "~3.2.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
-    "esbuild-plugin-tsc": "^0.5.0",
     "express": "^5.1.0",
     "gpt-tokenizer": "^3.4.0",
     "jsonwebtoken": "^9.0.2",
@@ -53,15 +53,14 @@
     "@types/pino": "^7.0.4",
     "@typescript-eslint/eslint-plugin": "^8.46.4",
     "@typescript-eslint/parser": "^8.46.4",
-    "copyfiles": "^2.4.1",
     "cross-env": "^10.1.0",
     "esbuild": "^0.27.0",
     "esbuild-node-externals": "^1.20.1",
+    "esbuild-plugin-copy": "^2.1.1",
+    "esbuild-plugin-tsc": "^0.5.0",
     "eslint": "^9.39.1",
-    "glob": "^13.0.0",
     "mastra": "^1.0.0-beta.3",
-    "tsc-alias": "^1.8.10",
-    "tsx": "^4.19.2",
+    "tsc-watch": "^7.2.0",
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.48.0"
   }

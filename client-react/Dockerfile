@@ -14,8 +14,8 @@ RUN npm install
 # Copy source code and config files
 COPY . .
 
-# Build the React app (Vite will inject VITE_AGENT_SERVER_URL)
-RUN npm run client:build
+# Build the React app (Vite will inject VITE_AGENT_SERVER_URL from .env.inb)
+RUN npm run client:build:inb
 
 # Stage 2: Production - Nginx
 FROM nginx:alpine

@@ -27,8 +27,8 @@ RUN npm install
 # Copy source code
 COPY src ./src
 
-# Build TypeScript
-RUN npm run server:build
+# Build TypeScript for INB server (NODE_ENV=inb with minification)
+RUN npm run server:build:inb
 
 
 

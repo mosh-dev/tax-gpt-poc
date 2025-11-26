@@ -19,10 +19,6 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
 
-    // Decorators for TSyringe
-    "experimentalDecorators": true,
-    "emitDecoratorMetadata": true,
-
     // Interop
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,

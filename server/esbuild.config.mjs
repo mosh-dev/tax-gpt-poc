@@ -1,9 +1,11 @@
 import esbuild from 'esbuild';
 import { nodeExternalsPlugin } from 'esbuild-node-externals';
 import tscPlugin from "esbuild-plugin-tsc";
+import { copy } from 'esbuild-plugin-copy';
 import { spawn } from 'child_process';
 
 const outPath = 'dist/app';
+const isProduction = process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'inb';
 
 const config = {
   entryPoints: ['src/server.ts'],
@@ -13,9 +15,19 @@ const config = {
   target: 'node20',
   sourcemap: true,
   bundle: true,
+  minify: isProduction,
+  treeShaking: true,
   plugins: [
     nodeExternalsPlugin(),
-    tscPlugin()
+    tscPlugin(),
+    copy({
+      resolveFrom: 'out',
+      assets: [{
+        from: ['./src/assets/**/*'],
+        to: ['./assets']
+      }],
+      watch: true
+    })
   ],
   loader: {
     '.ts': 'ts',
@@ -61,13 +73,16 @@ if (isWatch) {
   await context.watch();
   console.log('👀 Watching for changes...');
 
-  process.on('SIGINT', () => {
+  const shutdown = () => {
     console.log('\n👋 Stopping...');
     if (serverProcess) {
       serverProcess.kill();
     }
     process.exit(0);
-  });
+  };
+
+  process.on('SIGINT', shutdown);
+  process.on('SIGTERM', shutdown);
 } else {
   esbuild.build(config).then(() => {
     console.log('✓ Build completed successfully');

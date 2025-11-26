@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile
     container_name: tax-gpt-client
     env_file:
-      - .env.dev
+      - .env.inb
     ports:
       - "80:80"
     restart: unless-stopped
