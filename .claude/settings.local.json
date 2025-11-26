@@ -4,7 +4,10 @@
       "Bash(npm run lint)",
       "Bash(find:*)",
       "Bash(npm run build:*)",
-      "Bash(npm run start:*)"
+      "Bash(npm run start:*)",
+      "Bash(npm run client:lint:*)",
+      "Bash(npm run build:server:*)",
+      "Bash(npm run build:client:*)"
     ],
     "deny": [],
     "ask": []

@@ -38,12 +38,16 @@ export class RAGService {
   /**
    * Ingest a knowledge base file (txt, md, pdf)
    */
-  async ingestFile(filePath: string, metadata: {
-    fileId: string;
-    fileName: string;
-    fileType: 'txt' | 'md' | 'pdf';
-    size: number;
-  }): Promise<IngestResult> {
+  async ingestFile(
+    filePath: string,
+    metadata: {
+      fileId: string;
+      fileName: string;
+      fileType: 'txt' | 'md' | 'pdf';
+      size: number;
+    },
+    onProgress?: (stage: 'extracting' | 'chunking' | 'embedding', progress: number, message: string) => void
+  ): Promise<IngestResult> {
     console.log(`[RAG] Ingesting file: ${metadata.fileName} (${metadata.fileType})`);
 
     // Step 1: Extract text content based on file type
@@ -54,6 +58,7 @@ export class RAGService {
     }
 
     console.log(`[RAG] Extracted ${content.length} characters from ${metadata.fileName}`);
+    onProgress?.('extracting', 20, `Extracted ${content.length} characters`);
 
     // Step 2: Chunk the document
     const chunks = chunkDocument(content);
@@ -64,6 +69,7 @@ export class RAGService {
 
     const stats = getChunkStats(chunks);
     console.log(`[RAG] Created ${chunks.length} chunks (avg size: ${stats.avgChunkSize} chars)`);
+    onProgress?.('chunking', 40, `Created ${chunks.length} chunks`);
 
     // Step 3: Generate embeddings for all chunks
     const chunkTexts = chunks.map((chunk) => chunk.content);
@@ -74,6 +80,7 @@ export class RAGService {
     }
 
     console.log(`[RAG] Generated ${embeddings.length} embeddings`);
+    onProgress?.('embedding', 100, `Generated ${embeddings.length} embeddings`);
 
     // Step 4: Prepare vector documents
     const vectorDocs: VectorDocument[] = chunks.map((chunk, index) => ({

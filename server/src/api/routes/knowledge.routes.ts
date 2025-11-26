@@ -1,109 +1,95 @@
-/**
- * Knowledge Base Routes
- * Handles knowledge base file uploads, listing, and deletion
- * Files are processed with RAG for semantic search
- */
-
 import { Router, Request, Response } from 'express';
-import multer from 'multer';
-import path from 'path';
 import { randomUUID } from 'crypto';
-import { getStoragePath } from '@/storage';
-import { getRAGService } from '@domains/knowledge/rag-service.class';
 import { authMiddleware } from '../middleware/auth.middleware';
-import { fileService } from '@domains/document/file-service.class';
-import { Environment } from '@/environment';
-import fs from 'fs/promises';
 import { getErrorMessage } from '@utils/error-handler';
+import { progressManager } from '@domains/knowledge/progress-manager';
+import { knowledgeUpload } from '@domains/knowledge/upload-config';
+import { knowledgeService } from '@domains/knowledge/knowledge.service';
 
 const router = Router();
-
-// Configure multer for knowledge base uploads
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    const filesDir = getStoragePath('files');
-    void fs.mkdir(filesDir, { recursive: true })
-      .then(() => cb(null, filesDir));
-  },
-  filename: (req, file, cb) => {
-    // Generate unique filename with UUID (File Service pattern)
-    const fileId = randomUUID();
-    const ext = path.extname(file.originalname);
-    cb(null, `${fileId}${ext}`);
-  }
-});
-
-const upload = multer({
-  storage,
-  limits: {
-    fileSize: 50 * 1024 * 1024, // 50MB limit for knowledge base files
-  },
-  fileFilter: (req, file, cb) => {
-    // Accept only txt, md, and pdf files
-    const allowedTypes = /txt|md|pdf/;
-    const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-
-    // Check mime types
-    const allowedMimes = ['text/plain', 'text/markdown', 'application/pdf'];
-    const mimeOk = allowedMimes.some(mime => file.mimetype.includes(mime)) ||
-                   file.mimetype === 'application/octet-stream'; // For .md files sometimes
-
-    if (extname && (mimeOk || extname)) {
-      return cb(null, true);
-    }
-    cb(new Error('Only .txt, .md, and .pdf files are allowed for knowledge base'));
-  }
-});
 
 /**
  * POST /api/knowledge/upload
  * Upload knowledge base file and process with RAG
+ * Returns immediately with uploadId for progress tracking
  * Requires authentication
  */
-router.post('/upload', authMiddleware, upload.single('file'), async (req: Request, res: Response) => {
+router.post('/upload', authMiddleware, knowledgeUpload.single('file'), async (req: Request, res: Response): Promise<void> => {
   try {
     const file = req.file as Express.Multer.File;
 
     if (!file) {
-      return res.status(400).json({ error: 'No file uploaded' });
+      res.status(400).json({ error: 'No file uploaded' });
+      return;
     }
 
-    console.log(`[Knowledge API] Uploading file: ${file.originalname}`);
+    console.log(`[KnowledgeRoutes] Uploading file: ${file.originalname}`);
 
-    // Save file using File Service
-    const savedFile = await fileService.saveFile(file, undefined, Environment.BASE_URL);
-    const fileType = path.extname(file.originalname).substring(1) as 'txt' | 'md' | 'pdf';
+    // Generate unique upload ID for progress tracking
+    const uploadId = randomUUID();
 
-    // Ingest file with RAG service
-    const ragService = getRAGService();
-    const result = await ragService.ingestFile(savedFile.storedPath, {
-      fileId: savedFile.fileId,
-      fileName: savedFile.originalName,
-      fileType,
-      size: savedFile.size,
-    });
-
-    console.log(`[Knowledge API] File ingested successfully: ${result.chunkCount} chunks created`);
-
+    // Return immediately with upload ID
     res.json({
       success: true,
-      file: {
-        id: result.fileId,
-        name: result.fileName,
-        chunkCount: result.chunkCount,
-        stats: result.stats,
-      }
+      uploadId,
+      fileId: file.filename.split('.')[0], // Temporary ID until saved
+      fileName: file.originalname,
     });
+
+    // Process asynchronously with progress callbacks
+    try {
+      const result = await knowledgeService.uploadFile({
+        file,
+        onProgress: (stage, progress, message) => {
+          progressManager.emitProgress(uploadId, {
+            type: 'progress',
+            stage,
+            progress,
+            message,
+          });
+        }
+      });
+
+      console.log(`[KnowledgeRoutes] File ingested successfully: ${result.fileName} (${result.chunkCount} chunks)`);
+
+      // Send completion event
+      progressManager.complete(uploadId, {
+        type: 'complete',
+        chunkCount: result.chunkCount,
+        stats: { totalChunks: result.chunkCount, avgChunkSize: 0, estimatedTokens: 0 },
+      });
+    } catch (processingError: unknown) {
+      const errorMsg = getErrorMessage(processingError);
+      console.error('[KnowledgeRoutes] Processing error:', errorMsg);
+      progressManager.error(uploadId, errorMsg);
+    }
 
   } catch (error: unknown) {
     const errorMsg = getErrorMessage(error);
-    console.error('[Knowledge API] Upload error:', errorMsg);
+    console.error('[KnowledgeRoutes] Upload error:', errorMsg);
 
     res.status(500).json({
-      error: 'Failed to upload and process file',
+      error: 'Failed to upload file',
       message: errorMsg
     });
   }
+});
+
+/**
+ * GET /api/knowledge/upload-progress/:uploadId
+ * SSE endpoint for upload progress updates
+ * Requires authentication
+ */
+router.get('/upload-progress/:uploadId', authMiddleware, (req: Request, res: Response): void => {
+  const { uploadId } = req.params;
+
+  if (!uploadId) {
+    res.status(400).json({ error: 'Upload ID is required' });
+    return;
+  }
+
+  console.log(`[Knowledge API] SSE connection for upload: ${uploadId}`);
+  progressManager.subscribe(uploadId, res);
 });
 
 /**
@@ -111,36 +97,13 @@ router.post('/upload', authMiddleware, upload.single('file'), async (req: Reques
  * List all knowledge base files
  * Requires authentication
  */
-router.get('/files', authMiddleware, async (req: Request, res: Response) => {
+router.get('/files', authMiddleware, async (_: Request, res: Response) => {
   try {
-    const ragService = getRAGService();
-    const files = await ragService.listFiles();
-
-    // Fetch download URLs from File service
-    const filesWithUrls = await Promise.all(
-      files.map(async (f) => {
-        const fileUrl = await fileService.getFileUrl(f.fileId);
-        return {
-          id: f.fileId,
-          name: f.fileName,
-          type: f.fileType,
-          size: f.size,
-          chunkCount: f.chunkCount,
-          uploadedAt: f.uploadedAt,
-          downloadUrl: fileUrl || undefined,
-        };
-      })
-    );
-
-    res.json({
-      success: true,
-      count: filesWithUrls.length,
-      files: filesWithUrls,
-    });
-
+    const result = await knowledgeService.listFiles();
+    res.json(result);
   } catch (error: unknown) {
     const errorMsg = getErrorMessage(error);
-    console.error('[Knowledge API] List error:', errorMsg);
+    console.error('[KnowledgeRoutes] List error:', errorMsg);
 
     res.status(500).json({
       error: 'Failed to list files',
@@ -154,33 +117,23 @@ router.get('/files', authMiddleware, async (req: Request, res: Response) => {
  * Delete a knowledge base file and all its vectors
  * Requires authentication
  */
-router.delete('/files/:id', authMiddleware, async (req: Request, res: Response) => {
+router.delete('/files/:id', authMiddleware, async (req: Request, res: Response): Promise<void> => {
   try {
     const { id } = req.params;
 
     if (!id) {
-      return res.status(400).json({ error: 'File ID is required' });
+      res.status(400).json({ error: 'File ID is required' });
+      return;
     }
 
-    console.log(`[Knowledge API] Deleting file: ${id}`);
+    console.log(`[KnowledgeRoutes] Deleting file: ${id}`);
 
-    // Delete vectors from RAG service
-    const ragService = getRAGService();
-    await ragService.deleteFile(id);
-
-    // Delete file from File service (handles physical file + DB)
-    await fileService.deleteFile(id);
-
-    console.log(`[Knowledge API] File deleted successfully: ${id}`);
-
-    res.json({
-      success: true,
-      message: 'File deleted successfully'
-    });
+    const result = await knowledgeService.deleteFile(id);
+    res.json(result);
 
   } catch (error: unknown) {
     const errorMsg = getErrorMessage(error);
-    console.error('[Knowledge API] Delete error:', errorMsg);
+    console.error('[KnowledgeRoutes] Delete error:', errorMsg);
 
     res.status(500).json({
       error: 'Failed to delete file',

@@ -4,10 +4,10 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "tsc -b && vite build --mode dev",
-    "lint": "eslint .",
-    "preview": "vite preview"
+    "client:dev": "vite",
+    "client:build": "tsc -b && vite build --mode dev",
+    "client:lint": "eslint .",
+    "client:preview": "vite preview"
   },
   "dependencies": {
     "dompurify": "^3.3.0",

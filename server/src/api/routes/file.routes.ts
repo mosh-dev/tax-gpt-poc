@@ -1,17 +1,12 @@
-/**
- * File Routes
- * Defines routes for file operations
- */
-
 import { Router } from 'express';
 import multer from 'multer';
 import { FileController } from '@api/controllers/file.controller';
+import { MAX_FILE_SIZE } from '@/shared/constants/file-upload';
 
-// Configure multer for in-memory file storage
 const upload = multer({
   storage: multer.memoryStorage(),
   limits: {
-    fileSize: 10 * 1024 * 1024, // 10MB limit
+    fileSize: MAX_FILE_SIZE,
   },
 });
 

@@ -26,6 +26,7 @@ import { PinoLogger } from '@mastra/loggers';
 import { Observability } from '@mastra/observability';
 import { setMastra } from '@/mastra/mastra-instance';
 import { getOrCreateTaxAgent } from '@/mastra/agents/tax-agent/tax-agent.handler';
+import { MAX_BODY_SIZE } from '@/shared/constants/file-upload';
 
 /**
  * Create and configure Express application
@@ -59,8 +60,8 @@ export async function createExpressApp(): Promise<Express> {
     origin: true, // Allow any origin
     credentials: true
   }));
-  app.use(express.json());
-  app.use(express.urlencoded({ extended: true }));
+  app.use(express.json({ limit: MAX_BODY_SIZE }));
+  app.use(express.urlencoded({ extended: true, limit: MAX_BODY_SIZE }));
 
   // Request logging middleware
   app.use((req: Request, _: Response, next: NextFunction) => {

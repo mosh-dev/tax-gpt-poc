@@ -4,9 +4,8 @@
  */
 
 import { Router, Request, Response } from 'express';
-import { AgentConfig } from '@/mastra/agents/agent-config.model';
 import { getErrorMessage } from '@utils/error-handler';
-import { invalidateTaxAgent } from '@/mastra/agents/tax-agent/tax-agent.handler';
+import { agentConfigService } from '@domains/agent-config/agent-config.service';
 
 const router = Router();
 
@@ -14,12 +13,12 @@ const router = Router();
  * GET /api/agent-config
  * Get the current agent configuration
  */
-router.get('/', async (req: Request, res: Response) => {
+router.get('/', async (_: Request, res: Response) => {
   try {
-    const config = await AgentConfig.findOne().lean();
+    const config = await agentConfigService.getConfig();
 
     if (!config) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         error: 'Agent configuration not found',
       });
@@ -27,15 +26,11 @@ router.get('/', async (req: Request, res: Response) => {
 
     res.json({
       success: true,
-      config: {
-        id: config._id,
-        instructions: config.instructions,
-        updatedAt: config.updatedAt,
-      },
+      config,
     });
   } catch (error: unknown) {
     const errorMsg = getErrorMessage(error);
-    console.error('[AgentConfig] Failed to get config:', errorMsg);
+    console.error('[AgentConfigRoutes] Failed to get config:', errorMsg);
     res.status(500).json({
       success: false,
       error: errorMsg,
@@ -51,37 +46,24 @@ router.put('/', async (req: Request, res: Response) => {
   try {
     const { instructions } = req.body;
 
-    if (!instructions || typeof instructions !== 'string') {
-      return res.status(400).json({
-        success: false,
-        error: 'Instructions are required and must be a string',
-      });
-    }
-
-    // Find and update the config, or create if doesn't exist
-    const config = await AgentConfig.findOneAndUpdate(
-      {},
-      { instructions },
-      { new: true, upsert: true, runValidators: true }
-    ).lean();
-
-    console.log('[AgentConfig] Configuration updated');
-
-    // Invalidate the agent instance so it gets recreated with new instructions
-    await invalidateTaxAgent();
-    console.log('[AgentConfig] Agent instance invalidated - will use new instructions on next request');
+    const config = await agentConfigService.updateConfig({ instructions });
 
     res.json({
       success: true,
-      config: {
-        id: config._id,
-        instructions: config.instructions,
-        updatedAt: config.updatedAt,
-      },
+      config,
     });
   } catch (error: unknown) {
     const errorMsg = getErrorMessage(error);
-    console.error('[AgentConfig] Failed to update config:', errorMsg);
+    console.error('[AgentConfigRoutes] Failed to update config:', errorMsg);
+
+    // Handle validation errors with 400 status
+    if (errorMsg.includes('required') || errorMsg.includes('cannot be empty')) {
+      res.status(400).json({
+        success: false,
+        error: errorMsg,
+      });
+    }
+
     res.status(500).json({
       success: false,
       error: errorMsg,

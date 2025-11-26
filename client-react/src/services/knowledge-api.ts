@@ -30,9 +30,88 @@ export interface UploadKnowledgeFileResponse {
   };
 }
 
+export interface UploadInitiateResponse {
+  success: boolean;
+  uploadId: string;
+  fileId: string;
+  fileName: string;
+}
+
+export interface UploadProgressCallback {
+  (progress: {
+    bytesUploaded: number;
+    totalBytes: number;
+    percentage: number;
+  }): void;
+}
+
 class KnowledgeApiService {
   /**
-   * Upload a knowledge base file
+   * Upload a knowledge base file with progress tracking
+   * Uses XMLHttpRequest to support upload progress events
+   */
+  async uploadFileWithProgress(
+    file: File,
+    onProgress: UploadProgressCallback,
+    abortController: AbortController
+  ): Promise<UploadInitiateResponse> {
+    return new Promise((resolve, reject) => {
+      const xhr = new XMLHttpRequest();
+      const formData = new FormData();
+      formData.append('file', file);
+
+      xhr.upload.onprogress = (event) => {
+        if (event.lengthComputable) {
+          onProgress({
+            bytesUploaded: event.loaded,
+            totalBytes: event.total,
+            percentage: Math.round((event.loaded / event.total) * 100),
+          });
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          try {
+            const response = JSON.parse(xhr.responseText);
+            resolve(response);
+          } catch {
+            reject(new Error('Failed to parse response'));
+          }
+        } else {
+          try {
+            const error = JSON.parse(xhr.responseText);
+            reject(new Error(error.message || 'Upload failed'));
+          } catch {
+            reject(new Error(`Upload failed with status ${xhr.status}`));
+          }
+        }
+      };
+
+      xhr.onerror = () => {
+        reject(new Error('Network error during upload'));
+      };
+
+      xhr.onabort = () => {
+        reject(new Error('Upload cancelled'));
+      };
+
+      abortController.signal.addEventListener('abort', () => {
+        xhr.abort();
+      });
+
+      const token = authService.getAccessToken();
+      xhr.open('POST', `${API_BASE_URL}/api/knowledge/upload`);
+      if (token) {
+        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      }
+
+      xhr.send(formData);
+    });
+  }
+
+  /**
+   * Upload a knowledge base file (legacy method without progress)
    */
   async uploadFile(file: File): Promise<UploadKnowledgeFileResponse> {
     const formData = new FormData();
@@ -43,7 +122,6 @@ class KnowledgeApiService {
       {
         method: 'POST',
         body: formData,
-        // Don't set Content-Type header - browser will set it with boundary
       }
     );
 
