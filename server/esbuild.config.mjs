@@ -5,7 +5,6 @@ import { copy } from 'esbuild-plugin-copy';
 import { spawn } from 'child_process';
 
 const outPath = 'dist/app';
-const isProduction = process.env.NODE_ENV === 'production' || process.env.NODE_ENV === 'inb';
 
 const config = {
   entryPoints: ['src/server.ts'],
@@ -15,7 +14,6 @@ const config = {
   target: 'node20',
   sourcemap: true,
   bundle: true,
-  minify: isProduction,
   treeShaking: true,
   plugins: [
     nodeExternalsPlugin(),
