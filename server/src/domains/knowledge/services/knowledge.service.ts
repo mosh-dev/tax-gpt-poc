@@ -2,7 +2,6 @@
  * Knowledge Service
  * Orchestration layer for knowledge base operations
  */
-import { injectable } from 'tsyringe';
 
 import { ragService } from './rag.service';
 import { fileService } from '@domains/document/services/file.service';
@@ -14,8 +13,8 @@ import type {
   DeleteFileResult
 } from '@domains/knowledge/knowledge.types';
 
-@injectable()
 export class KnowledgeService {
+  // Note: This service uses singleton instances (ragService, fileService) and doesn't use DI yet
   /**
    * Upload and process a knowledge base file
    */

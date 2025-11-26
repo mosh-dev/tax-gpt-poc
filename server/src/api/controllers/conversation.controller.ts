@@ -2,21 +2,17 @@
  * Conversation Controller
  * Handles HTTP requests for conversation operations
  */
-import { injectable } from 'tsyringe';
-
 import { Request, Response } from 'express';
 import { getErrorMessage } from '@utils/error-handler';
 import { GetAllConversationsUseCase } from '@domains/conversation/use-cases/get-all-conversations.use-case';
 import { GetConversationHistoryUseCase } from '@domains/conversation/use-cases/get-conversation-history.use-case';
 import { DeleteConversationUseCase } from '@domains/conversation/use-cases/delete-conversation.use-case';
+import { injectFromContainer } from '@/app/di-container/container-helper';
 
-@injectable()
 export class ConversationController {
-  constructor(
-    private getAllConversationsUseCase: GetAllConversationsUseCase,
-    private getConversationHistoryUseCase: GetConversationHistoryUseCase,
-    private deleteConversationUseCase: DeleteConversationUseCase
-  ) {}
+  private getAllConversationsUseCase = injectFromContainer(GetAllConversationsUseCase);
+  private getConversationHistoryUseCase = injectFromContainer(GetConversationHistoryUseCase);
+  private deleteConversationUseCase = injectFromContainer(DeleteConversationUseCase);
 
   /**
    * GET /api/chat/conversations

@@ -1,5 +1,3 @@
-import 'reflect-metadata';
-
 import { getMastra } from '@/mastra/mastra-instance';
 import { Environment } from '@config/environment';
 import { createExpressApp, startExpressServer } from '@/app/app';

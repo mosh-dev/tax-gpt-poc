@@ -2,7 +2,6 @@
  * Vector Store Service
  * Persistent vector storage using LibSQL
  */
-import { injectable } from 'tsyringe';
 
 import { LibSQLVector } from '@mastra/libsql';
 import { STORAGE_PATHS } from '@config/storage';
@@ -16,7 +15,6 @@ export type { VectorDocument, SearchResult };
  * Vector Store Service
  * Uses LibSQL for persistent vector storage
  */
-@injectable()
 export class VectorStoreService {
   private vector: LibSQLVector;
   private initialized: boolean = false;
@@ -31,6 +29,7 @@ export class VectorStoreService {
       id: 'knowledge-base-vectors',
       connectionUrl: vectorDbPath,
     });
+    // Note: This service creates LibSQLVector in constructor and doesn't use DI yet
   }
 
   /**

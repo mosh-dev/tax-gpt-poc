@@ -22,14 +22,13 @@ import { Observability } from '@mastra/observability';
 import { setMastra } from '@/mastra/mastra-instance';
 import { getOrCreateTaxAgent } from '@/mastra/agents/tax-agent/tax-agent.handler';
 import { MAX_BODY_SIZE } from '@/shared/constants/file-upload';
-import { container } from 'tsyringe';
+import { injectFromContainer } from '@/app/di-container/container-helper';
 
 /**
  * Create and configure Express application
  * Sets up middleware, routes, and error handlers
  */
 export async function createExpressApp(): Promise<Express> {
-  // Initialize database, seeds, and LLM client (idempotent)
   await initializeApp();
   const taxAgentWrapper = await getOrCreateTaxAgent();
   const mastra = new Mastra({
@@ -72,9 +71,9 @@ export async function createExpressApp(): Promise<Express> {
   });
 
   // Resolve controllers from DI container (all dependencies auto-injected!)
-  const conversationController = container.resolve(ConversationController);
-  const chatController = container.resolve(ChatController);
-  const fileController = container.resolve(FileController);
+  const conversationController = injectFromContainer(ConversationController);
+  const chatController = injectFromContainer(ChatController);
+  const fileController = injectFromContainer(FileController);
 
   // Setup routes
   const conversationRoutes = createConversationRoutes(conversationController);

@@ -2,15 +2,14 @@
  * Create Conversation Use Case
  * Creates a new conversation
  */
-import { injectable } from 'tsyringe';
 import { MongoConversationRepository } from '@infrastructure/database/mongodb/repositories/mongo-conversation.repository';
 import { ConversationDTO, CreateConversationDTO } from '@domains/conversation/dtos/conversation-dto';
 import { TaxGptConversation } from '@domains/conversation/entities/tax-gpt-conversation.class';
 import { ConversationId } from '@domains/conversation/value-objects/conversation-id.class';
+import { injectFromContainer } from '@/app/di-container/container-helper';
 
-@injectable()
 export class CreateConversationUseCase {
-  constructor(private conversationRepository: MongoConversationRepository) {}
+  private conversationRepository = injectFromContainer(MongoConversationRepository);
 
   async execute(data: CreateConversationDTO): Promise<ConversationDTO> {
     // Create domain entity

@@ -2,7 +2,6 @@
  * MongoDB File Repository Implementation
  * Implements IFileRepository using MongoDB
  */
-import { injectable } from 'tsyringe';
 import { IFileRepository } from '@infrastructure/database/mongodb/repositories/interfaces/file-repository.interface';
 import { TaxGptFile } from '@domains/document/entities/tax-gpt-file.class';
 import { FileMapper } from '@infrastructure/database/mongodb/mappers/file.mapper';
@@ -10,7 +9,6 @@ import { FileId } from '@domains/document/value-objects/file-id.class';
 import { ConversationId } from '@domains/conversation/value-objects/conversation-id.class';
 import { FileModel } from '@domains/document/models/file.model';
 
-@injectable()
 export class MongoFileRepository implements IFileRepository {
   async create(file: TaxGptFile): Promise<TaxGptFile> {
     const data = FileMapper.toPersistence(file);

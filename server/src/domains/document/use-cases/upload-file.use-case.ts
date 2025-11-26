@@ -2,7 +2,6 @@
  * Upload File Use Case
  * Handles file upload and storage
  */
-import { injectable } from 'tsyringe';
 import { MongoFileRepository } from '@infrastructure/database/mongodb/repositories/mongo-file.repository';
 import { LocalFileStorageService } from '@infrastructure/storage/local-file-storage.service';
 import { FileDTO, UploadFileDTO } from '@domains/document/dtos/file-dto';
@@ -10,14 +9,11 @@ import { FileId } from '@domains/document/value-objects/file-id.class';
 import { FileMetadata } from '@domains/document/value-objects/file-metadata.class';
 import { ConversationId } from '@domains/conversation/value-objects/conversation-id.class';
 import { TaxGptFile } from '@domains/document/entities/tax-gpt-file.class';
+import { injectFromContainer } from '@/app/di-container/container-helper';
 
-@injectable()
 export class UploadFileUseCase {
-  constructor(
-    private fileRepository: MongoFileRepository,
-    private fileStorageService: LocalFileStorageService
-  ) {
-  }
+  private fileRepository = injectFromContainer(MongoFileRepository);
+  private fileStorageService = injectFromContainer(LocalFileStorageService);
 
   async execute(data: UploadFileDTO): Promise<FileDTO> {
     // 1. Generate file ID and save to storage

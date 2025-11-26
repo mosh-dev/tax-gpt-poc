@@ -2,7 +2,6 @@
  * Stream Chat Use Case
  * Handles streaming chat with AI agent
  */
-import { injectable } from 'tsyringe';
 import { MongoConversationRepository } from '@infrastructure/database/mongodb/repositories/mongo-conversation.repository';
 import { MongoMessageRepository } from '@infrastructure/database/mongodb/repositories/mongo-message.repository';
 import { MastraAIAgentService } from '@infrastructure/ai/mastra-ai-agent.service';
@@ -13,14 +12,12 @@ import { MessageRole } from '@domains/conversation/value-objects/message-role.cl
 import { TaxGptMessage } from '@domains/conversation/entities/tax-gpt-message.class';
 import { TaxGptConversation } from '@domains/conversation/entities/tax-gpt-conversation.class';
 import { STREAM_EVENT_TYPES, MASTRA_EVENT_TYPES } from '@shared/constants/events';
+import { injectFromContainer } from '@/app/di-container/container-helper';
 
-@injectable()
 export class StreamChatUseCase {
-  constructor(
-    private conversationRepository: MongoConversationRepository,
-    private messageRepository: MongoMessageRepository,
-    private aiAgentService: MastraAIAgentService
-  ) {}
+  private conversationRepository = injectFromContainer(MongoConversationRepository);
+  private messageRepository = injectFromContainer(MongoMessageRepository);
+  private aiAgentService = injectFromContainer(MastraAIAgentService);
 
   /**
    * Generate a conversation title from the first message (first 3 words)

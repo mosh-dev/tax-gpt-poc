@@ -2,7 +2,6 @@
  * Agent Config Service
  * Business logic for agent configuration management
  */
-import { injectable } from 'tsyringe';
 
 import { AgentConfig, IAgentConfig } from '@domains/agent-config/models/agent-config.model';
 import { invalidateTaxAgent } from '@/mastra/agents/tax-agent/tax-agent.handler';
@@ -17,8 +16,8 @@ export interface AgentConfigResponse {
   updatedAt: Date;
 }
 
-@injectable()
 export class AgentConfigService {
+  // Note: This service uses Mongoose models directly and doesn't use DI yet
   /**
    * Get the current agent configuration
    */

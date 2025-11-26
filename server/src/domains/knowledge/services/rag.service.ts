@@ -2,7 +2,6 @@
  * RAG Service
  * Main service for knowledge base ingestion and retrieval
  */
-import { injectable } from 'tsyringe';
 
 import { v4 as uuidv4 } from 'uuid';
 import { PDFParse } from 'pdf-parse';
@@ -20,9 +19,9 @@ import type { IngestResult, SearchOptions } from '@domains/knowledge/rag.types';
 /**
  * RAG Service for knowledge base management
  */
-@injectable()
 export class RAGService {
   private vectorStore = vectorStoreService;
+  // Note: This service uses singleton vectorStoreService and Mongoose models, doesn't use DI yet
 
   /**
    * Ingest a knowledge base file (txt, md, pdf)

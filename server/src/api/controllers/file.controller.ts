@@ -2,8 +2,6 @@
  * File Controller
  * Handles HTTP requests for file operations
  */
-import { injectable } from 'tsyringe';
-
 import { Request, Response } from 'express';
 import { getErrorMessage } from '@utils/error-handler';
 import { UploadFileUseCase } from '@domains/document/use-cases/upload-file.use-case';
@@ -11,15 +9,13 @@ import { ProcessDocumentUseCase } from '@domains/document/use-cases/process-docu
 import { GetFileUseCase } from '@domains/document/use-cases/get-file.use-case';
 import { DeleteFileUseCase } from '@domains/document/use-cases/delete-file.use-case';
 import { ProcessDocumentDTO, UploadFileDTO } from '@domains/document/dtos/file-dto';
+import { injectFromContainer } from '@/app/di-container/container-helper';
 
-@injectable()
 export class FileController {
-  constructor(
-    private uploadFileUseCase: UploadFileUseCase,
-    private processDocumentUseCase: ProcessDocumentUseCase,
-    private getFileUseCase: GetFileUseCase,
-    private deleteFileUseCase: DeleteFileUseCase
-  ) {}
+  private uploadFileUseCase = injectFromContainer(UploadFileUseCase);
+  private processDocumentUseCase = injectFromContainer(ProcessDocumentUseCase);
+  private getFileUseCase = injectFromContainer(GetFileUseCase);
+  private deleteFileUseCase = injectFromContainer(DeleteFileUseCase);
 
   /**
    * POST /api/files/upload

@@ -21,9 +21,6 @@ const config = {
     '.ts': 'ts',
     '.json': 'json'
   },
-  banner: {
-    js: `import "reflect-metadata";`
-  },
   tsconfig: 'tsconfig.json'
 };
 

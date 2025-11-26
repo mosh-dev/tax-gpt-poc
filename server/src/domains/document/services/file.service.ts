@@ -3,7 +3,6 @@
  * Handles all file-related operations (upload, download, delete, get)
  * Coordinates between file system and database
  */
-import { injectable } from 'tsyringe';
 
 import fs from 'fs/promises';
 import path from 'path';
@@ -23,8 +22,8 @@ export interface UploadedFileInfo {
   conversationId?: string;
 }
 
-@injectable()
 export class FileService {
+  // Note: This service uses the legacy mongoRepository and doesn't use DI yet
   /**
    * Save uploaded file and create database record
    */

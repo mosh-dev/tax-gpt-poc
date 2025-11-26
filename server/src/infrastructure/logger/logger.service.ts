@@ -3,8 +3,6 @@
  * Generic logging infrastructure service
  */
 
-import { injectable } from 'tsyringe';
-
 export interface ILoggerService {
   info(message: string, meta?: Record<string, any>): void;
   error(message: string, error?: Error, meta?: Record<string, any>): void;
@@ -14,9 +12,7 @@ export interface ILoggerService {
 
 /**
  * Console-based logger implementation
- * TSyringe will automatically create and inject this service
  */
-@injectable()
 export class LoggerService implements ILoggerService {
   constructor(private serviceName: string = 'TaxGPT') {}
 

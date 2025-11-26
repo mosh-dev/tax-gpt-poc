@@ -3,7 +3,6 @@
  * Main service for document OCR processing
  * Supports multiple document types with extensible processor architecture
  */
-import { injectable } from 'tsyringe';
 
 import path from 'path';
 import { DEFAULT_OCR_CONFIG, getOCRConfig, getSwissCantonLanguage } from './config';
@@ -12,7 +11,6 @@ import { PDFProcessor } from '@infrastructure/ocr/processors/pdf-processor';
 import { OCRResultThree } from '@/types/ocr-result.types';
 import { DocumentProcessor, FileType, OCRConfig, SupportedLanguage } from '@infrastructure/ocr/ocr.types';
 
-@injectable()
 export class OCRService {
   private processors: Map<FileType, DocumentProcessor>;
 
@@ -21,6 +19,7 @@ export class OCRService {
     this.processors = new Map();
     this.registerProcessor('image', new ImageProcessor());
     this.registerProcessor('pdf', new PDFProcessor());
+    // Note: This service creates processors in constructor and doesn't use DI yet
   }
 
   /**

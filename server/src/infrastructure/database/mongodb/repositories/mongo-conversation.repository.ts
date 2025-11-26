@@ -2,14 +2,12 @@
  * MongoDB Conversation Repository Implementation
  * Implements IConversationRepository using MongoDB
  */
-import { injectable } from 'tsyringe';
 import { IConversationRepository } from '@infrastructure/database/mongodb/repositories/interfaces/conversation-repository.interface';
 import { TaxGptConversation } from '@domains/conversation/entities/tax-gpt-conversation.class';
 import { ConversationMapper } from '@infrastructure/database/mongodb/mappers/conversation.mapper';
 import { ConversationId } from '@domains/conversation/value-objects/conversation-id.class';
 import { ConversationModel } from '@domains/conversation/models/conversation.model';
 
-@injectable()
 export class MongoConversationRepository implements IConversationRepository {
   async create(conversation: TaxGptConversation): Promise<TaxGptConversation> {
     const data = ConversationMapper.toPersistence(conversation);

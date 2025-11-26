@@ -4,19 +4,16 @@
  * - Custom MongoDB collections (messages, conversations)
  * - Mastra data (threads, messages, workflow snapshots)
  */
-import { injectable } from 'tsyringe';
 import { MongoConversationRepository } from '@infrastructure/database/mongodb/repositories/mongo-conversation.repository';
 import { MongoMessageRepository } from '@infrastructure/database/mongodb/repositories/mongo-message.repository';
 import { MastraAIAgentService } from '@infrastructure/ai/mastra-ai-agent.service';
 import { ConversationId } from '@domains/conversation/value-objects/conversation-id.class';
+import { injectFromContainer } from '@/app/di-container/container-helper';
 
-@injectable()
 export class DeleteConversationUseCase {
-  constructor(
-    private conversationRepository: MongoConversationRepository,
-    private messageRepository: MongoMessageRepository,
-    private aiAgentService: MastraAIAgentService
-  ) {}
+  private conversationRepository = injectFromContainer(MongoConversationRepository);
+  private messageRepository = injectFromContainer(MongoMessageRepository);
+  private aiAgentService = injectFromContainer(MastraAIAgentService);
 
   async execute(conversationId: string): Promise<void> {
     const convId = ConversationId.create(conversationId);

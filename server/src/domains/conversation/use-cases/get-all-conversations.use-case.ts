@@ -2,13 +2,12 @@
  * Get All Conversations Use Case
  * Retrieves list of conversations for a user
  */
-import { injectable } from 'tsyringe';
 import { MongoConversationRepository } from '@infrastructure/database/mongodb/repositories/mongo-conversation.repository';
 import { ConversationListDTO } from '@domains/conversation/dtos/conversation-dto';
+import { injectFromContainer } from '@/app/di-container/container-helper';
 
-@injectable()
 export class GetAllConversationsUseCase {
-  constructor(private conversationRepository: MongoConversationRepository) {}
+  private conversationRepository = injectFromContainer(MongoConversationRepository);
 
   async execute(userId?: string, limit: number = 50): Promise<ConversationListDTO[]> {
     const conversations = await this.conversationRepository.findAll(userId, limit);
