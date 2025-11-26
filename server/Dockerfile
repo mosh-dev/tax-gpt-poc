@@ -49,14 +49,15 @@ RUN apt-get update && apt-get install -y \
     librsvg2-2 \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy only package.json
+# Copy package.json and built output from builder
 COPY package.json ./
-
-# Install only production dependencies
-RUN npm install --omit=dev
-
-# Copy built output from builder
 COPY --from=builder /app/dist ./dist
+
+# Copy node_modules from builder (includes compiled native deps)
+COPY --from=builder /app/node_modules ./node_modules
+
+# Prune dev dependencies to keep image small
+RUN npm prune --production
 
 # Create non-root user
 RUN groupadd -g 1001 nodejs && \
