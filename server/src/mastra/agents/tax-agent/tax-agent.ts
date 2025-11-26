@@ -1,7 +1,7 @@
 import { Agent } from '@mastra/core/agent';
 import { Memory } from '@mastra/memory';
 import { createMastraMemory, createMemoryConfigFromEnv } from '@/mastra/helpers/mastra-memory.helper';
-import { AgentConfig } from '@/mastra/agents/agent-config.model';
+import { AgentConfig } from '@domains/agent-config/models/agent-config.model';
 import { encode } from 'gpt-tokenizer';
 import { getCollection } from '@infrastructure/database/database-utils';
 import { MASTRA_COLLECTIONS } from '@shared/constants/database-collections';

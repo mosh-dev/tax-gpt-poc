@@ -4,7 +4,7 @@
  */
 
 import { Environment } from '@/environment';
-import { AgentConfig, IAgentConfig } from '@/mastra/agents/agent-config.model';
+import { AgentConfig, IAgentConfig } from '@domains/agent-config/models/agent-config.model';
 import { DEFAULT_SYSTEM_INSTRUCTIONS } from '@/mastra/agents/tax-agent/system-instructions';
 
 /**

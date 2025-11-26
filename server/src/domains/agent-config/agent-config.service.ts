@@ -3,7 +3,7 @@
  * Business logic for agent configuration management
  */
 
-import { AgentConfig, IAgentConfig } from '@/mastra/agents/agent-config.model';
+import { AgentConfig, IAgentConfig } from '@domains/agent-config/models/agent-config.model';
 import { invalidateTaxAgent } from '@/mastra/agents/tax-agent/tax-agent.handler';
 
 export interface UpdateConfigParams {
