@@ -1,11 +1,11 @@
 import { asClass, asValue } from 'awilix';
-import { containerRegistry, symbolRegistry } from '@/app/di-container/container-registry';
+import { containerRegistry, containerTokenRegistry } from '@/app/di-container/container-registry';
 
 function getSymbol(key: string): symbol {
-  if (!symbolRegistry.has(key)) {
-    symbolRegistry.set(key, Symbol(key));
+  if (!containerTokenRegistry.has(key)) {
+    containerTokenRegistry.set(key, Symbol(key));
   }
-  return symbolRegistry.get(key)!;
+  return containerTokenRegistry.get(key)!;
 }
 
 export function registerToContainer<T>(refOrKey: any, value?: T): symbol {

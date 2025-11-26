@@ -34,12 +34,8 @@ import { MongoMessageRepository } from '@infrastructure/database/mongodb/reposit
 import { Environment } from '@config/environment';
 import { createContainer, InjectionMode } from 'awilix';
 
-export const containerRegistry = createContainer({
-  injectionMode: InjectionMode.PROXY,
-  strict: true,
-});
-
-export const symbolRegistry = new Map<string, symbol>();
+export const containerRegistry = createContainer({ injectionMode: InjectionMode.PROXY, strict: true});
+export const containerTokenRegistry = new Map<string, symbol>();
 
 export function registerApplicationComponents() {
   registerToContainer(ConversationController);
@@ -51,7 +47,6 @@ export function registerApplicationComponents() {
   registerToContainer(DeleteConversationUseCase);
   registerToContainer(CreateConversationUseCase);
   registerToContainer(StreamChatUseCase);
-
   registerToContainer(UploadFileUseCase);
   registerToContainer(ProcessDocumentUseCase);
   registerToContainer(GetFileUseCase);
@@ -61,7 +56,6 @@ export function registerApplicationComponents() {
   registerToContainer(AgentConfigService);
   registerToContainer(KnowledgeService);
   registerToContainer(RAGService);
-
   registerToContainer(OCRService);
   registerToContainer(TesseractOCRService);
   registerToContainer(MastraAIAgentService);
