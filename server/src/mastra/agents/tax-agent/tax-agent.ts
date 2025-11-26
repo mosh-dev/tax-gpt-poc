@@ -14,6 +14,7 @@ import { processDocumentsTool } from '@/mastra/agents/tax-agent/tools/process-do
 import { startTaxCalculationTool } from '@/mastra/agents/tax-agent/tools/start-tax-calculation-tool';
 import { resumeTaxCalculationTool } from '@/mastra/agents/tax-agent/tools/resume-tax-calculation-tool';
 import { searchKnowledgeTool } from '@/mastra/agents/tax-agent/tools/search-knowledge-tool';
+import { searchGeneralTool } from '@/mastra/agents/tax-agent/tools/search-general-tool';
 import { getOpenAiModel } from '@infrastructure/llm/llm';
 import { ChunkType } from '@mastra/core/stream';
 
@@ -61,6 +62,7 @@ export class TaxAgent {
         startTaxCalculationTool,
         resumeTaxCalculationTool,
         searchKnowledgeTool,
+        searchGeneralTool,
       },
     });
   }
