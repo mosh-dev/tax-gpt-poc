@@ -1,3 +1,5 @@
+import { GenerateMode } from '@infrastructure/ai/llm-client';
+
 export interface ExtractionInput {
   text: string | string[];
   context?: Record<string, any>;
@@ -15,5 +17,5 @@ export interface ExtractionMetadata {
   wasTruncated: boolean;
   cacheHit: boolean;
   modelName: string;
-  generateMode: 'tool' | 'json';
+  generateMode: GenerateMode;
 }

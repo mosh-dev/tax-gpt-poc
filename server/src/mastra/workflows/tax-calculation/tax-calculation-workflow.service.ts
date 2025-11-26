@@ -28,7 +28,6 @@ export class TaxCalculationWorkflowService {
    * Workflow state is automatically persisted to MongoDB by Mastra
    */
   async startTaxCalculation(threadId: string, message?: string): Promise<WorkflowStatus> {
-    console.log(`[WorkflowService] Starting tax calculation workflow for thread: ${threadId}`);
 
     try {
       const mastra = getMastra();
@@ -46,8 +45,6 @@ export class TaxCalculationWorkflowService {
           message,
         },
       });
-
-      console.log(`[WorkflowService] Workflow started, status: ${result.status}`);
 
       // Build status response
       const status: WorkflowStatus = {
@@ -98,7 +95,6 @@ export class TaxCalculationWorkflowService {
    * Loads workflow from MongoDB storage (survives server restarts)
    */
   async resumeWorkflow(runId: string, stepId: string, resumeData: any): Promise<WorkflowStatus> {
-    console.log(`[WorkflowService] Resuming workflow ${runId} at step ${stepId}`);
 
     try {
       const mastra = getMastra();
@@ -122,8 +118,6 @@ export class TaxCalculationWorkflowService {
         : workflowRunSnapshot.snapshot;
 
       const threadId = snapshot?.context?.input?.threadId || '';
-
-      console.log(`[WorkflowService] Resume data:`, JSON.stringify(resumeData, null, 2));
 
       // Resume the workflow
       const result = await run.resume({

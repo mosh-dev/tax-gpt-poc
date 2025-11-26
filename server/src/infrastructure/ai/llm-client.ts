@@ -3,6 +3,15 @@ import { Environment } from '@config/environment';
 import { getLLMApiKey } from '@infrastructure/config/secrets/secrets.service';
 import type { LanguageModel } from "ai";
 
+/**
+ * AI Generate Mode Type
+ * Determines how the AI model generates responses
+ * - 'auto': Let the model decide the best approach (default)
+ * - 'tool': Force tool/function calling mode
+ * - 'json': Force JSON response mode
+ */
+export type GenerateMode = 'auto' | 'json' | 'tool';
+
 export const MODEL_PURPOSES = {
   PRIMARY: 'primary',
   SECONDARY: 'secondary',
@@ -15,13 +24,32 @@ export type ModelPurpose = typeof MODEL_PURPOSES[keyof typeof MODEL_PURPOSES];
 interface ModelConfig {
   modelName: string;
   baseURL: string;
-  generateMode: 'tool' | 'json';
+  generateMode: GenerateMode;
   purpose: ModelPurpose;
 }
 
 const llmClients: Map<string, ReturnType<typeof createOpenAICompatible>> = new Map();
 const modelConfigs: Map<ModelPurpose, ModelConfig> = new Map();
 let isInitialized = false;
+
+/**
+ * Determines the appropriate generate mode based on model name
+ * @param modelName - The name of the LLM model
+ * @returns The generate mode to use ('auto', 'json', or 'tool')
+ */
+function getModelGenerateMode(modelName: string): GenerateMode {
+  const model = modelName.toLowerCase();
+
+  switch (true) {
+    case model.includes('gpt-3.5'):
+    case model.includes('claude'):
+    case model.includes('gemini'):
+      return 'json';
+
+    default:
+      return 'auto';
+  }
+}
 
 export async function initializeLLMClient(): Promise<void> {
   if (isInitialized) {
@@ -69,7 +97,7 @@ function buildModelConfigs(): void {
   modelConfigs.set(MODEL_PURPOSES.PRIMARY, {
     modelName: Environment.LLM_PRIMARY_MODEL,
     baseURL: Environment.LLM_PRIMARY_BASE_URL,
-    generateMode: Environment.getModelGenerateMode(Environment.LLM_PRIMARY_MODEL),
+    generateMode: getModelGenerateMode(Environment.LLM_PRIMARY_MODEL),
     purpose: MODEL_PURPOSES.PRIMARY,
   });
 
@@ -78,7 +106,7 @@ function buildModelConfigs(): void {
   modelConfigs.set(MODEL_PURPOSES.SECONDARY, {
     modelName: secondaryModel,
     baseURL: secondaryBaseUrl,
-    generateMode: Environment.getModelGenerateMode(secondaryModel),
+    generateMode: getModelGenerateMode(secondaryModel),
     purpose: MODEL_PURPOSES.SECONDARY,
   });
 
@@ -87,7 +115,7 @@ function buildModelConfigs(): void {
   modelConfigs.set(MODEL_PURPOSES.SIMPLE_CHAT, {
     modelName: simpleChatModel,
     baseURL: simpleChatBaseUrl,
-    generateMode: Environment.getModelGenerateMode(simpleChatModel),
+    generateMode: getModelGenerateMode(simpleChatModel),
     purpose: MODEL_PURPOSES.SIMPLE_CHAT,
   });
 
@@ -96,7 +124,7 @@ function buildModelConfigs(): void {
   modelConfigs.set(MODEL_PURPOSES.EXTRACTION, {
     modelName: extractionModel,
     baseURL: extractionBaseUrl,
-    generateMode: Environment.getModelGenerateMode(extractionModel),
+    generateMode: getModelGenerateMode(extractionModel),
     purpose: MODEL_PURPOSES.EXTRACTION,
   });
 }
@@ -135,7 +163,7 @@ export const getExtractionModel = (): LanguageModel => {
   return getModelByPurpose(MODEL_PURPOSES.EXTRACTION);
 };
 
-export const getGenerateMode = (purpose: ModelPurpose = MODEL_PURPOSES.PRIMARY): 'tool' | 'json' => {
+export const getGenerateMode = (purpose: ModelPurpose = MODEL_PURPOSES.PRIMARY): GenerateMode => {
   const config = modelConfigs.get(purpose);
   if (!config) {
     throw new Error(`No configuration found for model purpose: ${purpose}`);
