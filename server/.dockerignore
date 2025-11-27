@@ -25,11 +25,6 @@ Thumbs.db
 .git
 .gitignore
 
-# Environment
-.env
-.env.local
-.env.*.local
-
 # Testing
 coverage
 *.log
@@ -43,4 +38,3 @@ coverage
 .eslintrc*
 *.config.js
 !*config.prod.js
-package-lock.json

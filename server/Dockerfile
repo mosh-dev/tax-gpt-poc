@@ -1,11 +1,9 @@
 # ================================
 # Stage 1: Builder
 # ================================
-FROM node:24-alpine AS builder
+FROM node:24-slim AS builder
 
 WORKDIR /app
-
-# No system packages needed for @napi-rs/canvas
 
 # Copy package files
 COPY package.json ./
@@ -15,32 +13,28 @@ COPY esbuild.config.mjs ./
 # Install dependencies
 RUN npm install
 
-# Copy source
+# Copy source code
 COPY src ./src
 
 # Build TypeScript for INB server
 RUN npm run server:build:inb
 
 
-
 # ================================
 # Stage 2: Production
 # ================================
-FROM node:24-alpine AS production
+FROM node:24-slim AS production
 
 WORKDIR /app
 
-# @napi-rs/canvas requires ZERO system-level libs
-# Node 24 Slim is fully compatible out of the box.
-
-# Copy package.json and built output
+# Copy package.json only
 COPY package.json ./
-COPY --from=builder /app/dist ./dist
 
-# Copy node_modules (already built)
+# Copy built output and node_modules from builder
+COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
 
-# Remove dev deps
+# Remove dev dependencies
 RUN npm prune --omit=dev
 
 # Create non-root user
@@ -54,7 +48,7 @@ RUN mkdir -p /storage && \
 # Fix ownership for app
 RUN chown -R nodejs:nodejs /app
 
-# Switch user
+# Switch to non-root user
 USER nodejs
 
 EXPOSE 3000
