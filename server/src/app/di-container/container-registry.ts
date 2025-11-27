@@ -34,8 +34,10 @@ import { MongoMessageRepository } from '@infrastructure/database/mongodb/reposit
 import { Environment } from '@config/environment';
 import { createContainer, InjectionMode } from 'awilix';
 
-export const containerRegistry = createContainer({ injectionMode: InjectionMode.PROXY, strict: true});
-export const containerTokenRegistry = new Map<string, symbol>();
+export const containerRegistry = createContainer({
+  injectionMode: InjectionMode.PROXY,
+  strict: true
+});
 
 export function registerApplicationComponents() {
   registerToContainer(ConversationController);
