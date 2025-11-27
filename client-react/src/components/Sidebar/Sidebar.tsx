@@ -92,13 +92,13 @@ export default function Sidebar({
           {/* Search */}
           <div className="p-4 border-gray-200 dark:border-gray-700 pt-4">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400 dark:text-gray-500" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-500 dark:text-gray-400" />
               <input
                 type="text"
                 placeholder="Search chat"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 text-sm bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
+                className="w-full pl-10 pr-4 py-2.5 border-2 border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 dark:focus:ring-primary-400 dark:focus:border-primary-400 text-sm bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 font-medium shadow-sm hover:bg-white dark:hover:bg-gray-750 transition-colors"
               />
             </div>
           </div>
@@ -106,7 +106,7 @@ export default function Sidebar({
           {/* Conversations List */}
           <div className="flex-1 overflow-y-auto overscroll-contain border-b border-gray-200 dark:border-gray-700">
             <div className="p-2">
-              <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase px-3 mb-2">CHATS</h2>
+              <h2 className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider px-3 mb-3">Chats</h2>
 
               {loading ? (
                 <div className="flex justify-center py-8">
@@ -130,7 +130,7 @@ export default function Sidebar({
                     onClick={() => handleConversationClick(conv.conversationId)}
                   >
                     <MessageSquare className="w-4 h-4 flex-shrink-0" />
-                    <span className="flex-1 truncate text-[0.9rem]">
+                    <span className={`flex-1 truncate text-sm ${currentConversationId === conv.conversationId ? 'font-semibold' : 'font-medium'}`}>
                       {conv.title}
                     </span>
                     <button
@@ -153,16 +153,16 @@ export default function Sidebar({
           {/* Footer */}
           <div className="p-4">
             {userName && (
-              <div className="flex items-center gap-3 px-3 py-2 mb-2">
+              <div className="flex items-center gap-3 px-3 py-2 mb-3">
                 <User className="w-4 h-4 text-slate-500 dark:text-slate-400" />
-                <span className="text-sm text-gray-700 dark:text-gray-300 truncate">{userName}</span>
+                <span className="text-sm font-semibold text-gray-800 dark:text-gray-200 truncate">{userName}</span>
               </div>
             )}
-            <h2 className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase mb-2">INFO</h2>
+            <h2 className="text-xs font-bold text-gray-600 dark:text-gray-400 uppercase tracking-wider px-3 mb-3">Info</h2>
             {onOpenConfig && (
               <button
                 onClick={handleConfigClick}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm group"
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm font-medium group"
               >
                 <Settings className="w-4 h-4 text-slate-600 dark:text-slate-400" />
                 Agent Config
@@ -171,24 +171,24 @@ export default function Sidebar({
             {onOpenEmployeeData && (
               <button
                 onClick={handleEmployeeDataClick}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm group"
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm font-medium group"
               >
                 <Users className="w-4 h-4 text-emerald-600 dark:text-emerald-500" />
                 Mock Data
               </button>
             )}
-            <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm group">
+            <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm font-medium group">
               <FileText className="w-4 h-4 text-sky-600 dark:text-sky-500" />
               Updates & FAQ
             </button>
-            <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm group">
+            <button className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-700 dark:text-gray-300 text-sm font-medium group">
               <HelpCircle className="w-4 h-4 text-amber-600 dark:text-amber-500" />
               Support
             </button>
             {onLogout && (
               <button
                 onClick={onLogout}
-                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 dark:text-red-500 text-sm mt-2"
+                className="w-full flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/30 text-red-600 dark:text-red-500 text-sm font-semibold mt-2"
               >
                 <LogOut className="w-4 h-4 text-red-600 dark:text-red-500" />
                 Sign out
