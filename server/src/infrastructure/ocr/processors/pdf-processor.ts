@@ -1,22 +1,21 @@
 /**
  * PDF Document Processor (Standalone)
- * Uses PDF.js + tesseract.js - pure JavaScript with no system dependencies
+ * Uses pdf-to-png-converter + tesseract.js
  * Dual strategy:
  * 1. Digital PDF - Extract text directly (fast)
- * 2. Scanned PDF - Render to canvas and OCR (slower but comprehensive)
+ * 2. Scanned PDF - Convert to PNG and OCR (slower but comprehensive)
  */
 
 import { BaseDocumentProcessor } from './base-processor';
 import { ImageProcessor } from './image-processor';
-import { DEFAULT_OCR_CONFIG } from '../config';
+import { DEFAULT_OCR_CONFIG } from '../ocr-config';
 import path from 'path';
 import fs from 'fs/promises';
-import * as pdfjsLib from 'pdfjs-dist/legacy/build/pdf.mjs';
-import type { TextItem } from 'pdfjs-dist/types/src/display/api';
-import { createCanvas } from 'canvas';
 import { PDFParse } from 'pdf-parse';
 import { OCRResultThree } from '@/types/ocr-result.types';
 import { FileType, OCRConfig } from '@infrastructure/ocr/ocr.types';
+import { pdfToPng } from 'pdf-to-png-converter';
+import { STORAGE_PATHS } from '@config/storage';
 
 export class PDFProcessor extends BaseDocumentProcessor {
   protected supportedTypes: FileType[] = ['pdf'];
@@ -25,6 +24,41 @@ export class PDFProcessor extends BaseDocumentProcessor {
   constructor() {
     super();
     this.imageProcessor = new ImageProcessor();
+  }
+
+  /**
+   * Create temp directory for page images
+   * Uses centralized temp storage
+   */
+  private async createTempDirectory(filename: string): Promise<string> {
+    // Sanitize filename for Windows
+    const safeName = filename.replace(/[<>:"/\\|?*]+/g, "_");
+    const tempDir = path.join(STORAGE_PATHS.temp, `pdf-ocr-${Date.now()}-${safeName}`);
+    await fs.mkdir(tempDir, { recursive: true });
+
+    return tempDir;
+  }
+
+  /**
+   * Convert PDF to images using pdf-to-png-converter
+   * More reliable than PDF.js canvas rendering for complex PDFs with inline images
+   */
+  private async convertPDFToImages(filePath: string, tempDir: string, maxPages: number = 10): Promise<string[]> {
+    console.log(`[PDFProcessor] Converting PDF to images...`);
+    const pngPages = await pdfToPng(filePath, {
+      outputFolder: path.relative(process.cwd(), tempDir), // Must Use relative path for pdf-to-png-converter
+      viewportScale: 2.0,
+      pagesToProcess: Array.from({ length: maxPages }, (_, i) => i + 1)
+    });
+
+    return pngPages.map(page => page.path);
+  }
+
+  /**
+   * Clean up temporary files and directory
+   */
+  private async cleanupTempFiles(tempDir: string): Promise<void> {
+    await fs.rm(tempDir, { recursive: true, force: true }).catch(() => {});
   }
 
   /**
@@ -51,7 +85,7 @@ export class PDFProcessor extends BaseDocumentProcessor {
 
       console.log(`[PDFProcessor] Digital extraction: ${digitalWordCount} words`);
 
-      // If we got substantial text (>50 words), use digital extraction
+      // If we got significant text (>50 words), use digital extraction
       if (digitalWordCount > 50) {
         result.text = digitalText;
         result.wordCount = digitalWordCount;
@@ -99,99 +133,34 @@ export class PDFProcessor extends BaseDocumentProcessor {
   }
 
   /**
-   * Convert PDF pages to images using PDF.js and OCR with tesseract.js
-   * Pure JavaScript implementation - no system dependencies
+   * Convert PDF pages to images and OCR with tesseract.js
+   * Uses pdf-to-png-converter for reliable rendering
    */
   private async extractTextFromScannedPDF(filePath: string, config: OCRConfig): Promise<string> {
-    const tempDir = path.join(path.dirname(filePath), 'temp-pdf-ocr');
-    await fs.mkdir(tempDir, { recursive: true });
-
-    const createdImages: string[] = [];
+    const filename = path.basename(filePath, '.pdf');
+    const tempDir = await this.createTempDirectory(filename);
 
     try {
-      // Load PDF document
-      const dataBuffer = await fs.readFile(filePath);
-      const loadingTask = pdfjsLib.getDocument({
-        data: new Uint8Array(dataBuffer),
-        useSystemFonts: true,
-        verbosity: 0 // Suppress warnings
-      });
+      // Convert PDF to PNG images
+      const imagePaths = await this.convertPDFToImages(filePath, tempDir, 10);
 
-      const pdfDocument = await loadingTask.promise;
-      const pageCount = pdfDocument.numPages;
+      console.log(`[PDFProcessor] OCR processing ${imagePaths.length} page(s)...`);
 
-      console.log(`[PDFProcessor] Rendering ${pageCount} page(s) with PDF.js...`);
-
-      // Process all pages (limit to 10)
       const allText: string[] = [];
-      const maxPages = Math.min(pageCount, 10);
 
-      for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
-        try {
-          console.log(`[PDFProcessor] Rendering page ${pageNum}...`);
-
-          // Get page
-          const page = await pdfDocument.getPage(pageNum);
-          const viewport = page.getViewport({ scale: 2.0 }); // 2x scale for better quality
-
-          // Create canvas
-          const canvas = createCanvas(viewport.width, viewport.height);
-          const context = canvas.getContext('2d');
-
-          // Render PDF page to canvas
-          const renderContext = {
-            canvasContext: context as any,
-            canvas: canvas as any, // PDF.js also needs canvas reference
-            viewport: viewport
-          };
-
-          try {
-            await page.render(renderContext).promise;
-          } catch (renderError) {
-            console.error(`[PDFProcessor] Render error on page ${pageNum}:`, renderError);
-            // Try alternative approach: get text content directly
-            const textContent = await page.getTextContent();
-            const pageText = textContent.items
-              .map((item) => (item as TextItem).str)
-              .join(' ');
-
-            if (pageText.trim().length > 0) {
-              allText.push(pageText.trim());
-              continue;
-            } else {
-              throw renderError; // Re-throw if no text found
-            }
-          }
-
-          // Save canvas as image
-          const imagePath = path.join(tempDir, `page-${pageNum}.png`);
-          const buffer = canvas.toBuffer('image/png');
-          await fs.writeFile(imagePath, buffer);
-          createdImages.push(imagePath);
-
-          console.log(`[PDFProcessor] OCR processing page ${pageNum}...`);
-
-          // OCR the image
-          const ocrResult = await this.imageProcessor.process(imagePath, config);
-          allText.push(ocrResult.text);
-
-        } catch (pageError) {
-          console.error(`[PDFProcessor] Error processing page ${pageNum}:`, pageError);
-          // Continue with next page
-        }
+      // OCR each page
+      for (let i = 0; i < imagePaths.length; i++) {
+        console.log(`[PDFProcessor] OCR processing page ${i + 1}...`);
+        const ocrResult = await this.imageProcessor.process(imagePaths[i], config);
+        allText.push(ocrResult.text);
       }
 
-      // Combine all pages with page separators
       return allText.join('\n\n--- Page Break ---\n\n');
 
     } catch (error) {
-      throw new Error(`Scanned PDF OCR failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(`Scanned PDF processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
     } finally {
-      // Clean up temp files and directory
-      for (const imagePath of createdImages) {
-        await fs.unlink(imagePath).catch(() => {});
-      }
-      await fs.rm(tempDir, { recursive: true, force: true }).catch(() => {});
+      await this.cleanupTempFiles(tempDir);
     }
   }
 
@@ -199,40 +168,16 @@ export class PDFProcessor extends BaseDocumentProcessor {
    * Process multi-page PDF and return results for each page
    */
   async processMultiPage(filePath: string, config: OCRConfig): Promise<OCRResultThree[]> {
-    const tempDir = path.join(path.dirname(filePath), 'temp-pdf-ocr');
-    await fs.mkdir(tempDir, { recursive: true });
-
-    const createdImages: string[] = [];
+    const filename = path.basename(filePath, '.pdf');
+    const tempDir = await this.createTempDirectory(filename);
 
     try {
-      const dataBuffer = await fs.readFile(filePath);
-      const loadingTask = pdfjsLib.getDocument({
-        data: new Uint8Array(dataBuffer),
-        useSystemFonts: true
-      });
-
-      const pdfDocument = await loadingTask.promise;
-      const pageCount = pdfDocument.numPages;
+      // Convert PDF to PNG images
+      const imagePaths = await this.convertPDFToImages(filePath, tempDir);
       const results: OCRResultThree[] = [];
 
-      for (let pageNum = 1; pageNum <= pageCount; pageNum++) {
-        const page = await pdfDocument.getPage(pageNum);
-        const viewport = page.getViewport({ scale: 2.0 });
-
-        const canvas = createCanvas(viewport.width, viewport.height);
-        const context = canvas.getContext('2d');
-
-        await page.render({
-          canvasContext: context as any,
-          canvas: canvas as any,
-          viewport: viewport
-        }).promise;
-
-        const imagePath = path.join(tempDir, `page-${pageNum}.png`);
-        const buffer = canvas.toBuffer('image/png');
-        await fs.writeFile(imagePath, buffer);
-        createdImages.push(imagePath);
-
+      // OCR each page
+      for (const imagePath of imagePaths) {
         const result = await this.imageProcessor.process(imagePath, config);
         results.push(result);
       }
@@ -240,10 +185,7 @@ export class PDFProcessor extends BaseDocumentProcessor {
       return results;
 
     } finally {
-      for (const imagePath of createdImages) {
-        await fs.unlink(imagePath).catch(() => {});
-      }
-      await fs.rm(tempDir, { recursive: true, force: true }).catch(() => {});
+      await this.cleanupTempFiles(tempDir);
     }
   }
 }

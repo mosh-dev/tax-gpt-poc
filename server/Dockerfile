@@ -1,20 +1,11 @@
 # ================================
 # Stage 1: Builder
 # ================================
-FROM node:22-slim AS builder
+FROM node:24-alpine AS builder
 
 WORKDIR /app
 
-# Install build dependencies for canvas & other native packages
-RUN apt-get update && apt-get install -y \
-    python3 \
-    build-essential \
-    libcairo2-dev \
-    libpango1.0-dev \
-    libjpeg-dev \
-    libgif-dev \
-    librsvg2-dev \
-    && rm -rf /var/lib/apt/lists/*
+# No system packages needed for @napi-rs/canvas
 
 # Copy package files
 COPY package.json ./
@@ -24,10 +15,10 @@ COPY esbuild.config.mjs ./
 # Install dependencies
 RUN npm install
 
-# Copy source code
+# Copy source
 COPY src ./src
 
-# Build TypeScript for INB server (NODE_ENV=inb with minification)
+# Build TypeScript for INB server
 RUN npm run server:build:inb
 
 
@@ -35,46 +26,37 @@ RUN npm run server:build:inb
 # ================================
 # Stage 2: Production
 # ================================
-FROM node:22-slim AS production
+FROM node:24-alpine AS production
 
 WORKDIR /app
 
-# Install runtime dependencies for canvas & sharp
-RUN apt-get update && apt-get install -y \
-    libcairo2 \
-    libpango-1.0-0 \
-    libpangocairo-1.0-0 \
-    libjpeg62-turbo \
-    libgif7 \
-    librsvg2-2 \
-    && rm -rf /var/lib/apt/lists/*
+# @napi-rs/canvas requires ZERO system-level libs
+# Node 24 Slim is fully compatible out of the box.
 
-# Copy package.json and built output from builder
+# Copy package.json and built output
 COPY package.json ./
 COPY --from=builder /app/dist ./dist
 
-# Copy node_modules from builder (includes compiled native deps)
+# Copy node_modules (already built)
 COPY --from=builder /app/node_modules ./node_modules
 
-# Prune dev dependencies to keep image small
-RUN npm prune --production
+# Remove dev deps
+RUN npm prune --omit=dev
 
 # Create non-root user
 RUN groupadd -g 1001 nodejs && \
     useradd -u 1001 -g nodejs -s /bin/bash -m nodejs
 
-# Create root storage directory (subdirs created by app at startup)
+# Create storage directory
 RUN mkdir -p /storage && \
     chown -R nodejs:nodejs /storage
 
-# Fix permissions
+# Fix ownership for app
 RUN chown -R nodejs:nodejs /app
 
-# Switch to restricted user
+# Switch user
 USER nodejs
 
-# Expose port
 EXPOSE 3000
 
-# Start server
 CMD ["npm", "run", "server:start"]

@@ -72,31 +72,3 @@ export interface DocumentProcessor {
   /** Process the document */
   process(filePath: string, config: OCRConfig): Promise<OCRResultThree>;
 }
-
-/**
- * Swiss tax document specific types
- */
-export interface SwissTaxDocument {
-  /** Type of tax document */
-  documentType: 'lohnausweis' | 'steuererklarung' | 'receipt' | 'invoice' | 'other';
-  /** Canton (ZH, BE, etc.) */
-  canton?: string;
-  /** Tax year */
-  year?: number;
-  /** Extracted key-value pairs */
-  extractedData?: Record<string, string | number>;
-}
-
-/**
- * Enhanced OCR result with tax document analysis
- */
-export interface TaxDocumentResult extends OCRResultThree {
-  /** Tax document specific data */
-  taxDocument?: SwissTaxDocument;
-  /** Detected amounts (CHF) */
-  amounts?: number[];
-  /** Detected dates */
-  dates?: string[];
-  /** Key fields identified */
-  fields?: Record<string, string>;
-}

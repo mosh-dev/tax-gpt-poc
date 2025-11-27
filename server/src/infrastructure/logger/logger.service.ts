@@ -1,20 +1,9 @@
 /**
- * Logger Service
- * Generic logging infrastructure service
- */
-
-export interface ILoggerService {
-  info(message: string, meta?: Record<string, any>): void;
-  error(message: string, error?: Error, meta?: Record<string, any>): void;
-  warn(message: string, meta?: Record<string, any>): void;
-  debug(message: string, meta?: Record<string, any>): void;
-}
-
-/**
  * Console-based logger implementation
  */
-export class LoggerService implements ILoggerService {
-  constructor(private serviceName: string = 'TaxGPT') {}
+export class LoggerService {
+  constructor(private serviceName: string = 'TaxGPT') {
+  }
 
   info(message: string, meta?: Record<string, any>): void {
     console.log(`[${this.serviceName}] INFO:`, message, meta || '');
@@ -35,6 +24,3 @@ export class LoggerService implements ILoggerService {
     console.debug(`[${this.serviceName}] DEBUG:`, message, meta || '');
   }
 }
-
-// Export singleton instance (can also be managed by container)
-export const loggerService = new LoggerService();

@@ -8,7 +8,7 @@ import sharp from 'sharp';
 import fs from 'fs/promises';
 import path from 'path';
 import { BaseDocumentProcessor } from './base-processor';
-import { DEFAULT_OCR_CONFIG, DEFAULT_PREPROCESSING_OPTIONS } from '../config';
+import { DEFAULT_OCR_CONFIG, DEFAULT_PREPROCESSING_OPTIONS } from '../ocr-config';
 import { getStoragePath } from '@config/storage';
 import { OCRResultThree } from '@/types/ocr-result.types';
 import { FileType, OCRConfig, PreprocessingOptions } from '@infrastructure/ocr/ocr.types';
