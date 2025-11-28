@@ -1,4 +1,3 @@
-// Create MongoDB storage for workflow snapshots
 import { MongoDBStore } from '@mastra/mongodb';
 import { Environment } from '@config/environment';
 

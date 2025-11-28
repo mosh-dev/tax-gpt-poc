@@ -5,7 +5,6 @@ import { AgentConfig } from '@domains/agent-config/models/agent-config.model';
 import { encode } from 'gpt-tokenizer';
 import { getCollection } from '@infrastructure/database/utils';
 import { MASTRA_COLLECTIONS } from '@config/database-collections';
-import { logLLMResponse, logStreamError } from '@utils/logger';
 import { getErrorMessage } from '@utils/error-handler';
 import { getTaxDataTool } from '@/mastra/agents/tax-agent/tools/get-tax-data';
 import { calculateDeductionsTool } from '@/mastra/agents/tax-agent/tools/calculate-deductions';
@@ -17,6 +16,8 @@ import { searchKnowledgeTool } from '@/mastra/agents/tax-agent/tools/search-know
 import { searchGeneralTool } from '@/mastra/agents/tax-agent/tools/search-general-tool';
 import { getOpenAiModel } from '@infrastructure/ai/llm-client';
 import { ChunkType } from '@mastra/core/stream';
+import { injectFromContainer } from '@/app/di-container/container-helper';
+import { MastraLoggerService } from '@infrastructure/ai/mastra-logger.service';
 
 /**
  * Tax Agent powered by Mastra and LMStudio
@@ -24,6 +25,7 @@ import { ChunkType } from '@mastra/core/stream';
 export class TaxAgent {
   public readonly agent: Agent;
   private readonly memory?: Memory;
+  private readonly logger = injectFromContainer(MastraLoggerService)
 
   constructor(instructions: string) {
     const model = getOpenAiModel();
@@ -140,11 +142,11 @@ export class TaxAgent {
 
     try {
       for await (const event of stream.fullStream) {
-        logLLMResponse(event);
+        this.logger.logLLMResponse(event);
         yield event as ChunkType<any>;
       }
     } catch (error) {
-      logStreamError(error);
+      this.logger.logStreamError(error);
       throw error;
     }
   }

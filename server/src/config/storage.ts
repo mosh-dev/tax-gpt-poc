@@ -21,8 +21,6 @@ export const STORAGE_PATHS = {
   logs: path.join(STORAGE_ROOT, 'logs')
 } as const;
 
-ensureStorageDirectories();
-
 /**
  * Get storage path for a specific type
  */

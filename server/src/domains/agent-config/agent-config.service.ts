@@ -42,7 +42,7 @@ export class AgentConfigService {
     const { instructions } = params;
 
     // Validation
-    if (!instructions || typeof instructions !== 'string') {
+    if (!instructions) {
       throw new Error('Instructions are required and must be a string');
     }
 
