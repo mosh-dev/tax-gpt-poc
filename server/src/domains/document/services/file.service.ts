@@ -8,8 +8,9 @@ import fs from 'fs/promises';
 import path from 'path';
 import { randomUUID } from 'crypto';
 import { getStoragePath } from '@config/storage';
-import { mongoRepository } from '@infrastructure/database/base-repository';
 import { Environment } from '@config/environment';
+import { injectFromContainer } from '@/app/di-container/container-helper';
+import { MongoRepository } from '@infrastructure/database/base-repository';
 
 export interface UploadedFileInfo {
   fileId: string;
@@ -23,7 +24,7 @@ export interface UploadedFileInfo {
 }
 
 export class FileService {
-  // Note: This service uses the legacy mongoRepository and doesn't use DI yet
+  private readonly mongoRepository = injectFromContainer(MongoRepository);
   /**
    * Save uploaded file and create database record
    */
@@ -52,7 +53,7 @@ export class FileService {
     };
 
     // Save to database
-    await mongoRepository.createFile(fileData);
+    await this.mongoRepository.createFile(fileData);
 
     console.log(`[FileService] Saved file: ${file.originalname} (ID: ${fileId}, ${file.size} bytes)`);
 
@@ -73,7 +74,7 @@ export class FileService {
    */
   async deleteFile(fileId: string): Promise<boolean> {
     // Get file metadata
-    const file = await mongoRepository.findFileById(fileId);
+    const file = await this.mongoRepository.findFileById(fileId);
 
     if (!file) {
       console.warn(`[FileService] File not found for deletion: ${fileId}`);
@@ -90,7 +91,7 @@ export class FileService {
     }
 
     // Delete from database
-    await mongoRepository.deleteFile(fileId);
+    await this.mongoRepository.deleteFile(fileId);
 
     console.log(`[FileService] Deleted file: ${fileId}`);
     return true;
@@ -128,7 +129,7 @@ export class FileService {
     };
 
     // Save to database
-    await mongoRepository.createFile(fileData);
+    await this.mongoRepository.createFile(fileData);
 
     console.log(`[FileService] Saved generated file: ${filename} (ID: ${fileId}, ${buffer.length} bytes)`);
 
@@ -148,10 +149,7 @@ export class FileService {
    * Get file URL by ID
    */
   async getFileUrl(fileId: string): Promise<string | null> {
-    const file = await mongoRepository.findFileById(fileId);
+    const file = await this.mongoRepository.findFileById(fileId);
     return file ? file.url : null;
   }
 }
-
-// Export singleton instance
-export const fileService = new FileService();

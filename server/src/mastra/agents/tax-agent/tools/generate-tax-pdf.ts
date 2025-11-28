@@ -1,9 +1,10 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 import { generateTaxReturnPDF } from '@domains/document/services/pdf-generator';
-import { fileService } from '@domains/document/services/file.service';
+import { FileService } from '@domains/document/services/file.service';
 import { SwissTaxData } from '@domains/tax-extraction/swiss-tax-data.model';
 import { TOOL_IDS } from '@shared/constants/tool-ids';
+import { injectFromContainer } from '@/app/di-container/container-helper';
 
 /**
  * Tool to generate a PDF document of calculated tax data
@@ -67,7 +68,8 @@ export const generateTaxPDFTool = createTool({
         ? `${fileName}_${timestamp}.pdf`
         : `Tax_Return_${taxData.personalInfo.lastName}_${taxData.taxYear}_${timestamp}.pdf`;
 
-      // Save PDF using fileService for consistent URL handling
+      // Save PDF using FileService from container for consistent URL handling
+      const fileService = injectFromContainer(FileService);
       const savedFile = await fileService.saveGeneratedFile(
         pdfBuffer,
         pdfFileName,

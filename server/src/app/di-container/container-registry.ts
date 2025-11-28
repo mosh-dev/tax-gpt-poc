@@ -1,4 +1,4 @@
-import { registerToContainer } from '@/app/di-container/container-helper';
+import { initializeContainer } from '@/app/di-container/container-helper';
 
 import { ConversationController } from '@api/controllers/conversation.controller';
 import { ChatController } from '@api/controllers/chat.controller';
@@ -35,37 +35,49 @@ import { MongoFileRepository } from '@infrastructure/database/mongodb/repositori
 import { MongoMessageRepository } from '@infrastructure/database/mongodb/repositories/mongo-message.repository';
 
 import { Environment } from '@config/environment';
+import { MongoRepository } from '@infrastructure/database/base-repository';
 
 export function registerApplicationComponents() {
-  registerToContainer(ConversationController);
-  registerToContainer(ChatController);
-  registerToContainer(FileController);
+  // Register all components at once to avoid order issues
+  initializeContainer([
+    // Controllers
+    { class: ConversationController },
+    { class: ChatController },
+    { class: FileController },
 
-  registerToContainer(GetAllConversationsUseCase);
-  registerToContainer(GetConversationHistoryUseCase);
-  registerToContainer(DeleteConversationUseCase);
-  registerToContainer(CreateConversationUseCase);
-  registerToContainer(StreamChatUseCase);
-  registerToContainer(UploadFileUseCase);
-  registerToContainer(ProcessDocumentUseCase);
-  registerToContainer(GetFileUseCase);
-  registerToContainer(DeleteFileUseCase);
+    // Use Cases - Conversation
+    { class: GetAllConversationsUseCase },
+    { class: GetConversationHistoryUseCase },
+    { class: DeleteConversationUseCase },
+    { class: CreateConversationUseCase },
+    { class: StreamChatUseCase },
 
-  registerToContainer(FileService);
-  registerToContainer(AgentConfigService);
-  registerToContainer(KnowledgeService);
-  registerToContainer(RAGService);
-  registerToContainer(OCRService);
-  registerToContainer(TesseractOCRService);
-  registerToContainer(MastraAIAgentService);
-  registerToContainer(VectorStoreService);
-  registerToContainer(LocalFileStorageService);
-  registerToContainer(LoggerService);
-  registerToContainer(MastraLoggerService);
+    // Use Cases - Document
+    { class: UploadFileUseCase },
+    { class: ProcessDocumentUseCase },
+    { class: GetFileUseCase },
+    { class: DeleteFileUseCase },
 
-  registerToContainer(MongoConversationRepository);
-  registerToContainer(MongoFileRepository);
-  registerToContainer(MongoMessageRepository);
+    // Services
+    { class: FileService },
+    { class: AgentConfigService },
+    { class: KnowledgeService },
+    { class: RAGService },
+    { class: OCRService },
+    { class: TesseractOCRService },
+    { class: MastraAIAgentService },
+    { class: VectorStoreService },
+    { class: LocalFileStorageService },
+    { class: LoggerService },
+    { class: MastraLoggerService },
 
-  registerToContainer('baseUrl', Environment.BASE_URL);
+    // Repositories
+    { class: MongoRepository },
+    { class: MongoConversationRepository },
+    { class: MongoFileRepository },
+    { class: MongoMessageRepository },
+
+    // Values
+    { key: 'baseUrl', value: Environment.BASE_URL },
+  ]);
 }

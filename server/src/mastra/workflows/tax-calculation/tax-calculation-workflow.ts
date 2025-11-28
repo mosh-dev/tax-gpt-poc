@@ -5,11 +5,12 @@
 
 import { createStep, createWorkflow } from '@mastra/core/workflows';
 import { z } from 'zod';
-import { fileService } from '@domains/document/services/file.service';
+import { FileService } from '@domains/document/services/file.service';
 import { generateTaxReturnPDF } from '@domains/document/services/pdf-generator';
 import { WORKFLOW_IDS, WORKFLOW_STEPS } from '@shared/constants/workflow';
 import { extractTaxData, type DocumentWithText } from '@domains/tax-extraction/tax-data-extraction.service';
-import { mongoRepository } from '@infrastructure/database/base-repository';
+import { injectFromContainer } from '@/app/di-container/container-helper';
+import { MongoRepository } from '@infrastructure/database/base-repository';
 
 // === SCHEMA DEFINITIONS ===
 
@@ -205,6 +206,9 @@ const reviewExtractedDataStep = createStep({
 
     // Fetch latest OCR data from MongoDB (in case process-documents was called after workflow started)
     const documentsWithText: DocumentWithText[] = [];
+
+    const mongoRepository = injectFromContainer(MongoRepository);
+
     for (const doc of inputData.documents) {
       // Try to get from workflow data first
       if (doc.extractedText && doc.extractedText.trim().length > 0) {
@@ -417,7 +421,8 @@ const generateSummaryStep = createStep({
         // Generate actual PDF using PDF generator service
         const pdfBuffer = await generateTaxReturnPDF(taxDataForPdf);
 
-        // Save PDF using fileService for consistent URL handling
+        // Save PDF using FileService from container for consistent URL handling
+        const fileService = injectFromContainer(FileService);
         const filename = `Tax_Return_${personalInfo.lastName}_${personalInfo.taxYear}_${Date.now()}.pdf`;
         const savedFile = await fileService.saveGeneratedFile(
           pdfBuffer,

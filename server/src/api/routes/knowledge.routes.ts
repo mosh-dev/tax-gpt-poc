@@ -4,7 +4,8 @@ import { authMiddleware } from '../middleware/auth.middleware';
 import { getErrorMessage } from '@utils/error-handler';
 import { progressManager } from '@domains/knowledge/services/progress-manager';
 import { knowledgeUpload } from '@domains/knowledge/services/upload-config';
-import { knowledgeService } from '@domains/knowledge/services/knowledge.service';
+import { KnowledgeService } from '@domains/knowledge/services/knowledge.service';
+import { injectFromContainer } from '@/app/di-container/container-helper';
 
 const router = Router();
 
@@ -38,6 +39,7 @@ router.post('/upload', authMiddleware, knowledgeUpload.single('file'), async (re
 
     // Process asynchronously with progress callbacks
     try {
+      const knowledgeService = injectFromContainer(KnowledgeService);
       const result = await knowledgeService.uploadFile({
         file,
         onProgress: (stage, progress, message) => {
@@ -99,6 +101,7 @@ router.get('/upload-progress/:uploadId', authMiddleware, (req: Request, res: Res
  */
 router.get('/files', authMiddleware, async (_: Request, res: Response) => {
   try {
+    const knowledgeService = injectFromContainer(KnowledgeService);
     const result = await knowledgeService.listFiles();
     res.json(result);
   } catch (error: unknown) {
@@ -128,6 +131,7 @@ router.delete('/files/:id', authMiddleware, async (req: Request, res: Response):
 
     console.log(`[KnowledgeRoutes] Deleting file: ${id}`);
 
+    const knowledgeService = injectFromContainer(KnowledgeService);
     const result = await knowledgeService.deleteFile(id);
     res.json(result);
 

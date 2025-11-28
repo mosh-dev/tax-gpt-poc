@@ -4,7 +4,7 @@
  */
 
 import { ragService } from './rag.service';
-import { fileService } from '@domains/document/services/file.service';
+import { FileService } from '@domains/document/services/file.service';
 import { Environment } from '@config/environment';
 import path from 'path';
 import type {
@@ -12,9 +12,10 @@ import type {
   ListFilesResult,
   DeleteFileResult
 } from '@domains/knowledge/knowledge.types';
+import { injectFromContainer } from '@/app/di-container/container-helper';
 
 export class KnowledgeService {
-  // Note: This service uses singleton instances (ragService, fileService) and doesn't use DI yet
+  // Note: This service uses singleton instance (ragService) and doesn't use DI for it yet
   /**
    * Upload and process a knowledge base file
    */
@@ -27,7 +28,8 @@ export class KnowledgeService {
 
     console.log(`[KnowledgeService] Uploading file: ${file.originalname}`);
 
-    // Save file using File Service
+    // Save file using File Service from container
+    const fileService = injectFromContainer(FileService);
     const savedFile = await fileService.saveFile(file, undefined, Environment.BASE_URL);
     const fileType = path.extname(file.originalname).substring(1) as 'txt' | 'md' | 'pdf';
 
@@ -60,6 +62,7 @@ export class KnowledgeService {
     const files = await ragService.listFiles();
 
     // Fetch download URLs from File service
+    const fileService = injectFromContainer(FileService);
     const filesWithUrls = await Promise.all(
       files.map(async (f) => {
         const fileUrl = await fileService.getFileUrl(f.fileId);
@@ -96,6 +99,7 @@ export class KnowledgeService {
     await ragService.deleteFile(fileId);
 
     // Delete file from File service (handles physical file + DB)
+    const fileService = injectFromContainer(FileService);
     await fileService.deleteFile(fileId);
 
     console.log(`[KnowledgeService] File deleted successfully: ${fileId}`);
@@ -106,6 +110,3 @@ export class KnowledgeService {
     };
   }
 }
-
-// Export singleton instance
-export const knowledgeService = new KnowledgeService();

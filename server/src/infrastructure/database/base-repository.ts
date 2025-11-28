@@ -120,6 +120,3 @@ export class MongoRepository {
     );
   }
 }
-
-// Export singleton instance
-export const mongoRepository = new MongoRepository();
