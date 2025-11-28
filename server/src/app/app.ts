@@ -113,7 +113,6 @@ export async function startExpressServer(app: Express): Promise<void> {
   return new Promise((resolve, reject) => {
     try {
       const server = app.listen(Environment.SERVER_PORT, () => {
-        console.log(`\n`);
         console.log(`[Express Server] Environment: ${Environment.NODE_ENV}`);
         console.log(`[Express Server] API: ${Environment.BASE_URL}/api`);
         console.log(`[Express Server] Health: ${Environment.BASE_URL}/api/health`);

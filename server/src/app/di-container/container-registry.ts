@@ -28,17 +28,13 @@ import { VectorStoreService } from '@infrastructure/vector-store/vector-store.se
 import { LocalFileStorageService } from '@infrastructure/storage/local-file-storage.service';
 import { LoggerService } from '@infrastructure/logger/logger.service';
 
-import { MongoConversationRepository } from '@infrastructure/database/mongodb/repositories/mongo-conversation.repository';
+import {
+  MongoConversationRepository
+} from '@infrastructure/database/mongodb/repositories/mongo-conversation.repository';
 import { MongoFileRepository } from '@infrastructure/database/mongodb/repositories/mongo-file.repository';
 import { MongoMessageRepository } from '@infrastructure/database/mongodb/repositories/mongo-message.repository';
 
 import { Environment } from '@config/environment';
-import { createContainer, InjectionMode } from 'awilix';
-
-export const containerRegistry = createContainer({
-  injectionMode: InjectionMode.PROXY,
-  strict: true
-});
 
 export function registerApplicationComponents() {
   registerToContainer(ConversationController);

@@ -10,7 +10,7 @@
     "server:dev": "tsc-watch --noEmit --onSuccess \"node esbuild.config.mjs --watch\"",
     "server:start": "node dist/app/server.mjs",
     "server:lint": "eslint src/**/*.ts",
-    "server:mastra": "tsc --noEmit && cross-env MASTRA_START_SERVER=true mastra dev --dir src/mastra"
+    "server:mastra": "tsc-watch --noEmit --onSuccess \"mastra dev --dir src/mastra\""
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "^1.0.27",

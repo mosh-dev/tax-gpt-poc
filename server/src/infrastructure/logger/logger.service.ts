@@ -2,13 +2,14 @@ import { getStoragePath } from '@config/storage';
 import { existsSync, mkdirSync } from 'node:fs';
 import { createStream } from 'rotating-file-stream';
 import pino, { Logger } from 'pino';
+import pretty from 'pino-pretty';
 
 /**
  * Console-based logger implementation
  */
 export class LoggerService {
   private pinoServerLogger: Logger;
-  protected readonly logger : Logger;
+  protected readonly logger: Logger;
 
   constructor() {
     const logsDir = getStoragePath('logs');
@@ -23,35 +24,34 @@ export class LoggerService {
       compress: 'gzip',
     });
 
-// Use Pino v8 transport for pretty print
-    const transport = pino.transport({
-      target: 'pino-pretty',
-      options: {
-        colorize: false,
-        translateTime: 'yyyy-mm-dd HH:MM:ss',
-        ignore: 'pid,hostname',
+    const prettyStream = pretty({
+      colorize: true,
+      translateTime: 'yyyy-mm-dd HH:MM:ss',
+      ignore: 'pid,hostname,module',
+      messageFormat: (log, messageKey) => {
+        const module = log.module ? `[${log.module}] - ` : '';
+        return `${module}${log[messageKey]}`;
       },
     });
 
     this.pinoServerLogger = pino(
-      {
-        level: 'info',
-      },
+      { level: 'info' },
       pino.multistream([
-        { level: 'info', stream: transport },     // pretty console output
-        { level: 'info', stream: combinedLogStream }, // raw json for file rotation
+        { level: 'info', stream: prettyStream },
+        { level: 'info', stream: combinedLogStream },
       ])
     );
     this.logger = this.createNewLogger('TaxGPT');
   }
 
   public createNewLogger(module: string): Logger {
+    this.pinoServerLogger.info(`Creating new logger for module: ${module}`);
     return this.pinoServerLogger.child({ module });
   }
 
-  public logInfo(obj: object, msg?: string): void;
-  public logInfo(msg: string): void;
-  public logInfo(objOrMsg: object | string, msg?: string): void {
+  public log(obj: object, msg?: string): void;
+  public log(msg: string): void;
+  public log(objOrMsg: object | string, msg?: string): void {
     if (typeof objOrMsg === 'string') {
       this.logger.info(objOrMsg);
     } else {
@@ -59,9 +59,9 @@ export class LoggerService {
     }
   }
 
-  public logError(obj: object, msg?: string): void;
-  public logError(msg: string): void;
-  public logError(objOrMsg: object | string, msg?: string): void {
+  public error(obj: object, msg?: string): void;
+  public error(msg: string): void;
+  public error(objOrMsg: object | string, msg?: string): void {
     if (typeof objOrMsg === 'string') {
       this.logger.error(objOrMsg);
     } else {

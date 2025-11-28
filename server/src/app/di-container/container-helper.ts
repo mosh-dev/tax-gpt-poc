@@ -1,5 +1,9 @@
-import { asClass, asValue } from 'awilix';
-import { containerRegistry } from '@/app/di-container/container-registry';
+import { asClass, asValue, createContainer, InjectionMode } from 'awilix';
+
+export const containerRegistry = createContainer({
+  injectionMode: InjectionMode.PROXY,
+  strict: true
+});
 
 export function registerToContainer<T>(refOrKey: any, value?: T): string {
   let key: string;

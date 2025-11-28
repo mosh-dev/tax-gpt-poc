@@ -2,6 +2,8 @@ import { connectDatabase } from '@infrastructure/database/connection';
 import { initializeLLMClient } from '@infrastructure/ai/llm-client';
 import { runAllSeeds } from '@/scripts/seeds/run-seed';
 import { registerApplicationComponents } from '@/app/di-container/container-registry';
+import { injectFromContainer } from '@/app/di-container/container-helper';
+import { LoggerService } from '@infrastructure/logger/logger.service';
 
 let isInitialized = false;
 let isInitializing = false;
@@ -30,8 +32,10 @@ export async function initializeApp(): Promise<void> {
     await runAllSeeds();
     await initializeLLMClient();
 
+    const logger = injectFromContainer(LoggerService);
+
     isInitialized = true;
-    console.log('[Initialize] Application initialization completed successfully');
+    logger.log('[Initialize] Application initialization completed successfully');
   } catch (error) {
     console.error('[Initialize] Initialization failed:', error);
     throw error;

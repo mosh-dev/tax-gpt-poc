@@ -34,13 +34,12 @@ export class TaxAgent {
     try {
       const memoryConfig = createMemoryConfigFromEnv();
       this.memory = createMastraMemory(memoryConfig);
-      console.log('[TaxAgent] Mastra Memory initialized successfully');
-      console.log(`[TaxAgent] Vector storage: ${memoryConfig.enableVectorStorage ? 'enabled' : 'disabled'}`);
-    } catch (error: unknown) {
+      this.logger.log('[TaxAgent] Mastra Memory initialized successfully');
+      this.logger.log(`[TaxAgent] Vector storage: ${memoryConfig.enableVectorStorage ? 'enabled' : 'disabled'}`);
+    } catch (error: any) {
       const errorMsg = getErrorMessage(error);
-      console.warn('[TaxAgent] Failed to initialize Mastra Memory:', errorMsg);
-      console.warn('[TaxAgent] Agent will run without persistent memory');
-      this.memory = undefined;
+      this.logger.error(error, `[TaxAgent] Failed to initialize Mastra Memory: ${errorMsg}`);
+      throw error;
     }
 
     // Count tokens in system instructions
@@ -48,8 +47,6 @@ export class TaxAgent {
     console.log(`[TaxAgent] System instructions loaded from database:`);
     console.log(`  - Character count: ${instructions.length.toLocaleString()}`);
     console.log(`  - Token count: ${tokenCount.toLocaleString()} tokens`);
-    console.log(`  - Estimated cost per request (input): $${(tokenCount * 0.003 / 1000).toFixed(6)}`);
-    console.log(`  - (Assuming $0.003/1K input tokens - adjust for your model)`);
 
     this.agent = new Agent({
       id: 'zurich-tax-assistant',

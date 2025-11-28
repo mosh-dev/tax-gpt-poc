@@ -1,26 +1,22 @@
 import { getMastra } from '@/mastra/mastra-instance';
-import { Environment } from '@config/environment';
 import { createExpressApp, startExpressServer } from '@/app/app';
-import { Mastra } from '@mastra/core';
+import { injectFromContainer } from '@/app/di-container/container-helper';
+import { LoggerService } from '@infrastructure/logger/logger.service';
 
-const isMastraPlayground = Environment.MASTRA_START_SERVER;
 
-let mastraInstance: Mastra | null = null;
+// !!!!!!!! IMPORTANT !!!!!!!!
+// This file is used to start the Mastra playground.
+// Do not add any other code here, Or Import anything from this file
+// =================================================================
 
-// Conditionally start Express server when running in Mastra dev mode
-// Uses a custom port (3001) to avoid conflict with Mastra playground
-if (isMastraPlayground) {
-  console.log('[Mastra] MASTRA_START_SERVER flag detected, starting Express server...');
-  try {
-    const app = await createExpressApp();
-    await startExpressServer(app);
-  } catch (error) {
-    console.error('[Mastra] Failed to start Express server:', error);
-    throw error;
-  }
-  mastraInstance = getMastra();
+try {
+  const app = await createExpressApp();
+  await startExpressServer(app);
+} catch (error: any) {
+  const logger = injectFromContainer(LoggerService);
+  logger.logException(error,'[Mastra] Failed to start Express server:');
+  throw error;
 }
 
-
 // noinspection JSUnusedGlobalSymbols
-export const mastra = mastraInstance;
+export const mastra = getMastra();
