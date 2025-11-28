@@ -2,7 +2,6 @@ import { connectDatabase } from '@infrastructure/database/connection';
 import { initializeLLMClient } from '@infrastructure/ai/llm-client';
 import { runAllSeeds } from '@/scripts/seeds/run-seed';
 import { registerApplicationComponents } from '@/app/di-container/container-registry';
-import { ensureStorageDirectories } from '@config/storage';
 
 let isInitialized = false;
 let isInitializing = false;
@@ -26,7 +25,6 @@ export async function initializeApp(): Promise<void> {
 
   isInitializing = true;
   try {
-    ensureStorageDirectories();
     registerApplicationComponents();
     await connectDatabase();
     await runAllSeeds();
