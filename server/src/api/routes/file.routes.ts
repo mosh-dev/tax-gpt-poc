@@ -13,17 +13,9 @@ const upload = multer({
 
 const router = Router();
 
-
-// POST /api/files/upload - Upload files
 router.post('/upload', upload.array('files'), (req, res) => injectFromContainer(FileController).upload(req, res));
-
-// POST /api/files/process - Process documents with OCR
 router.post('/process', (req, res) => injectFromContainer(FileController).processDocuments(req, res));
-
-// GET /api/files/:id - Get file metadata
 router.get('/:id', (req, res) => injectFromContainer(FileController).getFile(req, res));
-
-// DELETE /api/files/:id - Delete file
 router.delete('/:id', (req, res) => injectFromContainer(FileController).deleteFile(req, res));
 
 

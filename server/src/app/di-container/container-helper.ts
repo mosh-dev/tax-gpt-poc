@@ -1,6 +1,6 @@
 import { asClass, asValue, createContainer, InjectionMode, NameAndRegistrationPair } from 'awilix';
 
-export const containerRegistry = createContainer({
+const containerRegistry = createContainer({
   injectionMode: InjectionMode.PROXY,
   strict: true
 });
@@ -59,6 +59,7 @@ export function initializeContainer<T>(refOrKey: any, value?: T): string | void 
 }
 
 
+// noinspection JSUnusedGlobalSymbols
 export function registerToContainer<T>(refOrKey: any, value?: T): string {
   let key: string;
   let registration: any;
