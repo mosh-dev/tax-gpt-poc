@@ -4,6 +4,8 @@
  */
 
 import { TaxAgent } from './tax-agent';
+import { injectFromContainer } from '@/app/di-container/container-helper';
+import { LoggerService } from '@infrastructure/logger/logger.service';
 
 /**
  * Singleton agent instance
@@ -30,9 +32,10 @@ let isCreating: boolean = false;
  * @returns Promise<TaxAgent> - Singleton agent instance
  */
 export async function getOrCreateTaxAgent(): Promise<TaxAgent> {
+  const logger = injectFromContainer(LoggerService);
   // If agent is currently being created, wait briefly and retry
   if (isCreating) {
-    console.log('[TaxAgent] Agent creation in progress, waiting...');
+    logger.log('[TaxAgent] Agent creation in progress, waiting...');
     await new Promise(resolve => setTimeout(resolve, 10));
     return getOrCreateTaxAgent(); // Retry
   }
@@ -43,9 +46,10 @@ export async function getOrCreateTaxAgent(): Promise<TaxAgent> {
   }
 
   // Agent needs to be created or refreshed - query DB for latest instructions
-  console.log('[TaxAgent] Fetching instructions from database', {
-    reason: !taxAgentInstance ? 'no instance' : 'refresh requested'
-  });
+  logger.log(
+    { reason: !taxAgentInstance ? 'no instance' : 'refresh requested' },
+    '[TaxAgent] Fetching instructions from database'
+  );
 
   isCreating = true;
   try {
@@ -55,11 +59,11 @@ export async function getOrCreateTaxAgent(): Promise<TaxAgent> {
     taxAgentInstance = agent;
     needsRefresh = false; // Clear refresh flag
 
-    console.log('[TaxAgent] Agent instance created successfully');
+    logger.log('[TaxAgent] Agent instance created successfully');
 
     return agent;
   } catch (error) {
-    console.error('[TaxAgent] Error creating agent instance:', error);
+    logger.error(error as any,'[TaxAgent] Error creating agent instance:');
     throw error;
   } finally {
     isCreating = false;
@@ -72,7 +76,7 @@ export async function getOrCreateTaxAgent(): Promise<TaxAgent> {
  * Sets the needsRefresh flag so next request will fetch fresh instructions
  */
 export async function invalidateTaxAgent(): Promise<void> {
-  console.log('[TaxAgent] Invalidating agent - next request will fetch fresh instructions from DB');
+  injectFromContainer(LoggerService).log('[TaxAgent] Invalidating agent - next request will fetch fresh instructions from DB');
   taxAgentInstance = null;
   needsRefresh = true;
 }

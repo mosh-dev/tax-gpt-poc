@@ -11,6 +11,7 @@ import { getStoragePath } from '@config/storage';
 import { Environment } from '@config/environment';
 import { injectFromContainer } from '@/app/di-container/container-helper';
 import { MongoRepository } from '@infrastructure/database/base-repository';
+import { LoggerService } from '@infrastructure/logger/logger.service';
 
 export interface UploadedFileInfo {
   fileId: string;
@@ -25,6 +26,7 @@ export interface UploadedFileInfo {
 
 export class FileService {
   private readonly mongoRepository = injectFromContainer(MongoRepository);
+  private readonly logger = injectFromContainer(LoggerService);
   /**
    * Save uploaded file and create database record
    */
@@ -55,7 +57,7 @@ export class FileService {
     // Save to database
     await this.mongoRepository.createFile(fileData);
 
-    console.log(`[FileService] Saved file: ${file.originalname} (ID: ${fileId}, ${file.size} bytes)`);
+    this.logger.log(`[FileService] Saved file: ${file.originalname} (ID: ${fileId}, ${file.size} bytes)`);
 
     return {
       fileId,
@@ -77,23 +79,23 @@ export class FileService {
     const file = await this.mongoRepository.findFileById(fileId);
 
     if (!file) {
-      console.warn(`[FileService] File not found for deletion: ${fileId}`);
+      this.logger.warn(`[FileService] File not found for deletion: ${fileId}`);
       return false;
     }
 
     try {
       // Delete physical file
       await fs.unlink(file.storedPath);
-      console.log(`[FileService] Deleted physical file: ${file.storedPath}`);
-    } catch (error) {
-      console.error(`[FileService] Failed to delete physical file: ${file.storedPath}`, error);
+      this.logger.log(`[FileService] Deleted physical file: ${file.storedPath}`);
+    } catch (error : any) {
+      this.logger.error(error,`[FileService] Failed to delete physical file: ${file.storedPath}`);
       // Continue with database deletion even if physical file deletion fails
     }
 
     // Delete from database
     await this.mongoRepository.deleteFile(fileId);
 
-    console.log(`[FileService] Deleted file: ${fileId}`);
+    this.logger.log(`[FileService] Deleted file: ${fileId}`);
     return true;
   }
 
@@ -131,7 +133,7 @@ export class FileService {
     // Save to database
     await this.mongoRepository.createFile(fileData);
 
-    console.log(`[FileService] Saved generated file: ${filename} (ID: ${fileId}, ${buffer.length} bytes)`);
+    this.logger.log(`[FileService] Saved generated file: ${filename} (ID: ${fileId}, ${buffer.length} bytes)`);
 
     return {
       fileId,

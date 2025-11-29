@@ -2,8 +2,7 @@ import { connectDatabase } from '@infrastructure/database/connection';
 import { initializeLLMClient } from '@infrastructure/ai/llm-client';
 import { runAllSeeds } from '@/scripts/seeds/run-seed';
 import { registerApplicationComponents } from '@/app/di-container/container-registry';
-import { injectFromContainer } from '@/app/di-container/container-helper';
-import { LoggerService } from '@infrastructure/logger/logger.service';
+import { pinoServerLogger } from '@utils/pino-logger';
 
 let isInitialized = false;
 let isInitializing = false;
@@ -15,12 +14,12 @@ let isInitializing = false;
  */
 export async function initializeApp(): Promise<void> {
   if (isInitialized) {
-    console.log('[Initialize] Already initialized, skipping');
+    pinoServerLogger.info('[Initialize] Already initialized, skipping');
     return;
   }
 
   if (isInitializing) {
-    console.log('[Initialize] Initialization in progress, waiting...');
+    pinoServerLogger.info('[Initialize] Initialization in progress, waiting...');
     await new Promise(resolve => setTimeout(resolve, 100));
     return initializeApp(); // Retry
   }
@@ -32,12 +31,10 @@ export async function initializeApp(): Promise<void> {
     await runAllSeeds();
     await initializeLLMClient();
 
-    const logger = injectFromContainer(LoggerService);
-
     isInitialized = true;
-    logger.log('[Initialize] Application initialization completed successfully');
+    pinoServerLogger.info('[Initialize] Application initialization completed successfully');
   } catch (error) {
-    console.error('[Initialize] Initialization failed:', error);
+    pinoServerLogger.error(error as any, '[Initialize] Initialization failed:');
     throw error;
   } finally {
     isInitializing = false;

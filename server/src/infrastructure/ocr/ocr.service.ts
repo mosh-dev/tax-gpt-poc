@@ -10,16 +10,16 @@ import { ImageProcessor } from '@infrastructure/ocr/processors/image-processor';
 import { PDFProcessor } from '@infrastructure/ocr/processors/pdf-processor';
 import { OCRResultThree } from '@/types/ocr-result.types';
 import { DocumentProcessor, FileType, OCRConfig, SupportedLanguage } from '@infrastructure/ocr/ocr.types';
+import { injectFromContainer } from '@/app/di-container/container-helper';
+import { LoggerService } from '@infrastructure/logger/logger.service';
 
 export class OCRService {
-  private processors: Map<FileType, DocumentProcessor>;
+  private processors = new Map<FileType, DocumentProcessor>();
+  private logger = injectFromContainer(LoggerService);
 
   constructor() {
-    // Register processors
-    this.processors = new Map();
     this.registerProcessor('image', new ImageProcessor());
     this.registerProcessor('pdf', new PDFProcessor());
-    // Note: This service creates processors in constructor and doesn't use DI yet
   }
 
   /**
@@ -28,7 +28,7 @@ export class OCRService {
    */
   registerProcessor(fileType: FileType, processor: DocumentProcessor): void {
     this.processors.set(fileType, processor);
-    console.log(`[OCRService] Registered processor for ${fileType} files`);
+    this.logger.log(`[OCRService] Registered processor for ${fileType} files`);
   }
 
   /**
@@ -71,54 +71,48 @@ export class OCRService {
   ): Promise<OCRResultThree> {
     const startTime = Date.now();
 
-    try {
-      // Detect file type
-      const fileType = await this.detectFileType(filePath);
+    // Detect file type
+    const fileType = await this.detectFileType(filePath);
 
-      if (fileType === 'unknown') {
-        throw new Error('Unsupported file type. Please upload an image (JPG, PNG, etc.) or PDF.');
-      }
-
-      // Get appropriate processor
-      const processor = this.getProcessor(fileType);
-
-      if (!processor) {
-        throw new Error(`No processor available for ${fileType} files`);
-      }
-
-      // Build configuration
-      let config: OCRConfig;
-
-      if (options?.config) {
-        // Use custom config
-        config = { ...DEFAULT_OCR_CONFIG, ...options.config };
-      } else if (options?.canton) {
-        // Use canton-specific language
-        const cantonLanguage = getSwissCantonLanguage(options.canton);
-        config = getOCRConfig(options?.quality, cantonLanguage);
-      } else if (options?.language) {
-        // Use specified language
-        config = getOCRConfig(options?.quality, options.language);
-      } else {
-        // Use quality preset or default
-        config = getOCRConfig(options?.quality);
-      }
-
-      console.log(`[OCRService] Processing ${fileType} file: ${path.basename(filePath)}`);
-      console.log(`[OCRService] Config:`, config);
-
-      // Process document
-      const result = await processor.process(filePath, config);
-
-      console.log(`[OCRService] Completed in ${Date.now() - startTime}ms`);
-      console.log(`[OCRService] Extracted ${result.wordCount} words`);
-
-      return result;
-
-    } catch (error) {
-      console.error('[OCRService] Processing error:', error);
-      throw error;
+    if (fileType === 'unknown') {
+      throw new Error('Unsupported file type. Please upload an image (JPG, PNG, etc.) or PDF.');
     }
+
+    // Get appropriate processor
+    const processor = this.getProcessor(fileType);
+
+    if (!processor) {
+      throw new Error(`No processor available for ${fileType} files`);
+    }
+
+    // Build configuration
+    let config: OCRConfig;
+
+    if (options?.config) {
+      // Use custom config
+      config = { ...DEFAULT_OCR_CONFIG, ...options.config };
+    } else if (options?.canton) {
+      // Use canton-specific language
+      const cantonLanguage = getSwissCantonLanguage(options.canton);
+      config = getOCRConfig(options?.quality, cantonLanguage);
+    } else if (options?.language) {
+      // Use specified language
+      config = getOCRConfig(options?.quality, options.language);
+    } else {
+      // Use quality preset or default
+      config = getOCRConfig(options?.quality);
+    }
+
+    console.log(`[OCRService] Processing ${fileType} file: ${path.basename(filePath)}`);
+    console.log(`[OCRService] Config:`, config);
+
+    // Process document
+    const result = await processor.process(filePath, config);
+
+    console.log(`[OCRService] Completed in ${Date.now() - startTime}ms`);
+    console.log(`[OCRService] Extracted ${result.wordCount} words`);
+
+    return result;
   }
 
   /**

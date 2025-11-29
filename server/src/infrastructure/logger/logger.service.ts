@@ -1,48 +1,12 @@
-import { getStoragePath } from '@config/storage';
-import { existsSync, mkdirSync } from 'node:fs';
-import { createStream } from 'rotating-file-stream';
-import pino, { Logger } from 'pino';
-import pretty from 'pino-pretty';
+import { Logger } from 'pino';
+import { pinoServerLogger } from '@utils/pino-logger';
 
 /**
  * Console-based logger implementation
  */
 export class LoggerService {
-  private pinoServerLogger: Logger;
-  protected readonly logger: Logger;
-
-  constructor() {
-    const logsDir = getStoragePath('logs');
-    if (!existsSync(logsDir)) {
-      mkdirSync(logsDir, { recursive: true });
-    }
-
-    const combinedLogStream = createStream('combined.log', {
-      path: logsDir,
-      size: '10M',
-      interval: '1d',
-      compress: 'gzip',
-    });
-
-    const prettyStream = pretty({
-      colorize: true,
-      translateTime: 'yyyy-mm-dd HH:MM:ss',
-      ignore: 'pid,hostname,module',
-      messageFormat: (log, messageKey) => {
-        const module = log.module ? `[${log.module}] - ` : '';
-        return `${module}${log[messageKey]}`;
-      },
-    });
-
-    this.pinoServerLogger = pino(
-      { level: 'info' },
-      pino.multistream([
-        { level: 'info', stream: prettyStream },
-        { level: 'info', stream: combinedLogStream },
-      ])
-    );
-    this.logger = this.createNewLogger('TaxGPT');
-  }
+  private pinoServerLogger = pinoServerLogger;
+  protected readonly logger = this.createNewLogger('TaxGPT');
 
   public createNewLogger(module: string): Logger {
     this.pinoServerLogger.info(`Creating new logger for module: ${module}`);
@@ -56,6 +20,16 @@ export class LoggerService {
       this.logger.info(objOrMsg);
     } else {
       this.logger.info(objOrMsg, msg);
+    }
+  }
+
+  public warn(obj: object, msg?: string): void;
+  public warn(msg: string): void;
+  public warn(objOrMsg: object | string, msg?: string): void {
+    if (typeof objOrMsg === 'string') {
+      this.logger.warn(objOrMsg);
+    } else {
+      this.logger.warn(objOrMsg, msg);
     }
   }
 
