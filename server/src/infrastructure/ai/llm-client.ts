@@ -87,7 +87,7 @@ export async function initializeLLMClient(): Promise<void> {
     logger.info(`[LLM] Created client for base URL: ${baseURL}`);
   }
 
-  logger.info('[LLM] Model Registry:');
+  logger.info('[LLM] Model Registry');
   for (const [purpose, config] of modelConfigs.entries()) {
     logger.info(`  - ${purpose}: ${config.modelName} (mode: ${config.generateMode})`);
   }

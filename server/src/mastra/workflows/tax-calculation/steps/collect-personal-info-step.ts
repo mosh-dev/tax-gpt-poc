@@ -26,7 +26,7 @@ export const collectPersonalInfoStep = createStep({
   execute: async ({ resumeData, suspend }) => {
     const logger = injectFromContainer(AgentLoggerService);
     if (resumeData) {
-      logger.info(resumeData, '[Workflow] Personal info received:');
+      logger.info(resumeData, '[Workflow] Personal info received');
       return resumeData;
     }
 

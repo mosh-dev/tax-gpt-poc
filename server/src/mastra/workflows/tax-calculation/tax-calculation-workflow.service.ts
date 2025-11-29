@@ -81,7 +81,7 @@ export class TaxCalculationWorkflowService {
       // Handle error state
       if (result.status === 'failed') {
         status.error = result.error?.message || 'Unknown error';
-        this.logger.info(result, `[WorkflowService] Workflow failed on start:`);
+        this.logger.info(result, `[WorkflowService] Workflow failed on start`);
         await this.deleteWorkflowSnapshot(runId);
       }
 
@@ -160,7 +160,7 @@ export class TaxCalculationWorkflowService {
     // Handle error state
     if (result.status === 'failed') {
       status.error = result.error?.message || 'Unknown error';
-      this.logger.info(status, `[WorkflowService] Workflow failed:`);
+      this.logger.info(status, `[WorkflowService] Workflow failed`);
       await this.deleteWorkflowSnapshot(runId);
     }
 

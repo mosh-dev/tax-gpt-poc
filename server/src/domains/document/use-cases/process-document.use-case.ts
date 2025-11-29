@@ -75,7 +75,7 @@ export class ProcessDocumentUseCase {
         const result = await this.execute(doc);
         results.push(result);
       } catch (error) {
-        this.logger.error({ error },`[ProcessDocumentUseCase] Failed to process ${doc.fileId}:`);
+        this.logger.error({ error },`[ProcessDocumentUseCase] Failed to process ${doc.fileId}`);
       }
     }
 

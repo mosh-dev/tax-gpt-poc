@@ -128,7 +128,7 @@ export const processDocumentsTool = createTool({
             error: getErrorMessage(error) || 'Unknown error'
           });
 
-          logger.error({ error }, `[ProcessDocumentsTool] Error: ${metadata.originalName}:`);
+          logger.error({ error }, `[ProcessDocumentsTool] Error: ${metadata.originalName}`);
         }
       }
 
@@ -157,7 +157,7 @@ export const processDocumentsTool = createTool({
       });
 
     } catch (error) {
-      logger.error({ error }, '[ProcessDocumentsTool] Error:');
+      logger.error({ error }, '[ProcessDocumentsTool] Error');
       return createSafeResult({
         success: false,
         message: 'Failed to process documents',

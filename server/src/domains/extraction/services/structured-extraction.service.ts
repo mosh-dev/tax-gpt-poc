@@ -95,7 +95,7 @@ export async function extractStructuredData<T extends z.ZodTypeAny>(
       modelName,
       generateMode,
       textLength: finalText.length,
-    }, '[StructuredExtraction] Error during extraction:');
+    }, '[StructuredExtraction] Error during extraction');
     throw error;
   }
 }

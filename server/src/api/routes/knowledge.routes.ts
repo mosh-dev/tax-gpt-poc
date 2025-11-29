@@ -64,13 +64,13 @@ router.post('/upload', knowledgeUpload.single('file'), async (req: Request, res:
       });
     } catch (processingError) {
       const errorMsg = getErrorMessage(processingError);
-      logger.error(processingError, '[KnowledgeRoutes] Processing error:');
+      logger.error(processingError, '[KnowledgeRoutes] Processing error');
       progressManager.error(uploadId, errorMsg);
     }
 
   } catch (error) {
     const errorMsg = getErrorMessage(error);
-    logger.error({ error },'[KnowledgeRoutes] Upload error:');
+    logger.error({ error },'[KnowledgeRoutes] Upload error');
 
     res.status(500).json({
       error: 'Failed to upload file',
@@ -141,7 +141,7 @@ router.delete('/files/:id', async (req: Request, res: Response): Promise<void> =
     res.json(result);
 
   } catch (error) {
-    logger.error({ error }, '[KnowledgeRoutes] Delete error:');
+    logger.error({ error }, '[KnowledgeRoutes] Delete error');
 
     res.status(500).json({
       error: 'Failed to delete file',

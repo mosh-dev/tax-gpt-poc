@@ -35,7 +35,7 @@ export async function getOrCreateTaxAgent(): Promise<TaxAgent> {
   const logger = injectFromContainer(LoggerService);
   // If agent is currently being created, wait briefly and retry
   if (isCreating) {
-    logger.info('[TaxAgent] Agent creation in progress, waiting...');
+    logger.info('Agent creation in progress, waiting...');
     await new Promise(resolve => setTimeout(resolve, 10));
     return getOrCreateTaxAgent(); // Retry
   }
@@ -47,7 +47,7 @@ export async function getOrCreateTaxAgent(): Promise<TaxAgent> {
 
   // Agent needs to be created or refreshed - query DB for latest instructions
   const reason = taxAgentInstance ? ' refresh requested' : 'no instance';
-  logger.info(`[TaxAgent] Fetching instructions from database - reason: ${reason}`);
+  logger.info(`Fetching instructions from database - reason: ${reason}`);
 
   isCreating = true;
   try {
@@ -57,11 +57,11 @@ export async function getOrCreateTaxAgent(): Promise<TaxAgent> {
     taxAgentInstance = agent;
     needsRefresh = false; // Clear refresh flag
 
-    logger.info('[TaxAgent] Agent instance created successfully');
+    logger.info('Agent instance created successfully');
 
     return agent;
   } catch (error) {
-    logger.error({ error }, '[TaxAgent] Error creating agent instance:');
+    logger.error({ error }, 'Error creating agent instance');
     throw error;
   } finally {
     isCreating = false;
@@ -74,7 +74,7 @@ export async function getOrCreateTaxAgent(): Promise<TaxAgent> {
  * Sets the needsRefresh flag so next request will fetch fresh instructions
  */
 export async function invalidateTaxAgent(): Promise<void> {
-  injectFromContainer(LoggerService).info('[TaxAgent] Invalidating agent - next request will fetch fresh instructions from DB');
+  injectFromContainer(LoggerService).info('Invalidating agent - next request will fetch fresh instructions from DB');
   taxAgentInstance = null;
   needsRefresh = true;
 }

@@ -103,7 +103,7 @@ export async function startExpressServer(app: Express): Promise<void> {
         reject(error);
       });
     } catch (error) {
-      logger.error({ error }, `[Express Server] Error during startup:`);
+      logger.error({ error }, `[Express Server] Error during startup`);
       reject(error);
     }
   });

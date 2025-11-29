@@ -61,7 +61,7 @@ export async function getSecret(key: string): Promise<string | undefined> {
       return undefined;
     }
   } catch (error) {
-    logger.error({ error }, `[Secrets] Error fetching secret ${key}:`);
+    logger.error({ error }, `[Secrets] Error fetching secret ${key}`);
     throw error;
   }
 }

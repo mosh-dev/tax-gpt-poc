@@ -41,7 +41,7 @@ export async function disconnectDatabase(): Promise<void> {
   try {
     await mongoose.disconnect();
   } catch (error) {
-    logger.error({ error }, '[Database] Disconnect failed:');
+    logger.error({ error }, '[Database] Disconnect failed');
   }
 }
 
@@ -58,7 +58,7 @@ mongoose.connection.on('connected', () => {
 });
 
 mongoose.connection.on('error', (err) => {
-  injectFromContainer(LoggerService).error(err, '[Database] Mongoose connection error:');
+  injectFromContainer(LoggerService).error(err, '[Database] Mongoose connection error');
 });
 
 mongoose.connection.on('disconnected', () => {

@@ -34,16 +34,16 @@ export class TaxAgent {
     try {
       const memoryConfig = createMemoryConfigFromEnv();
       this.memory = createMastraMemory(memoryConfig);
-      this.logger.info('[TaxAgent] Mastra Memory initialized successfully');
-      this.logger.info(`[TaxAgent] Vector storage: ${memoryConfig.enableVectorStorage ? 'enabled' : 'disabled'}`);
+      this.logger.info('Mastra Memory initialized successfully');
+      this.logger.info(`Vector storage: ${memoryConfig.enableVectorStorage ? 'enabled' : 'disabled'}`);
     } catch (error) {
-      this.logger.error({ error }, `[TaxAgent] Failed to initialize Mastra Memory`);
+      this.logger.error({ error }, `Failed to initialize Mastra Memory`);
       throw error;
     }
 
     // Count tokens in system instructions
     const tokenCount = encode(instructions).length;
-    this.logger.info(`[TaxAgent] System instructions loaded from database:`);
+    this.logger.info(`System instructions loaded from database`);
     this.logger.info(`  - Character count: ${instructions.length.toLocaleString()}`);
     this.logger.info(`  - Token count: ${tokenCount.toLocaleString()} tokens`);
 
@@ -123,11 +123,11 @@ export class TaxAgent {
       // This allows Mastra to create the thread on second attempt
       const errorMessage = getErrorMessage(error).toLowerCase();
       if (errorMessage.includes('thread') || errorMessage.includes('not found') || errorMessage.includes('does not exist')) {
-        this.logger.info(`[TaxAgent] First attempt failed with thread error, retrying...`);
+        this.logger.info(`First attempt failed with thread error, retrying...`);
         try {
           stream = await createStream();
         } catch (retryError) {
-          this.logger.error(retryError, '[TaxAgent] Retry also failed');
+          this.logger.error(retryError, 'Retry also failed');
           throw retryError;
         }
       } else {
@@ -152,26 +152,26 @@ export class TaxAgent {
    */
   async deleteThread(threadId: string, resourceId?: string): Promise<void> {
     if (!this.memory) {
-      this.logger.warn('[TaxAgent] Memory not configured, skipping thread deletion');
+      this.logger.warn('Memory not configured, skipping thread deletion');
       return;
     }
 
     const effectiveResourceId = resourceId || 'default-user';
-    this.logger.info(`[TaxAgent] Deleting Mastra thread: ${threadId}, Resource: ${effectiveResourceId}`);
+    this.logger.info(`Deleting Mastra thread: ${threadId}, Resource: ${effectiveResourceId}`);
 
     try {
       // Use Mastra's official Memory API to delete thread and messages
       await this.memory.deleteThread(threadId);
-      this.logger.info(`[TaxAgent] Successfully deleted Mastra thread via official API: ${threadId}`);
+      this.logger.info(`Successfully deleted Mastra thread via official API: ${threadId}`);
     } catch (error) {
-      this.logger.error({ error }, '[TaxAgent] Error deleting Mastra thread');
+      this.logger.error({ error }, 'Error deleting Mastra thread');
     }
 
     // Also delete workflow snapshots (Mastra doesn't provide API for this yet)
     try {
       await this.deleteWorkflowSnapshots(threadId);
     } catch (error) {
-      this.logger.error({ error }, '[TaxAgent] Error deleting workflow snapshots');
+      this.logger.error({ error }, 'Error deleting workflow snapshots');
     }
   }
 
@@ -204,12 +204,12 @@ export class TaxAgent {
           'snapshot.context.input.threadId': threadId,
         });
 
-        this.logger.info(`[TaxAgent] Deleted ${result.deletedCount} workflow snapshots for thread: ${threadId}`);
+        this.logger.info(`Deleted ${result.deletedCount} workflow snapshots for thread: ${threadId}`);
       } else {
-        this.logger.warn('[TaxAgent] MongoDB connection not available for workflow snapshot cleanup');
+        this.logger.warn('MongoDB connection not available for workflow snapshot cleanup');
       }
     } catch (error) {
-      this.logger.error({ error }, '[TaxAgent] Error deleting workflow snapshots');
+      this.logger.error({ error }, 'Error deleting workflow snapshots');
       throw error;
     }
   }

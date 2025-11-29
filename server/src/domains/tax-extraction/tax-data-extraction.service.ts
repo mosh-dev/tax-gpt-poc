@@ -102,7 +102,7 @@ export async function extractTaxData(
     logger.error({
       documentCount: documents.length,
       hasPersonalContext: !!personalContext,
-    }, '[TaxDataExtraction] Context:');
+    }, '[TaxDataExtraction] Context');
 
     return createEmptyTaxData();
   }

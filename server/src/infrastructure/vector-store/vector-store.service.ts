@@ -210,7 +210,7 @@ export class VectorStoreService {
         this.logger.info(`[VectorStore] No documents found for file ${fileId}`);
       }
     } catch (error) {
-      this.logger.error({ error }, '[VectorStore] Error deleting by fileId:');
+      this.logger.error({ error }, '[VectorStore] Error deleting by fileId');
       throw new Error(`Failed to delete documents for file ${fileId}: ${getErrorMessage(error)}`);
     }
   }
