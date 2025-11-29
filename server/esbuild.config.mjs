@@ -43,7 +43,7 @@ function startServer() {
   }
 
   console.log('🚀 Starting server...');
-  serverProcess = spawn('node', [`${outPath}/server.mjs`], {
+  serverProcess = spawn('node', ['--enable-source-maps', `${outPath}/server.mjs`], {
     stdio: 'inherit'
   });
 
