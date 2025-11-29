@@ -32,7 +32,7 @@ export async function createExpressApp(): Promise<Express> {
 
   // Request logging middleware
   app.use((req: Request, _: Response, next: NextFunction) => {
-    logger.info(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+    logger.info(`${req.method} ${req.path}`);
     next();
   });
 

@@ -1,12 +1,8 @@
-/**
- * Agent Config Routes
- * Routes for managing AI agent configuration
- */
-
-import { Router, Request, Response } from 'express';
+import { Request, Response, Router } from 'express';
 import { getErrorMessage } from '@utils/error-handler';
 import { injectFromContainer } from '@/app/di-container/container-helper';
 import { AgentConfigService } from '@domains/agent-config/agent-config.service';
+import { LoggerService } from '@infrastructure/logger/logger.service';
 
 const router = Router();
 
@@ -16,6 +12,7 @@ const router = Router();
  */
 router.get('/', async (_: Request, res: Response) => {
   const agentConfigService = injectFromContainer(AgentConfigService);
+  const logger = injectFromContainer(LoggerService);
   try {
     const config = await agentConfigService.getConfig();
 
@@ -31,11 +28,10 @@ router.get('/', async (_: Request, res: Response) => {
       config,
     });
   } catch (error) {
-    const errorMsg = getErrorMessage(error);
-    console.error('[AgentConfigRoutes] Failed to get config:', errorMsg);
+    logger.error({ error }, '[AgentConfigRoutes] Failed to get config');
     res.status(500).json({
       success: false,
-      error: errorMsg,
+      error: getErrorMessage(error),
     });
   }
 });
@@ -45,9 +41,9 @@ router.get('/', async (_: Request, res: Response) => {
  * Update the agent configuration
  */
 router.put('/', async (req: Request, res: Response) => {
+  const agentConfigService = injectFromContainer(AgentConfigService);
+  const logger = injectFromContainer(LoggerService);
   try {
-    const agentConfigService = injectFromContainer(AgentConfigService);
-
     const { instructions } = req.body;
     const config = await agentConfigService.updateConfig({ instructions });
 
@@ -56,9 +52,9 @@ router.put('/', async (req: Request, res: Response) => {
       config,
     });
   } catch (error) {
-    const errorMsg = getErrorMessage(error);
-    console.error('[AgentConfigRoutes] Failed to update config:', errorMsg);
+    logger.error({ error }, '[AgentConfigRoutes] Failed to update config');
 
+    const errorMsg = getErrorMessage(error);
     // Handle validation errors with 400 status
     if (errorMsg.includes('required') || errorMsg.includes('cannot be empty')) {
       res.status(400).json({

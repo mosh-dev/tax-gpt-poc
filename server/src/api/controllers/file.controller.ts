@@ -1,7 +1,3 @@
-/**
- * File Controller
- * Handles HTTP requests for file operations
- */
 import { Request, Response } from 'express';
 import { getErrorMessage } from '@utils/error-handler';
 import { UploadFileUseCase } from '@domains/document/use-cases/upload-file.use-case';
@@ -10,12 +6,14 @@ import { GetFileUseCase } from '@domains/document/use-cases/get-file.use-case';
 import { DeleteFileUseCase } from '@domains/document/use-cases/delete-file.use-case';
 import { ProcessDocumentDTO, UploadFileDTO } from '@domains/document/dtos/file-dto';
 import { injectFromContainer } from '@/app/di-container/container-helper';
+import { LoggerService } from '@infrastructure/logger/logger.service';
 
 export class FileController {
-  private uploadFileUseCase = injectFromContainer(UploadFileUseCase);
-  private processDocumentUseCase = injectFromContainer(ProcessDocumentUseCase);
-  private getFileUseCase = injectFromContainer(GetFileUseCase);
-  private deleteFileUseCase = injectFromContainer(DeleteFileUseCase);
+  private readonly uploadFileUseCase = injectFromContainer(UploadFileUseCase);
+  private readonly processDocumentUseCase = injectFromContainer(ProcessDocumentUseCase);
+  private readonly getFileUseCase = injectFromContainer(GetFileUseCase);
+  private readonly deleteFileUseCase = injectFromContainer(DeleteFileUseCase);
+  private readonly logger = injectFromContainer(LoggerService);
 
   /**
    * POST /api/files/upload
@@ -54,11 +52,10 @@ export class FileController {
         files: uploadedFiles,
       });
     } catch (error) {
-      const errorMsg = getErrorMessage(error);
-      console.error('[FileController] Upload error:', errorMsg);
+      this.logger.error({ error }, '[FileController] Upload error');
       res.status(500).json({
         success: false,
-        error: errorMsg,
+        error: getErrorMessage(error),
       });
     }
   }
@@ -94,11 +91,10 @@ export class FileController {
         results,
       });
     } catch (error) {
-      const errorMsg = getErrorMessage(error);
-      console.error('[FileController] Process documents error:', errorMsg);
+      this.logger.error({ error }, '[FileController] Process documents error');
       res.status(500).json({
         success: false,
-        error: errorMsg,
+        error: getErrorMessage(error),
       });
     }
   }
@@ -118,9 +114,8 @@ export class FileController {
         file,
       });
     } catch (error) {
+      this.logger.error({ error }, '[FileController] Get file error');
       const errorMsg = getErrorMessage(error);
-      console.error('[FileController] Get file error:', errorMsg);
-
       if (errorMsg.includes('not found')) {
         res.status(404).json({
           success: false,
@@ -142,7 +137,6 @@ export class FileController {
   async deleteFile(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-
       await this.deleteFileUseCase.execute(id);
 
       res.json({
@@ -150,9 +144,8 @@ export class FileController {
         message: 'File deleted',
       });
     } catch (error) {
+      this.logger.error({ error }, '[FileController] Delete file error');
       const errorMsg = getErrorMessage(error);
-      console.error('[FileController] Delete file error:', errorMsg);
-
       if (errorMsg.includes('not found')) {
         res.status(404).json({
           success: false,

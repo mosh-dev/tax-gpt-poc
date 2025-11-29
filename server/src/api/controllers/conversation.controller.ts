@@ -8,11 +8,14 @@ import { GetAllConversationsUseCase } from '@domains/conversation/use-cases/get-
 import { GetConversationHistoryUseCase } from '@domains/conversation/use-cases/get-conversation-history.use-case';
 import { DeleteConversationUseCase } from '@domains/conversation/use-cases/delete-conversation.use-case';
 import { injectFromContainer } from '@/app/di-container/container-helper';
+import { LoggerService } from '@infrastructure/logger/logger.service';
 
 export class ConversationController {
-  private getAllConversationsUseCase = injectFromContainer(GetAllConversationsUseCase);
-  private getConversationHistoryUseCase = injectFromContainer(GetConversationHistoryUseCase);
-  private deleteConversationUseCase = injectFromContainer(DeleteConversationUseCase);
+  private readonly getAllConversationsUseCase = injectFromContainer(GetAllConversationsUseCase);
+  private readonly getConversationHistoryUseCase = injectFromContainer(GetConversationHistoryUseCase);
+  private readonly deleteConversationUseCase = injectFromContainer(DeleteConversationUseCase);
+
+  private readonly logger = injectFromContainer(LoggerService);
 
   /**
    * GET /api/chat/conversations
@@ -32,11 +35,10 @@ export class ConversationController {
         conversations,
       });
     } catch (error) {
-      const errorMsg = getErrorMessage(error);
-      console.error('[ConversationController] Failed to get conversations:', errorMsg);
+      this.logger.error({ error }, '[ConversationController] Failed to get conversations');
       res.status(500).json({
         success: false,
-        error: errorMsg,
+        error: getErrorMessage(error),
       });
     }
   }
@@ -61,7 +63,7 @@ export class ConversationController {
       });
     } catch (error) {
       const errorMsg = getErrorMessage(error);
-      console.error('[ConversationController] Failed to get conversation:', errorMsg);
+      this.logger.error({ error },'[ConversationController] Failed to get conversation');
 
       if (errorMsg.includes('not found')) {
         res.status(404).json({
@@ -84,7 +86,6 @@ export class ConversationController {
   async delete(req: Request, res: Response): Promise<void> {
     try {
       const { id } = req.params;
-
       await this.deleteConversationUseCase.execute(id);
 
       res.json({
@@ -92,9 +93,9 @@ export class ConversationController {
         message: 'Conversation deleted',
       });
     } catch (error) {
-      const errorMsg = getErrorMessage(error);
-      console.error('[ConversationController] Failed to delete conversation:', errorMsg);
+      this.logger.error({ error },'[ConversationController] Failed to delete conversation');
 
+      const errorMsg = getErrorMessage(error);
       if (errorMsg.includes('not found')) {
         res.status(404).json({
           success: false,

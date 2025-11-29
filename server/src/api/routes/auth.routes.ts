@@ -1,18 +1,10 @@
-/**
- * Authentication Routes
- * Login and token refresh endpoints
- */
-
-import { Router, Request, Response } from 'express';
+import { Request, Response, Router } from 'express';
 import { User } from '@domains/user/user.model';
-import {
-  generateAccessToken,
-  generateRefreshToken,
-  verifyRefreshToken
-} from '../middleware/auth.middleware';
-import { getErrorMessage } from '@utils/error-handler';
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../middleware/auth.middleware';
 import { Environment } from '@config/environment';
 import jwt from 'jsonwebtoken';
+import { injectFromContainer } from '@/app/di-container/container-helper';
+import { LoggerService } from '@infrastructure/logger/logger.service';
 
 const router = Router();
 
@@ -21,6 +13,7 @@ const router = Router();
  * Authenticate user and return tokens
  */
 router.post('/login', async (req: Request, res: Response) => {
+  const logger = injectFromContainer(LoggerService);
   try {
     const { userName, password } = req.body;
 
@@ -67,8 +60,7 @@ router.post('/login', async (req: Request, res: Response) => {
       }
     });
   } catch (error) {
-    const errorMsg = getErrorMessage(error);
-    console.error('[Auth] Login error:', errorMsg);
+    logger.error({ error }, '[Auth] Login error');
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Login failed'
@@ -81,6 +73,7 @@ router.post('/login', async (req: Request, res: Response) => {
  * Refresh access token using refresh token
  */
 router.post('/refresh', async (req: Request, res: Response) => {
+  const logger = injectFromContainer(LoggerService);
   try {
     const { refreshToken } = req.body;
 
@@ -125,8 +118,7 @@ router.post('/refresh', async (req: Request, res: Response) => {
       refreshToken: newRefreshToken
     });
   } catch (error) {
-    const errorMsg = getErrorMessage(error);
-    console.error('[Auth] Refresh error:', errorMsg);
+    logger.error({ error }, '[Auth] Refresh error');
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Token refresh failed'
@@ -139,8 +131,6 @@ router.post('/refresh', async (req: Request, res: Response) => {
  * Get current user info (requires auth)
  */
 router.get('/me', async (req: Request, res: Response) => {
-  // This endpoint will be protected by middleware
-  // For now, extract token manually
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -155,7 +145,6 @@ router.get('/me', async (req: Request, res: Response) => {
 
   try {
     const decoded = jwt.verify(token, Environment.JWT_SECRET) as { userId: string; userName: string };
-
     const user = await User.findOne({ userId: decoded.userId });
 
     if (!user) {

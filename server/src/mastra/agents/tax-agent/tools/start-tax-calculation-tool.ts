@@ -28,11 +28,8 @@ After starting, you'll receive the first step's requirements. Guide the user thr
     const logger = injectFromContainer(AgentLoggerService);
     const workflowService = injectFromContainer(TaxCalculationWorkflowService);
     try {
-      logger.info(`[StartWorkflowTool] Starting tax calculation workflow for thread: ${threadId}`);
-
       const status = await workflowService.startTaxCalculation(threadId, message);
-
-      logger.info(`[StartWorkflowTool] Workflow started with status: ${status.status}`);
+      logger.info(`[StartWorkflowTool] Workflow started with threadId ${threadId}, status: ${status.status}`);
 
       if (status.status === 'suspended') {
         return {
@@ -54,7 +51,7 @@ Ask the user to provide the required information based on the suspendPayload.`,
       };
 
     } catch (error) {
-      console.error('[StartWorkflowTool] Error:', error);
+      logger.error({ error }, '[StartWorkflowTool] Error');
       return {
         success: false,
         message: 'Failed to start workflow',
