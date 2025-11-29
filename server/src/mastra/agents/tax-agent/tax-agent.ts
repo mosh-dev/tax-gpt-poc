@@ -36,9 +36,8 @@ export class TaxAgent {
       this.memory = createMastraMemory(memoryConfig);
       this.logger.info('[TaxAgent] Mastra Memory initialized successfully');
       this.logger.info(`[TaxAgent] Vector storage: ${memoryConfig.enableVectorStorage ? 'enabled' : 'disabled'}`);
-    } catch (error: any) {
-      const errorMsg = getErrorMessage(error);
-      this.logger.error(error, `[TaxAgent] Failed to initialize Mastra Memory: ${errorMsg}`);
+    } catch (error) {
+      this.logger.error({ error }, `[TaxAgent] Failed to initialize Mastra Memory`);
       throw error;
     }
 
@@ -129,8 +128,7 @@ export class TaxAgent {
         try {
           stream = await createStream();
         } catch (retryError) {
-          const retryErrorMsg = getErrorMessage(retryError);
-          this.logger.error('[TaxAgent] Retry also failed:', retryErrorMsg);
+          this.logger.error(retryError, '[TaxAgent] Retry also failed');
           throw retryError;
         }
       } else {
@@ -167,14 +165,14 @@ export class TaxAgent {
       await this.memory.deleteThread(threadId);
       this.logger.info(`[TaxAgent] Successfully deleted Mastra thread via official API: ${threadId}`);
     } catch (error) {
-      this.logger.error(error, '[TaxAgent] Error deleting Mastra thread:');
+      this.logger.error({ error }, '[TaxAgent] Error deleting Mastra thread');
     }
 
     // Also delete workflow snapshots (Mastra doesn't provide API for this yet)
     try {
       await this.deleteWorkflowSnapshots(threadId);
     } catch (error) {
-      this.logger.error(error,'[TaxAgent] Error deleting workflow snapshots:');
+      this.logger.error({ error }, '[TaxAgent] Error deleting workflow snapshots');
     }
   }
 
@@ -211,8 +209,8 @@ export class TaxAgent {
       } else {
         this.logger.warn('[TaxAgent] MongoDB connection not available for workflow snapshot cleanup');
       }
-    } catch (error: unknown) {
-      this.logger.error(error, '[TaxAgent] Error deleting workflow snapshots');
+    } catch (error) {
+      this.logger.error({ error }, '[TaxAgent] Error deleting workflow snapshots');
       throw error;
     }
   }

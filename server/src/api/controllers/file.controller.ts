@@ -53,7 +53,7 @@ export class FileController {
         success: true,
         files: uploadedFiles,
       });
-    } catch (error: unknown) {
+    } catch (error) {
       const errorMsg = getErrorMessage(error);
       console.error('[FileController] Upload error:', errorMsg);
       res.status(500).json({
@@ -93,7 +93,7 @@ export class FileController {
         success: true,
         results,
       });
-    } catch (error: unknown) {
+    } catch (error) {
       const errorMsg = getErrorMessage(error);
       console.error('[FileController] Process documents error:', errorMsg);
       res.status(500).json({
@@ -117,7 +117,7 @@ export class FileController {
         success: true,
         file,
       });
-    } catch (error: unknown) {
+    } catch (error) {
       const errorMsg = getErrorMessage(error);
       console.error('[FileController] Get file error:', errorMsg);
 
@@ -149,7 +149,7 @@ export class FileController {
         success: true,
         message: 'File deleted',
       });
-    } catch (error: unknown) {
+    } catch (error) {
       const errorMsg = getErrorMessage(error);
       console.error('[FileController] Delete file error:', errorMsg);
 

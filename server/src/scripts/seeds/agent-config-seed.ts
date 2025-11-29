@@ -34,7 +34,7 @@ export async function seedAgentConfig(): Promise<void> {
     await config.save();
     logger.info('[Seed] Agent config created with default instructions');
   } catch (error) {
-    logger.error(error, '[Seed] Error seeding agent config:');
+    logger.error({ error }, '[Seed] Error seeding agent config');
     throw error;
   }
 }

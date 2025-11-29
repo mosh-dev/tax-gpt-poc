@@ -5,7 +5,6 @@
 
 import { Secret } from '@infrastructure/config/secrets/secret.model';
 import { isDatabaseConnected } from '@infrastructure/database/connection';
-import { getErrorMessage } from '@utils/error-handler';
 import { LoggerService } from '@infrastructure/logger/logger.service';
 import { injectFromContainer } from '@/app/di-container/container-helper';
 
@@ -61,9 +60,8 @@ export async function getSecret(key: string): Promise<string | undefined> {
       logger.warn(`[Secrets] Secret not found in database: ${key}`);
       return undefined;
     }
-  } catch (error: unknown) {
-    const errorMsg = getErrorMessage(error);
-    logger.error(errorMsg, `[Secrets] Error fetching secret ${key}:`);
+  } catch (error) {
+    logger.error({ error }, `[Secrets] Error fetching secret ${key}:`);
     throw error;
   }
 }

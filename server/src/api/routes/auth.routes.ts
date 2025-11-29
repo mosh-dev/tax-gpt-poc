@@ -66,7 +66,7 @@ router.post('/login', async (req: Request, res: Response) => {
         userName: user.userName
       }
     });
-  } catch (error: unknown) {
+  } catch (error) {
     const errorMsg = getErrorMessage(error);
     console.error('[Auth] Login error:', errorMsg);
     res.status(500).json({
@@ -124,7 +124,7 @@ router.post('/refresh', async (req: Request, res: Response) => {
       accessToken: newAccessToken,
       refreshToken: newRefreshToken
     });
-  } catch (error: unknown) {
+  } catch (error) {
     const errorMsg = getErrorMessage(error);
     console.error('[Auth] Refresh error:', errorMsg);
     res.status(500).json({

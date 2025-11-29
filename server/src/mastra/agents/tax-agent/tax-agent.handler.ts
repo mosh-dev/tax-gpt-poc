@@ -61,7 +61,7 @@ export async function getOrCreateTaxAgent(): Promise<TaxAgent> {
 
     return agent;
   } catch (error) {
-    logger.error(error as any, '[TaxAgent] Error creating agent instance:');
+    logger.error({ error }, '[TaxAgent] Error creating agent instance:');
     throw error;
   } finally {
     isCreating = false;

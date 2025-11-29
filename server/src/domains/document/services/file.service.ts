@@ -87,8 +87,8 @@ export class FileService {
       // Delete physical file
       await fs.unlink(file.storedPath);
       this.logger.info(`[FileService] Deleted physical file: ${file.storedPath}`);
-    } catch (error : any) {
-      this.logger.error(error,`[FileService] Failed to delete physical file: ${file.storedPath}`);
+    } catch (error) {
+      this.logger.error({ error },`[FileService] Failed to delete physical file: ${file.storedPath}`);
       // Continue with database deletion even if physical file deletion fails
     }
 

@@ -2,7 +2,7 @@ import { Logger } from 'pino';
 import { pinoServerLogger } from '@utils/pino-logger';
 
 /**
- * Console-based logger implementation
+ * Logger service that exposes Pino logger methods directly
  */
 export class LoggerService {
   protected readonly logger = pinoServerLogger.child({ module: 'TaxGPT' });
@@ -12,34 +12,39 @@ export class LoggerService {
     return pinoServerLogger.child({ module });
   }
 
-  public info(obj: object, msg?: string): void;
-  public info(msg: string): void;
-  public info(objOrMsg: object | string, msg?: string): void {
-    if (typeof objOrMsg === 'string') {
-      this.logger.info(objOrMsg);
-    } else {
-      this.logger.info(objOrMsg, msg);
-    }
-  }
+  /**
+   * Log at 'info' level - delegates directly to Pino
+   * Supports all Pino signatures:
+   * - info('message')
+   * - info('message %s %d', 'value', 123)
+   * - info({ obj: 'value' }, 'message')
+   * - info({ obj: 'value' })
+   */
+  public get info() {
+    return this.logger.info.bind(this.logger);
+  };
 
-  public warn(obj: object, msg?: string): void;
-  public warn(msg: string): void;
-  public warn(objOrMsg: object | string, msg?: string): void {
-    if (typeof objOrMsg === 'string') {
-      this.logger.warn(objOrMsg);
-    } else {
-      this.logger.warn(objOrMsg, msg);
-    }
-  }
+  /**
+   * Log at 'warn' level - delegates directly to Pino
+   * Supports all Pino signatures:
+   * - warn('message')
+   * - warn('message %s %d', 'value', 123)
+   * - warn({ obj: 'value' }, 'message')
+   * - warn({ obj: 'value' })
+   */
+  public get warn() {
+    return this.logger.warn.bind(this.logger);
+  };
 
-  public error(obj: object | unknown, msg?: string): void;
-  public error(obj: object, msg?: string): void;
-  public error(msg: string): void;
-  public error(objOrMsg: object | string | unknown, msg?: string): void {
-    if (typeof objOrMsg === 'string') {
-      this.logger.error(objOrMsg);
-    } else {
-      this.logger.error(objOrMsg, msg);
-    }
-  }
+  /**
+   * Log at 'error' level - delegates directly to Pino
+   * Supports all Pino signatures:
+   * - error('message')
+   * - error('message %s %d', 'value', 123)
+   * - error({ obj: 'value' }, 'message')
+   * - error({ obj: 'value' })
+   */
+  public get error() {
+    return this.logger.error.bind(this.logger);
+  };
 }

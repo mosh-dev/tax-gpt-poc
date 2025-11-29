@@ -10,8 +10,8 @@ import { pinoServerLogger } from '@utils/pino-logger';
 try {
   const app = await createExpressApp();
   await startExpressServer(app);
-} catch (error: any) {
-  pinoServerLogger.error(error, '[Mastra] Failed to start Express server:');
+} catch (error) {
+  pinoServerLogger.error({ error }, '[Mastra] Failed to start Express server');
   throw error;
 }
 

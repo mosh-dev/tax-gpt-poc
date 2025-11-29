@@ -2,7 +2,7 @@ import { LibSQLVector } from '@mastra/libsql';
 import { STORAGE_PATHS } from '@config/storage';
 import { generateEmbedding } from '@infrastructure/embedding/embedding.service';
 import { getErrorMessage } from '@utils/error-handler';
-import type { VectorDocument, SearchResult } from './vector-store.types';
+import type { SearchResult, VectorDocument } from './vector-store.types';
 import { injectFromContainer } from '@/app/di-container/container-helper';
 import { LoggerService } from '@infrastructure/logger/logger.service';
 
@@ -54,14 +54,14 @@ export class VectorStoreService {
           this.logger.info('[VectorStore] Using existing vector index');
           return;
         } else {
-          this.logger.error(error,'[VectorStore] Index creation warning:');
+          this.logger.error({ error }, '[VectorStore] Index creation warning');
         }
       }
 
       this.initialized = true;
       this.logger.info('[VectorStore] Vector store initialized successfully');
     } catch (error) {
-      this.logger.error(error,'[VectorStore] Failed to initialize:');
+      this.logger.error({ error }, '[VectorStore] Failed to initialize');
       throw error;
     }
   }
@@ -96,8 +96,8 @@ export class VectorStoreService {
       });
 
       this.logger.info(`[VectorStore] Stored ${docs.length} documents in LibSQL`);
-    } catch (error: unknown) {
-      this.logger.error(error, '[VectorStore] Error storing documents:');
+    } catch (error) {
+      this.logger.error({ error }, '[VectorStore] Error storing documents');
       throw error;
     }
   }
@@ -150,8 +150,8 @@ export class VectorStoreService {
       this.logger.info(`[VectorStore] Search returned ${searchResults.length} results (topK: ${topK}, minScore: ${minScore})`);
 
       return searchResults;
-    } catch (error: unknown) {
-      this.logger.error(error,'[VectorStore] Error searching:');
+    } catch (error) {
+      this.logger.error({ error }, '[VectorStore] Error searching');
       // If query fails, return empty results instead of throwing
       this.logger.warn('[VectorStore] Returning empty results due to search error');
       return [];
@@ -176,9 +176,8 @@ export class VectorStoreService {
         });
       }
       this.logger.info(`[VectorStore] Deleted ${ids.length} documents from LibSQL`);
-    } catch (error: unknown) {
-      const errorMsg = getErrorMessage(error);
-      this.logger.error('[VectorStore] Error deleting documents:', errorMsg);
+    } catch (error) {
+      this.logger.error({ error }, '[VectorStore] Error deleting documents');
     }
   }
 
@@ -210,10 +209,9 @@ export class VectorStoreService {
       } else {
         this.logger.info(`[VectorStore] No documents found for file ${fileId}`);
       }
-    } catch (error: unknown) {
-      const errorMsg = getErrorMessage(error);
-      this.logger.error(error, '[VectorStore] Error deleting by fileId:');
-      throw new Error(`Failed to delete documents for file ${fileId}: ${errorMsg}`);
+    } catch (error) {
+      this.logger.error({ error }, '[VectorStore] Error deleting by fileId:');
+      throw new Error(`Failed to delete documents for file ${fileId}: ${getErrorMessage(error)}`);
     }
   }
 }

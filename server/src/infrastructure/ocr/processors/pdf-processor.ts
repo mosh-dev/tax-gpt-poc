@@ -17,6 +17,7 @@ import { FileType, OCRConfig } from '@infrastructure/ocr/ocr.types';
 import { pdfToPng } from 'pdf-to-png-converter';
 import { STORAGE_PATHS } from '@config/storage';
 import { LoggerService } from '@infrastructure/logger/logger.service';
+import { getErrorMessage } from '@utils/error-handler';
 
 export class PDFProcessor extends BaseDocumentProcessor {
   protected supportedTypes: FileType[] = ['pdf'];
@@ -112,9 +113,9 @@ export class PDFProcessor extends BaseDocumentProcessor {
       return this.updateProcessingTime(result, startTime);
 
     } catch (error) {
-      this.logger.error(error,'[PDFProcessor] Error');
+      this.logger.error({ error },'[PDFProcessor] Error');
       result.status = 'failed';
-      result.error = error instanceof Error ? error.message : 'Unknown error during PDF processing';
+      result.error = getErrorMessage(error);
       return this.updateProcessingTime(result, startTime);
     }
   }

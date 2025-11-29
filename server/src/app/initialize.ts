@@ -93,7 +93,7 @@ export async function initializeInfrastructure(): Promise<void> {
     isInitialized = true;
     pinoServerLogger.info('[Initialize] Application initialization completed successfully');
   } catch (error) {
-    pinoServerLogger.error(error as any, '[Initialize] Initialization failed:');
+    pinoServerLogger.error({ error }, '[Initialize] Initialization failed');
     throw error;
   } finally {
     isInitializing = false;

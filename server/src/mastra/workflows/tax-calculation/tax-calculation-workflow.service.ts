@@ -5,7 +5,6 @@
  */
 import { getCollection } from '@infrastructure/database/utils';
 import { MASTRA_COLLECTIONS } from '@config/database-collections';
-import { getErrorMessage } from '@utils/error-handler';
 import { WORKFLOW_IDS } from '@shared/constants/workflow';
 import { getMastra } from '@/mastra/mastra-instance';
 import { injectFromContainer } from '@/app/di-container/container-helper';
@@ -82,15 +81,14 @@ export class TaxCalculationWorkflowService {
       // Handle error state
       if (result.status === 'failed') {
         status.error = result.error?.message || 'Unknown error';
-        this.logger.info(result,`[WorkflowService] Workflow failed on start:`);
+        this.logger.info(result, `[WorkflowService] Workflow failed on start:`);
         await this.deleteWorkflowSnapshot(runId);
       }
 
       return status;
-    } catch (error: unknown) {
-      const errorMsg = getErrorMessage(error);
-      this.logger.error('[WorkflowService] Error starting workflow:', errorMsg);
-      throw new Error(`Failed to start workflow: ${errorMsg}`);
+    } catch (error) {
+      this.logger.error({ error }, '[WorkflowService] Error starting workflow');
+      throw error;
     }
   }
 
@@ -183,8 +181,8 @@ export class TaxCalculationWorkflowService {
       } else {
         this.logger.warn('[WorkflowService] MongoDB connection not available for workflow snapshot cleanup');
       }
-    } catch (error: unknown) {
-      this.logger.error(error, '[WorkflowService] Error deleting workflow snapshot:');
+    } catch (error) {
+      this.logger.error({ error }, '[WorkflowService] Error deleting workflow snapshot');
     }
   }
 }

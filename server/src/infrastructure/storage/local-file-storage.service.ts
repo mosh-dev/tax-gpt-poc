@@ -50,7 +50,7 @@ export class LocalFileStorageService implements IFileStorageService {
   async deleteFile(filePath: string): Promise<void> {
     try {
       await fs.unlink(filePath);
-    } catch (error: unknown) {
+    } catch (error) {
       if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
         throw error;
       }

@@ -30,7 +30,7 @@ router.get('/', async (_: Request, res: Response) => {
       success: true,
       config,
     });
-  } catch (error: unknown) {
+  } catch (error) {
     const errorMsg = getErrorMessage(error);
     console.error('[AgentConfigRoutes] Failed to get config:', errorMsg);
     res.status(500).json({
@@ -55,7 +55,7 @@ router.put('/', async (req: Request, res: Response) => {
       success: true,
       config,
     });
-  } catch (error: unknown) {
+  } catch (error) {
     const errorMsg = getErrorMessage(error);
     console.error('[AgentConfigRoutes] Failed to update config:', errorMsg);
 

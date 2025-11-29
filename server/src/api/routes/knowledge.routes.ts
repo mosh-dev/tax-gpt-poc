@@ -62,15 +62,15 @@ router.post('/upload', knowledgeUpload.single('file'), async (req: Request, res:
         chunkCount: result.chunkCount,
         stats: { totalChunks: result.chunkCount, avgChunkSize: 0, estimatedTokens: 0 },
       });
-    } catch (processingError: unknown) {
+    } catch (processingError) {
       const errorMsg = getErrorMessage(processingError);
       logger.error(processingError, '[KnowledgeRoutes] Processing error:');
       progressManager.error(uploadId, errorMsg);
     }
 
-  } catch (error: unknown) {
+  } catch (error) {
     const errorMsg = getErrorMessage(error);
-    logger.error(error,'[KnowledgeRoutes] Upload error:');
+    logger.error({ error },'[KnowledgeRoutes] Upload error:');
 
     res.status(500).json({
       error: 'Failed to upload file',
@@ -108,9 +108,9 @@ router.get('/files', async (_: Request, res: Response) => {
     const knowledgeService = injectFromContainer(KnowledgeService);
     const result = await knowledgeService.listFiles();
     res.json(result);
-  } catch (error: unknown) {
+  } catch (error) {
     const errorMsg = getErrorMessage(error);
-    logger.error(error,'[KnowledgeRoutes] List error');
+    logger.error({ error },'[KnowledgeRoutes] List error');
 
     res.status(500).json({
       error: 'Failed to list files',
@@ -140,13 +140,12 @@ router.delete('/files/:id', async (req: Request, res: Response): Promise<void> =
     const result = await knowledgeService.deleteFile(id);
     res.json(result);
 
-  } catch (error: unknown) {
-    const errorMsg = getErrorMessage(error);
-    logger.error(error, '[KnowledgeRoutes] Delete error:');
+  } catch (error) {
+    logger.error({ error }, '[KnowledgeRoutes] Delete error:');
 
     res.status(500).json({
       error: 'Failed to delete file',
-      message: errorMsg
+      message: getErrorMessage(error)
     });
   }
 });

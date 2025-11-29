@@ -11,6 +11,7 @@ import { injectFromContainer } from '@/app/di-container/container-helper';
 import { MongoRepository } from '@infrastructure/database/base-repository';
 import { OCRService } from '@infrastructure/ocr/ocr.service';
 import { AgentLoggerService } from '@infrastructure/ai/agent-logger.service';
+import { getErrorMessage } from '@utils/error-handler';
 
 /**
  * Safely serialize any value to ensure it's JSON-safe
@@ -127,7 +128,7 @@ export const processDocumentsTool = createTool({
             error: error instanceof Error ? error.message : 'Unknown error'
           });
 
-          logger.error(error, `[ProcessDocumentsTool] Error: ${metadata.originalName}:`);
+          logger.error({ error }, `[ProcessDocumentsTool] Error: ${metadata.originalName}:`);
         }
       }
 
@@ -156,11 +157,11 @@ export const processDocumentsTool = createTool({
       });
 
     } catch (error) {
-      logger.error(error, '[ProcessDocumentsTool] Error:');
+      logger.error({ error }, '[ProcessDocumentsTool] Error:');
       return createSafeResult({
         success: false,
         message: 'Failed to process documents',
-        error: error instanceof Error ? error.message : 'Unknown error'
+        error: getErrorMessage(error)
       });
     }
   },

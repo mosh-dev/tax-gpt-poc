@@ -31,7 +31,7 @@ export class ConversationController {
         success: true,
         conversations,
       });
-    } catch (error: unknown) {
+    } catch (error) {
       const errorMsg = getErrorMessage(error);
       console.error('[ConversationController] Failed to get conversations:', errorMsg);
       res.status(500).json({
@@ -59,7 +59,7 @@ export class ConversationController {
         success: true,
         ...result,
       });
-    } catch (error: unknown) {
+    } catch (error) {
       const errorMsg = getErrorMessage(error);
       console.error('[ConversationController] Failed to get conversation:', errorMsg);
 
@@ -91,7 +91,7 @@ export class ConversationController {
         success: true,
         message: 'Conversation deleted',
       });
-    } catch (error: unknown) {
+    } catch (error) {
       const errorMsg = getErrorMessage(error);
       console.error('[ConversationController] Failed to delete conversation:', errorMsg);
 

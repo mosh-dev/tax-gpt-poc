@@ -28,7 +28,7 @@ export async function connectDatabase(): Promise<void> {
       bufferCommands: false, // Disable buffering to fail fast
     });
   } catch (error) {
-    logger.error(error, '[Database] Connection failed:');
+    logger.error({ error }, '[Database] Connection failed');
     throw error; // Throw to let caller handle the error
   }
 }
@@ -41,7 +41,7 @@ export async function disconnectDatabase(): Promise<void> {
   try {
     await mongoose.disconnect();
   } catch (error) {
-    logger.error(error, '[Database] Disconnect failed:');
+    logger.error({ error }, '[Database] Disconnect failed:');
   }
 }
 

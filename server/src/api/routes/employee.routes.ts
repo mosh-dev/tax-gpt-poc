@@ -3,9 +3,10 @@
  * API endpoints for retrieving employee/tax data
  */
 
-import { Router, Request, Response } from 'express';
+import { Request, Response, Router } from 'express';
 import { Employee } from '@domains/tax-extraction/employee.model';
-import { getErrorMessage } from '@utils/error-handler';
+import { injectFromContainer } from '@/app/di-container/container-helper';
+import { LoggerService } from '@infrastructure/logger/logger.service';
 
 const router = Router();
 
@@ -14,6 +15,7 @@ const router = Router();
  * Get all active employees with their tax data
  */
 router.get('/', async (_: Request, res: Response) => {
+  const logger = injectFromContainer(LoggerService);
   try {
     const employees = await Employee.find({ isActive: true })
       .sort({ scenarioId: 1 })
@@ -32,9 +34,8 @@ router.get('/', async (_: Request, res: Response) => {
         updatedAt: emp.updatedAt,
       })),
     });
-  } catch (error: unknown) {
-    const errorMsg = getErrorMessage(error);
-    console.error('[Employees] Error fetching employees:', errorMsg);
+  } catch (error) {
+    logger.error({ error }, '[Employees] Error fetching employees');
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to fetch employees',
@@ -47,6 +48,7 @@ router.get('/', async (_: Request, res: Response) => {
  * Get list of available scenarios (summary view)
  */
 router.get('/scenarios', async (_: Request, res: Response) => {
+  const logger = injectFromContainer(LoggerService);
   try {
     const employees = await Employee.find({ isActive: true })
       .sort({ scenarioId: 1 })
@@ -76,9 +78,8 @@ router.get('/scenarios', async (_: Request, res: Response) => {
       count: scenarios.length,
       scenarios,
     });
-  } catch (error: unknown) {
-    const errorMsg = getErrorMessage(error);
-    console.error('[Employees] Error fetching scenarios:', errorMsg);
+  } catch (error) {
+    logger.error({ error }, '[Employees] Error fetching scenarios');
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to fetch scenarios',
@@ -91,6 +92,7 @@ router.get('/scenarios', async (_: Request, res: Response) => {
  * Get specific employee by scenario ID
  */
 router.get('/:scenarioId', async (req: Request, res: Response) => {
+  const logger = injectFromContainer(LoggerService);
   try {
     const { scenarioId } = req.params;
 
@@ -119,9 +121,8 @@ router.get('/:scenarioId', async (req: Request, res: Response) => {
         updatedAt: employee.updatedAt,
       },
     });
-  } catch (error: unknown) {
-    const errorMsg = getErrorMessage(error);
-    console.error('[Employees] Error fetching employee:', errorMsg);
+  } catch (error) {
+    logger.error({ error }, '[Employees] Error fetching employee');
     res.status(500).json({
       error: 'Internal Server Error',
       message: 'Failed to fetch employee',

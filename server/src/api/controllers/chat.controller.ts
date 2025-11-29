@@ -65,9 +65,9 @@ export class ChatController {
         }
 
         res.end();
-      } catch (streamError: unknown) {
+      } catch (streamError) {
         const streamErrorMsg = getErrorMessage(streamError);
-        this.logger.error('[ChatController] Streaming error:', streamErrorMsg);
+        this.logger.error(streamError, '[ChatController] Streaming error');
         res.write(`data: ${JSON.stringify({
           type: 'error',
           error: streamErrorMsg,
@@ -75,14 +75,13 @@ export class ChatController {
         })}\n\n`);
         res.end();
       }
-    } catch (error: unknown) {
-      const errorMsg = getErrorMessage(error);
-      this.logger.error('[ChatController] Chat stream error:', errorMsg);
+    } catch (error) {
+      this.logger.error({ error },'[ChatController] Chat stream error');
 
       if (!res.headersSent) {
         res.status(500).json({
           success: false,
-          error: errorMsg,
+          error: getErrorMessage(error),
           timestamp: new Date().toISOString(),
         });
       }

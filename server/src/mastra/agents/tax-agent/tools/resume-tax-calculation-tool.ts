@@ -78,7 +78,7 @@ Always check what step the workflow is currently on before resuming.`,
       };
 
     } catch (error) {
-      logger.error(error, '[ResumeWorkflowTool] Error:');
+      logger.error({ error }, '[ResumeWorkflowTool]');
 
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 

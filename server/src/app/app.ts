@@ -99,11 +99,11 @@ export async function startExpressServer(app: Express): Promise<void> {
       });
 
       server.on('error', (error: Error) => {
-        logger.error(error, `[Express Server] ${error.message}`);
+        logger.error({ error }, `[Express Server] ${error.message}`);
         reject(error);
       });
     } catch (error) {
-      logger.error(error, `[Express Server] Error during startup:`);
+      logger.error({ error }, `[Express Server] Error during startup:`);
       reject(error);
     }
   });
