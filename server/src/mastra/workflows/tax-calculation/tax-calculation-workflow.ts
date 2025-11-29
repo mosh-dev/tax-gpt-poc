@@ -190,7 +190,6 @@ const reviewExtractedDataStep = createStep({
     canEdit: z.boolean(),
   }),
   execute: async ({ inputData, resumeData, suspend }) => {
-    console.log("============= Inside reviewExtractedDataStep.");
     if (resumeData && resumeData.confirmed) {
       console.log('[Workflow] Extracted data confirmed by user');
       return {

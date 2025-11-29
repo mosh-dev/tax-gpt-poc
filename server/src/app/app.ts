@@ -121,7 +121,6 @@ export async function startExpressServer(app: Express): Promise<void> {
         logger.log(`[Express Server] Environment: ${Environment.NODE_ENV}`);
         logger.log(`[Express Server] API: ${Environment.BASE_URL}/api`);
         logger.log(`[Express Server] Health: ${Environment.BASE_URL}/api/health`);
-        logger.log(`[Express Server] Files: ${Environment.BASE_URL}/files\n`);
         resolve();
       });
 
