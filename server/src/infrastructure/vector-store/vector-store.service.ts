@@ -221,6 +221,3 @@ export class VectorStoreService {
     }
   }
 }
-
-// Export singleton instance
-export const vectorStoreService = new VectorStoreService();

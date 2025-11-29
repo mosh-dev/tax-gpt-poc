@@ -5,6 +5,8 @@
 
 import { Employee, EmployeeData } from '@domains/tax-extraction/employee.model';
 import { SwissTaxData } from '@domains/tax-extraction/swiss-tax-data.model';
+import { injectFromContainer } from '@/app/di-container/container-helper';
+import { LoggerService } from '@infrastructure/logger/logger.service';
 
 // Scenario 1: Single employee in Zurich
 const mockEmployeeSingle: SwissTaxData = {
@@ -194,7 +196,8 @@ const employeeSeedData: EmployeeData[] = [
  * Uses upsert to avoid duplicates
  */
 export async function seedEmployees(): Promise<void> {
-  console.log('[Seed] Starting employee data seeding...');
+  const logger = injectFromContainer(LoggerService);
+  logger.log('[Seed] Starting employee data seeding...');
 
   let created = 0;
   let updated = 0;
@@ -214,7 +217,7 @@ export async function seedEmployees(): Promise<void> {
     }
   }
 
-  console.log(`[Seed] Employee seeding complete: ${created} created, ${updated} updated`);
+  logger.log(`[Seed] Employee seeding complete: ${created} created, ${updated} updated`);
 }
 
 /**

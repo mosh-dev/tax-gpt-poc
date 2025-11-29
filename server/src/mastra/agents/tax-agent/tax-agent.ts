@@ -44,9 +44,9 @@ export class TaxAgent {
 
     // Count tokens in system instructions
     const tokenCount = encode(instructions).length;
-    console.log(`[TaxAgent] System instructions loaded from database:`);
-    console.log(`  - Character count: ${instructions.length.toLocaleString()}`);
-    console.log(`  - Token count: ${tokenCount.toLocaleString()} tokens`);
+    this.logger.log(`[TaxAgent] System instructions loaded from database:`);
+    this.logger.log(`  - Character count: ${instructions.length.toLocaleString()}`);
+    this.logger.log(`  - Token count: ${tokenCount.toLocaleString()} tokens`);
 
     this.agent = new Agent({
       id: 'zurich-tax-assistant',
@@ -101,7 +101,8 @@ export class TaxAgent {
     }
 
     // resourceId is required by Mastra Memory - use default if not provided
-    const effectiveResourceId = resourceId || 'default-user';``
+    const effectiveResourceId = resourceId || 'default-user';
+    ``
 
     // Helper function to create stream
     const createStream = () => {
@@ -124,12 +125,12 @@ export class TaxAgent {
       // This allows Mastra to create the thread on second attempt
       const errorMessage = getErrorMessage(error).toLowerCase();
       if (errorMessage.includes('thread') || errorMessage.includes('not found') || errorMessage.includes('does not exist')) {
-        console.log(`[TaxAgent] First attempt failed with thread error, retrying...`);
+        this.logger.log(`[TaxAgent] First attempt failed with thread error, retrying...`);
         try {
           stream = await createStream();
         } catch (retryError) {
           const retryErrorMsg = getErrorMessage(retryError);
-          console.error('[TaxAgent] Retry also failed:', retryErrorMsg);
+          this.logger.error('[TaxAgent] Retry also failed:', retryErrorMsg);
           throw retryError;
         }
       } else {
@@ -154,29 +155,26 @@ export class TaxAgent {
    */
   async deleteThread(threadId: string, resourceId?: string): Promise<void> {
     if (!this.memory) {
-      console.warn('[TaxAgent] Memory not configured, skipping thread deletion');
+      this.logger.warn('[TaxAgent] Memory not configured, skipping thread deletion');
       return;
     }
 
     const effectiveResourceId = resourceId || 'default-user';
-    console.log(`[TaxAgent] Deleting Mastra thread: ${threadId}, Resource: ${effectiveResourceId}`);
+    this.logger.log(`[TaxAgent] Deleting Mastra thread: ${threadId}, Resource: ${effectiveResourceId}`);
 
     try {
       // Use Mastra's official Memory API to delete thread and messages
       await this.memory.deleteThread(threadId);
-      console.log(`[TaxAgent] Successfully deleted Mastra thread via official API: ${threadId}`);
-    } catch (error: unknown) {
-      const errorMsg = getErrorMessage(error);
-      console.error('[TaxAgent] Error deleting Mastra thread:', errorMsg);
-      // Log error but don't throw - deletion failure shouldn't break the main flow
+      this.logger.log(`[TaxAgent] Successfully deleted Mastra thread via official API: ${threadId}`);
+    } catch (error) {
+      this.logger.error(error, '[TaxAgent] Error deleting Mastra thread:');
     }
 
     // Also delete workflow snapshots (Mastra doesn't provide API for this yet)
     try {
       await this.deleteWorkflowSnapshots(threadId);
-    } catch (error: unknown) {
-      const errorMsg = getErrorMessage(error);
-      console.error('[TaxAgent] Error deleting workflow snapshots:', errorMsg);
+    } catch (error) {
+      this.logger.error(error,'[TaxAgent] Error deleting workflow snapshots:');
     }
   }
 

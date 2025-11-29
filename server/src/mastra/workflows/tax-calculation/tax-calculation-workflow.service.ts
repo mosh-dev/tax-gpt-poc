@@ -192,6 +192,3 @@ export class TaxCalculationWorkflowService {
     }
   }
 }
-
-// Export singleton instance
-export const workflowService = new TaxCalculationWorkflowService();

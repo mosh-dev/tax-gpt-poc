@@ -2,6 +2,8 @@ import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { Environment } from '@config/environment';
 import { getLLMApiKey } from '@infrastructure/config/secrets/secrets.service';
 import type { LanguageModel } from "ai";
+import { injectFromContainer } from '@/app/di-container/container-helper';
+import { LoggerService } from '@infrastructure/logger/logger.service';
 
 /**
  * AI Generate Mode Type
@@ -52,15 +54,17 @@ function getModelGenerateMode(modelName: string): GenerateMode {
 }
 
 export async function initializeLLMClient(): Promise<void> {
+  const logger = injectFromContainer(LoggerService);
+
   if (isInitialized) {
-    console.log('[LLM] Already initialized, skipping initialization');
+    logger.log('[LLM] Already initialized, skipping initialization');
     return;
   }
 
   const apiKey = await getLLMApiKey();
 
   if (!apiKey) {
-    throw new Error('LLM API key not found in database. Please ensure the "llmkey" secret is set in the secrets collection.');
+    throw new Error('[LLM] LLM API key not found in database. Please ensure the "llmkey" secret is set in the secrets collection.');
   }
 
   buildModelConfigs();
@@ -80,12 +84,12 @@ export async function initializeLLMClient(): Promise<void> {
     });
 
     llmClients.set(baseURL, client);
-    console.log(`[LLM] Created client for base URL: ${baseURL}`);
+    logger.log(`[LLM] Created client for base URL: ${baseURL}`);
   }
 
-  console.log('[LLM] Model Registry:');
+  logger.log('[LLM] Model Registry:');
   for (const [purpose, config] of modelConfigs.entries()) {
-    console.log(`  - ${purpose}: ${config.modelName} (mode: ${config.generateMode})`);
+    logger.log(`  - ${purpose}: ${config.modelName} (mode: ${config.generateMode})`);
   }
 
   isInitialized = true;

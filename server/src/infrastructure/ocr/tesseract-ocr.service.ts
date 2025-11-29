@@ -1,14 +1,11 @@
-/**
- * Tesseract OCR Service Adapter
- * Implements IOCRService using the existing OCRService
- */
-import { ocrService } from '@infrastructure/ocr/ocr.service';
 import { IOCRService, OCROptions } from '@infrastructure/interfaces/ocr-service.interface';
 import { OCRResultOne } from '@/types/ocr-result.types';
+import { injectFromContainer } from '@/app/di-container/container-helper';
+import { OCRService } from '@infrastructure/ocr/ocr.service';
 
 
 export class TesseractOCRService implements IOCRService {
-  private ocrService = ocrService;
+  private ocrService = injectFromContainer(OCRService);
   // Note: This adapter uses singleton ocrService and doesn't use DI yet
 
   async processDocument(filePath: string, options?: OCROptions): Promise<OCRResultOne> {

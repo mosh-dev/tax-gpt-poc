@@ -19,6 +19,8 @@ import { getOrCreateTaxAgent } from '@/mastra/agents/tax-agent/tax-agent.handler
 import { MAX_BODY_SIZE } from '@/shared/constants/file-upload';
 import { knowledgeRoutes } from '@api/routes/knowledge.routes';
 import { fileRoutes } from '@api/routes/file.routes';
+import { injectFromContainer } from '@/app/di-container/container-helper';
+import { LoggerService } from '@infrastructure/logger/logger.service';
 
 /**
  * Create and configure Express application
@@ -26,6 +28,9 @@ import { fileRoutes } from '@api/routes/file.routes';
  */
 export async function createExpressApp(): Promise<Express> {
   await initializeApp();
+
+  const logger = injectFromContainer(LoggerService);
+
   const taxAgentWrapper = await getOrCreateTaxAgent();
   const mastra = new Mastra({
     agents: { taxAgent: taxAgentWrapper.agent },
@@ -53,7 +58,7 @@ export async function createExpressApp(): Promise<Express> {
 
   // Request logging middleware
   app.use((req: Request, _: Response, next: NextFunction) => {
-    console.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+    logger.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
     next();
   });
 
@@ -80,7 +85,7 @@ export async function createExpressApp(): Promise<Express> {
   app.use('/api/employees', authMiddleware, employeeRoutes);
   app.use('/api/knowledge', knowledgeRoutes);
 
-  console.log('[Express Setup] Routes configured');
+  logger.log('[Express Setup] Routes configured');
 
   // 404 handler
   app.use((req: Request, res: Response) => {
@@ -93,8 +98,7 @@ export async function createExpressApp(): Promise<Express> {
 
   // Global error handler
   app.use((err: Error, _: Request, res: Response) => {
-    console.error('Error:', err.message);
-    console.error('Stack:', err.stack);
+    logger.error(err);
 
     res.status(500).json({
       error: 'Internal Server Error',
@@ -111,21 +115,22 @@ export async function createExpressApp(): Promise<Express> {
  */
 export async function startExpressServer(app: Express): Promise<void> {
   return new Promise((resolve, reject) => {
+    const logger = injectFromContainer(LoggerService);
     try {
       const server = app.listen(Environment.SERVER_PORT, () => {
-        console.log(`[Express Server] Environment: ${Environment.NODE_ENV}`);
-        console.log(`[Express Server] API: ${Environment.BASE_URL}/api`);
-        console.log(`[Express Server] Health: ${Environment.BASE_URL}/api/health`);
-        console.log(`[Express Server] Files: ${Environment.BASE_URL}/files\n`);
+        logger.log(`[Express Server] Environment: ${Environment.NODE_ENV}`);
+        logger.log(`[Express Server] API: ${Environment.BASE_URL}/api`);
+        logger.log(`[Express Server] Health: ${Environment.BASE_URL}/api/health`);
+        logger.log(`[Express Server] Files: ${Environment.BASE_URL}/files\n`);
         resolve();
       });
 
       server.on('error', (error: Error) => {
-        console.error('[Express Server] Failed to start:', error.message);
+        logger.error(error, `[Express Server] ${error.message}`);
         reject(error);
       });
     } catch (error) {
-      console.error('[Express Server] Error during startup:', error);
+      logger.error(error, `[Express Server] Error during startup:`);
       reject(error);
     }
   });

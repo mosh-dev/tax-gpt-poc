@@ -181,6 +181,3 @@ export class OCRService {
     return this.processors.has(fileType);
   }
 }
-
-// Export singleton instance
-export const ocrService = new OCRService();

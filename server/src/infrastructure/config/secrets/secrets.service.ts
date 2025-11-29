@@ -6,6 +6,8 @@
 import { Secret } from '@infrastructure/config/secrets/secret.model';
 import { isDatabaseConnected } from '@infrastructure/database/connection';
 import { getErrorMessage } from '@utils/error-handler';
+import { LoggerService } from '@infrastructure/logger/logger.service';
+import { injectFromContainer } from '@/app/di-container/container-helper';
 
 /**
  * In-memory cache for secrets to avoid repeated database queries
@@ -29,9 +31,11 @@ const cacheTimestamps = new Map<string, number>();
  * @throws Error if database is not connected
  */
 export async function getSecret(key: string): Promise<string | undefined> {
-  // Check if database is connected
+  const logger = injectFromContainer(LoggerService);
   if (!isDatabaseConnected()) {
-    throw new Error('Database not connected. Cannot retrieve secrets.');
+    const message = 'Database not connected. Cannot retrieve secrets.';
+    logger.error(message);
+    throw new Error(message);
   }
 
   // Check cache first
@@ -39,7 +43,7 @@ export async function getSecret(key: string): Promise<string | undefined> {
   const cachedTime = cacheTimestamps.get(key);
 
   if (cachedValue && cachedTime && Date.now() - cachedTime < CACHE_TTL) {
-    console.log(`[Secrets] Using cached value for key: ${key}`);
+    logger.log(`[Secrets] Using cached value for key: ${key}`);
     return cachedValue;
   }
 
@@ -51,15 +55,15 @@ export async function getSecret(key: string): Promise<string | undefined> {
       // Cache the value
       secretsCache.set(key, secret.value);
       cacheTimestamps.set(key, Date.now());
-      console.log(`[Secrets] Retrieved and cached secret: ${key}`);
+      logger.log(`[Secrets] Retrieved and cached secret: ${key}`);
       return secret.value;
     } else {
-      console.warn(`[Secrets] Secret not found in database: ${key}`);
+      logger.warn(`[Secrets] Secret not found in database: ${key}`);
       return undefined;
     }
   } catch (error: unknown) {
     const errorMsg = getErrorMessage(error);
-    console.error(`[Secrets] Error fetching secret ${key}:`, errorMsg);
+    logger.error(errorMsg, `[Secrets] Error fetching secret ${key}:`);
     throw error;
   }
 }
@@ -80,34 +84,5 @@ export async function getLLMApiKey(): Promise<string | undefined> {
 export function clearSecretsCache(): void {
   secretsCache.clear();
   cacheTimestamps.clear();
-  console.log('[Secrets] Cache cleared');
-}
-
-/**
- * Set a secret value in the database
- * @param key Secret key
- * @param value Secret value
- */
-export async function setSecret(key: string, value: string): Promise<void> {
-  if (!isDatabaseConnected()) {
-    throw new Error('Database not connected');
-  }
-
-  try {
-    await Secret.findOneAndUpdate(
-      { key },
-      { value },
-      { upsert: true, new: true }
-    );
-
-    // Update cache
-    secretsCache.set(key, value);
-    cacheTimestamps.set(key, Date.now());
-
-    console.log(`[Secrets] Secret updated: ${key}`);
-  } catch (error: unknown) {
-    const errorMsg = getErrorMessage(error);
-    console.error(`[Secrets] Error setting secret ${key}:`, errorMsg);
-    throw error;
-  }
+  injectFromContainer(LoggerService).log('[Secrets] Cache cleared');
 }

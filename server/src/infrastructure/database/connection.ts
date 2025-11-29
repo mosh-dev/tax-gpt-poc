@@ -5,6 +5,8 @@
 
 import mongoose from 'mongoose';
 import { Environment } from '@config/environment';
+import { injectFromContainer } from '@/app/di-container/container-helper';
+import { LoggerService } from '@infrastructure/logger/logger.service';
 
 const MONGODB_URI = Environment.MONGODB_URI;
 
@@ -13,8 +15,9 @@ const MONGODB_URI = Environment.MONGODB_URI;
  * Checks connection state and skips if already connected (naturally idempotent)
  */
 export async function connectDatabase(): Promise<void> {
+  const logger = injectFromContainer(LoggerService);
   if (isDatabaseConnected()) {
-    console.log('[Database] Already connected, skipping connection');
+    logger.log('[Database] Already connected, skipping connection');
     return;
   }
 
@@ -25,7 +28,7 @@ export async function connectDatabase(): Promise<void> {
       bufferCommands: false, // Disable buffering to fail fast
     });
   } catch (error) {
-    console.error('[Database] Connection failed:', error);
+    logger.error(error, '[Database] Connection failed:');
     throw error; // Throw to let caller handle the error
   }
 }
@@ -34,10 +37,11 @@ export async function connectDatabase(): Promise<void> {
  * Disconnect from MongoDB
  */
 export async function disconnectDatabase(): Promise<void> {
+  const logger = injectFromContainer(LoggerService);
   try {
     await mongoose.disconnect();
   } catch (error) {
-    console.error('[Database] Disconnect failed:', error);
+    logger.error(error, '[Database] Disconnect failed:');
   }
 }
 
@@ -50,15 +54,15 @@ export function isDatabaseConnected(): boolean {
 
 // Handle connection events
 mongoose.connection.on('connected', () => {
-  console.log('[Database] Mongoose connected to MongoDB');
+  injectFromContainer(LoggerService).log('[Database] Mongoose connected to MongoDB');
 });
 
 mongoose.connection.on('error', (err) => {
-  console.error('[Database] Mongoose connection error:', err);
+  injectFromContainer(LoggerService).error(err, '[Database] Mongoose connection error:');
 });
 
 mongoose.connection.on('disconnected', () => {
-  console.log('[Database] Mongoose disconnected from MongoDB');
+  injectFromContainer(LoggerService).log('[Database] Mongoose disconnected from MongoDB');
 });
 
 // Graceful shutdown

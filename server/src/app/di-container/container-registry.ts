@@ -81,3 +81,5 @@ export function registerApplicationComponents() {
     { key: 'baseUrl', value: Environment.BASE_URL },
   ]);
 }
+
+export const test = () => console.log('test');

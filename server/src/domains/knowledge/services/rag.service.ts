@@ -9,23 +9,16 @@ import { KnowledgeBase } from '@domains/knowledge/models/knowledge-base.model';
 import { chunkDocument, getChunkStats } from './chunker';
 import { generateEmbeddings } from '@infrastructure/embedding/embedding.service';
 import fs from 'fs/promises';
-import {
-  SearchResult,
-  VectorDocument,
-  vectorStoreService
-} from '@infrastructure/vector-store/vector-store.service';
+import { SearchResult, VectorDocument, VectorStoreService } from '@infrastructure/vector-store/vector-store.service';
 import type { IngestResult, SearchOptions } from '@domains/knowledge/rag.types';
+import { injectFromContainer } from '@/app/di-container/container-helper';
 
 /**
  * RAG Service for knowledge base management
  */
 export class RAGService {
-  private vectorStore = vectorStoreService;
-  // Note: This service uses singleton vectorStoreService and Mongoose models, doesn't use DI yet
+  private vectorStore = injectFromContainer(VectorStoreService);
 
-  /**
-   * Ingest a knowledge base file (txt, md, pdf)
-   */
   async ingestFile(
     filePath: string,
     metadata: {
@@ -206,6 +199,3 @@ export class RAGService {
     }
   }
 }
-
-// Export singleton instance
-export const ragService = new RAGService();

@@ -21,7 +21,7 @@ const prettyStream = pretty({
   translateTime: 'yyyy-mm-dd HH:MM:ss',
   ignore: 'pid,hostname,module',
   messageFormat: (log, messageKey) => {
-    const module = log.module ? `[${log.module}] - ` : '';
+    const module = log.module ? `[${log.module}] ` : '';
     return `${module}${log[messageKey]}`;
   },
 });

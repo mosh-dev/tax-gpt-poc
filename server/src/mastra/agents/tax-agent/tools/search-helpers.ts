@@ -1,10 +1,7 @@
-/**
- * Search Tool Helpers
- * Shared utilities for knowledge base search tools
- */
-
 import { z } from 'zod';
-import { ragService } from '@domains/knowledge/services/rag.service';
+import { injectFromContainer } from '@/app/di-container/container-helper';
+import { LoggerService } from '@infrastructure/logger/logger.service';
+import { RAGService } from '@domains/knowledge/services/rag.service';
 
 export interface SearchOptions {
   topK?: number;
@@ -53,7 +50,10 @@ export async function executeKnowledgeSearch(
   toolName: string = 'SearchTool'
 ): Promise<SearchResult> {
   try {
-    console.log(`[${toolName}] Searching for: "${query}"`);
+    const logger = injectFromContainer(LoggerService);
+    const ragService = injectFromContainer(RAGService);
+
+    logger.log(`[${toolName}] Searching for: "${query}"`);
 
     const results = await ragService.searchKnowledge(query, {
       topK: options.topK || 5,
@@ -83,7 +83,7 @@ export async function executeKnowledgeSearch(
     // Get unique source files
     const uniqueSources = [...new Set(formattedResults.map(r => r.source))];
 
-    console.log(`[${toolName}] Found ${results.length} results from ${uniqueSources.length} file(s): ${uniqueSources.join(', ')}`);
+    logger.log(`[${toolName}] Found ${results.length} results from ${uniqueSources.length} file(s): ${uniqueSources.join(', ')}`);
 
     // Create detailed message with source files
     const sourceList = uniqueSources.map(s => `"${s}"`).join(', ');

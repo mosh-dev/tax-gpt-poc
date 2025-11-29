@@ -5,7 +5,8 @@
 
 import { Router, Request, Response } from 'express';
 import { getErrorMessage } from '@utils/error-handler';
-import { agentConfigService } from '@domains/agent-config/agent-config.service';
+import { injectFromContainer } from '@/app/di-container/container-helper';
+import { AgentConfigService } from '@domains/agent-config/agent-config.service';
 
 const router = Router();
 
@@ -14,6 +15,7 @@ const router = Router();
  * Get the current agent configuration
  */
 router.get('/', async (_: Request, res: Response) => {
+  const agentConfigService = injectFromContainer(AgentConfigService);
   try {
     const config = await agentConfigService.getConfig();
 
@@ -44,8 +46,9 @@ router.get('/', async (_: Request, res: Response) => {
  */
 router.put('/', async (req: Request, res: Response) => {
   try {
-    const { instructions } = req.body;
+    const agentConfigService = injectFromContainer(AgentConfigService);
 
+    const { instructions } = req.body;
     const config = await agentConfigService.updateConfig({ instructions });
 
     res.json({

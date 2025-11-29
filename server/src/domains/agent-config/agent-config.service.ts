@@ -78,6 +78,3 @@ export class AgentConfigService {
     return count > 0;
   }
 }
-
-// Export singleton instance
-export const agentConfigService = new AgentConfigService();

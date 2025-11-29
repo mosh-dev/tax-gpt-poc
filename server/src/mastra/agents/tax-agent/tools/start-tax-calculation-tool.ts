@@ -1,13 +1,9 @@
-/**
- * Start Workflow Tool
- * Mastra tool for starting tax calculation workflows
- * Called by AI agent when user wants to do a complete tax calculation
- */
-
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
-import { workflowService } from '@/mastra/workflows/tax-calculation/tax-calculation-workflow.service';
+import { TaxCalculationWorkflowService } from '@/mastra/workflows/tax-calculation/tax-calculation-workflow.service';
 import { TOOL_IDS } from '@shared/constants/tool-ids';
+import { LoggerService } from '@infrastructure/logger/logger.service';
+import { injectFromContainer } from '@/app/di-container/container-helper';
 
 export const startTaxCalculationTool = createTool({
   id: TOOL_IDS.START_TAX_CALCULATION,
@@ -29,12 +25,14 @@ After starting, you'll receive the first step's requirements. Guide the user thr
     message: z.string().optional().describe('Optional initial message from the user'),
   }),
   execute: async ({ threadId, message }) => {
+    const logger = injectFromContainer(LoggerService);
+    const workflowService = injectFromContainer(TaxCalculationWorkflowService);
     try {
-      console.log(`[StartWorkflowTool] Starting tax calculation workflow for thread: ${threadId}`);
+      logger.log(`[StartWorkflowTool] Starting tax calculation workflow for thread: ${threadId}`);
 
       const status = await workflowService.startTaxCalculation(threadId, message);
 
-      console.log(`[StartWorkflowTool] Workflow started with status: ${status.status}`);
+      logger.log(`[StartWorkflowTool] Workflow started with status: ${status.status}`);
 
       if (status.status === 'suspended') {
         return {

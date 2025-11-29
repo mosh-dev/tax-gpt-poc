@@ -4,13 +4,16 @@
  */
 
 import mongoose from 'mongoose';
+import { injectFromContainer } from '@/app/di-container/container-helper';
+import { LoggerService } from '@infrastructure/logger/logger.service';
 
 /**
  * Get MongoDB database connection
  */
 export function getDatabase(): mongoose.Connection['db'] | null {
+  const logger = injectFromContainer(LoggerService);
   if (!mongoose.connection.db) {
-    console.warn('[Database] MongoDB connection not available');
+    logger.warn('[Database] MongoDB connection not available');
     return null;
   }
   return mongoose.connection.db;

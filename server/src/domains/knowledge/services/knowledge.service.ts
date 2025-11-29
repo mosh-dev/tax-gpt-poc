@@ -1,9 +1,3 @@
-/**
- * Knowledge Service
- * Orchestration layer for knowledge base operations
- */
-
-import { ragService } from './rag.service';
 import { FileService } from '@domains/document/services/file.service';
 import { Environment } from '@config/environment';
 import path from 'path';
@@ -13,9 +7,10 @@ import type {
   DeleteFileResult
 } from '@domains/knowledge/knowledge.types';
 import { injectFromContainer } from '@/app/di-container/container-helper';
+import { RAGService } from '@domains/knowledge/services/rag.service';
 
 export class KnowledgeService {
-  // Note: This service uses singleton instance (ragService) and doesn't use DI for it yet
+  private readonly ragService = injectFromContainer(RAGService);
   /**
    * Upload and process a knowledge base file
    */
@@ -34,7 +29,7 @@ export class KnowledgeService {
     const fileType = path.extname(file.originalname).substring(1) as 'txt' | 'md' | 'pdf';
 
     // Process file with RAG service (this runs asynchronously with progress callbacks)
-    const result = await ragService.ingestFile(
+    const result = await this.ragService.ingestFile(
       savedFile.storedPath,
       {
         fileId: savedFile.fileId,
@@ -59,7 +54,7 @@ export class KnowledgeService {
    * List all knowledge base files
    */
   async listFiles(): Promise<ListFilesResult> {
-    const files = await ragService.listFiles();
+    const files = await this.ragService.listFiles();
 
     // Fetch download URLs from File service
     const fileService = injectFromContainer(FileService);
@@ -96,7 +91,7 @@ export class KnowledgeService {
     console.log(`[KnowledgeService] Deleting file: ${fileId}`);
 
     // Delete vectors from RAG service
-    await ragService.deleteFile(fileId);
+    await this.ragService.deleteFile(fileId);
 
     // Delete file from File service (handles physical file + DB)
     const fileService = injectFromContainer(FileService);

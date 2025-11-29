@@ -6,8 +6,10 @@
 
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
-import { workflowService } from '@/mastra/workflows/tax-calculation/tax-calculation-workflow.service';
 import { TOOL_IDS } from '@shared/constants/tool-ids';
+import { injectFromContainer } from '@/app/di-container/container-helper';
+import { LoggerService } from '@infrastructure/logger/logger.service';
+import { TaxCalculationWorkflowService } from '@/mastra/workflows/tax-calculation/tax-calculation-workflow.service';
 
 export const resumeTaxCalculationTool = createTool({
   id: TOOL_IDS.RESUME_TAX_CALCULATION,
@@ -30,13 +32,16 @@ Always check what step the workflow is currently on before resuming.`,
     data: z.any().describe('The data for this step. Structure depends on the step type.'),
   }),
   execute: async ({ runId, stepId, data }) => {
+    const logger = injectFromContainer(LoggerService);
+    const workflowService = injectFromContainer(TaxCalculationWorkflowService);
+
     try {
-      console.log(`[ResumeWorkflowTool] Resuming workflow ${runId} at step ${stepId}`);
-      console.log(`[ResumeWorkflowTool] Data:`, JSON.stringify(data, null, 2));
+      logger.log(`[ResumeWorkflowTool] Resuming workflow ${runId} at step ${stepId}`);
+      logger.log(data, `[ResumeWorkflowTool] Data:`);
 
       const status = await workflowService.resumeWorkflow(runId, stepId, data);
 
-      console.log(`[ResumeWorkflowTool] Workflow status: ${status.status}`);
+      logger.log(`[ResumeWorkflowTool] Workflow status: ${status.status}`);
 
       if (status.status === 'completed') {
         return {
@@ -73,7 +78,7 @@ Always check what step the workflow is currently on before resuming.`,
       };
 
     } catch (error) {
-      console.error('[ResumeWorkflowTool] Error:', error);
+      logger.error(error, '[ResumeWorkflowTool] Error:');
 
       const errorMessage = error instanceof Error ? error.message : 'Unknown error';
 

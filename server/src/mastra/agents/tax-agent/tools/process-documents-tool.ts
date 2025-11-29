@@ -7,9 +7,9 @@
 import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 import stringify from 'safe-stable-stringify';
-import { ocrService } from '@infrastructure/ocr/ocr.service';
 import { injectFromContainer } from '@/app/di-container/container-helper';
 import { MongoRepository } from '@infrastructure/database/base-repository';
+import { OCRService } from '@infrastructure/ocr/ocr.service';
 
 /**
  * Safely serialize any value to ensure it's JSON-safe
@@ -76,6 +76,7 @@ export const processDocumentsTool = createTool({
         console.log(`[ProcessDocumentsTool] Processing: ${metadata.originalName}`);
 
         try {
+          const ocrService = injectFromContainer(OCRService);
           // Process document with OCR
           const ocrResult = await ocrService.processDocument(metadata.storedPath, {
             quality: quality || 'balanced'

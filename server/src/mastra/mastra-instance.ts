@@ -3,6 +3,8 @@
  * Provides access to the Mastra instance without circular dependencies
  */
 import type { Mastra } from '@mastra/core';
+import { injectFromContainer } from '@/app/di-container/container-helper';
+import { LoggerService } from '@infrastructure/logger/logger.service';
 
 let mastraInstance: Mastra | null = null;
 
@@ -12,7 +14,7 @@ let mastraInstance: Mastra | null = null;
  */
 export function setMastra(instance: Mastra): void {
   mastraInstance = instance;
-  console.log('[Mastra Instance] Mastra instance registered');
+  injectFromContainer(LoggerService).log('[Mastra Instance] Mastra instance registered');
 }
 
 /**

@@ -5,6 +5,8 @@
 
 import { seedAgentConfig } from '@/scripts/seeds/agent-config-seed';
 import { seedEmployees } from '@/scripts/seeds/employee-seed';
+import { injectFromContainer } from '@/app/di-container/container-helper';
+import { LoggerService } from '@infrastructure/logger/logger.service';
 
 /**
  * Run all seed scripts
@@ -14,5 +16,5 @@ export async function runAllSeeds(): Promise<void> {
   await seedAgentConfig();
   await seedEmployees();
 
-  console.log('[Seed] All seed scripts completed');
+  injectFromContainer(LoggerService).log('[Seed] All seed scripts completed');
 }
