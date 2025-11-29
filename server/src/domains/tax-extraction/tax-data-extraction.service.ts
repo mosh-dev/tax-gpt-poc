@@ -77,7 +77,7 @@ export async function extractTaxData(
     return createEmptyTaxData();
   }
 
-  logger.log(`[TaxDataExtraction] Extracting from ${documents.length} documents`);
+  logger.info(`[TaxDataExtraction] Extracting from ${documents.length} documents`);
 
   const systemPrompt = buildSwissTaxPrompt(personalContext);
 
@@ -92,8 +92,8 @@ export async function extractTaxData(
       }
     );
 
-    logger.log('[TaxDataExtraction] AI extraction completed successfully');
-    logger.log(result, '[TaxDataExtraction] Extracted data');
+    logger.info('[TaxDataExtraction] AI extraction completed successfully');
+    logger.info(result, '[TaxDataExtraction] Extracted data');
 
     return result;
   } catch (error: any) {

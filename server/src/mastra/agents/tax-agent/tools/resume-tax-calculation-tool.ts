@@ -36,12 +36,12 @@ Always check what step the workflow is currently on before resuming.`,
     const workflowService = injectFromContainer(TaxCalculationWorkflowService);
 
     try {
-      logger.log(`[ResumeWorkflowTool] Resuming workflow ${runId} at step ${stepId}`);
-      logger.log(data, `[ResumeWorkflowTool] Data:`);
+      logger.info(`[ResumeWorkflowTool] Resuming workflow ${runId} at step ${stepId}`);
+      logger.info(data, `[ResumeWorkflowTool] Data:`);
 
       const status = await workflowService.resumeWorkflow(runId, stepId, data);
 
-      logger.log(`[ResumeWorkflowTool] Workflow status: ${status.status}`);
+      logger.info(`[ResumeWorkflowTool] Workflow status: ${status.status}`);
 
       if (status.status === 'completed') {
         return {

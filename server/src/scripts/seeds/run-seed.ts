@@ -16,5 +16,5 @@ export async function runAllSeeds(): Promise<void> {
   await seedAgentConfig();
   await seedEmployees();
 
-  injectFromContainer(LoggerService).log('[Seed] All seed scripts completed');
+  injectFromContainer(LoggerService).info('[Seed] All seed scripts completed');
 }

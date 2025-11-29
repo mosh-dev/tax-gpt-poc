@@ -56,7 +56,7 @@ export class ChatController {
         for await (const event of this.streamChatUseCase.execute(requestDTO)) {
           // Check if client disconnected
           if (!res.writable) {
-            this.logger.log('[ChatController] Client disconnected - stopping stream');
+            this.logger.info('[ChatController] Client disconnected - stopping stream');
             break;
           }
 

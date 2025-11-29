@@ -23,7 +23,7 @@ export class KnowledgeService {
       throw new Error('No file provided');
     }
 
-    this.logger.log(`[KnowledgeService] Uploading file: ${file.originalname}`);
+    this.logger.info(`[KnowledgeService] Uploading file: ${file.originalname}`);
 
     // Save file using File Service from container
     const fileService = injectFromContainer(FileService);
@@ -42,7 +42,7 @@ export class KnowledgeService {
       onProgress
     );
 
-    this.logger.log(`[KnowledgeService] File processed successfully: ${savedFile.originalName}`);
+    this.logger.info(`[KnowledgeService] File processed successfully: ${savedFile.originalName}`);
 
     return {
       fileId: savedFile.fileId,
@@ -90,7 +90,7 @@ export class KnowledgeService {
       throw new Error('File ID is required');
     }
 
-    this.logger.log(`[KnowledgeService] Deleting file: ${fileId}`);
+    this.logger.info(`[KnowledgeService] Deleting file: ${fileId}`);
 
     // Delete vectors from RAG service
     await this.ragService.deleteFile(fileId);
@@ -99,7 +99,7 @@ export class KnowledgeService {
     const fileService = injectFromContainer(FileService);
     await fileService.deleteFile(fileId);
 
-    this.logger.log(`[KnowledgeService] File deleted successfully: ${fileId}`);
+    this.logger.info(`[KnowledgeService] File deleted successfully: ${fileId}`);
 
     return {
       success: true,

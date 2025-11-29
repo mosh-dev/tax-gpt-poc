@@ -43,7 +43,7 @@ export async function extractStructuredData<T extends z.ZodTypeAny>(
   if (useCache) {
     const cached = cache.get<z.infer<T>>(cacheKey);
     if (cached) {
-      logger.log('[StructuredExtraction] Cache hit');
+      logger.info('[StructuredExtraction] Cache hit');
       return cached;
     }
   }
@@ -57,7 +57,7 @@ export async function extractStructuredData<T extends z.ZodTypeAny>(
   });
 
   if (truncationResult.wasTruncated) {
-    logger.log(
+    logger.info(
       `[StructuredExtraction] Text truncated: ${truncationResult.originalTokens} → ${truncationResult.finalTokens} tokens`
     );
   }
@@ -70,7 +70,7 @@ export async function extractStructuredData<T extends z.ZodTypeAny>(
     ? `${systemPrompt}\n\nInput:\n${finalText}`
     : finalText;
 
-  logger.log(`[StructuredExtraction] Extracting with model: ${modelName} (mode: ${generateMode})`);
+  logger.info(`[StructuredExtraction] Extracting with model: ${modelName} (mode: ${generateMode})`);
 
   try {
     const result = await generateObject({

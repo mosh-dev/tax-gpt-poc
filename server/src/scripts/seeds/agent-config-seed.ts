@@ -10,7 +10,7 @@ import { LoggerService } from '@infrastructure/logger/logger.service';
  */
 export async function seedAgentConfig(): Promise<void> {
   const logger = injectFromContainer(LoggerService);
-  logger.log('[Seed] Seeding agent config...');
+  logger.info('[Seed] Seeding agent config...');
 
   try {
     const existingAgentConfig = await AgentConfig.findOne().lean<IAgentConfig>();
@@ -23,7 +23,7 @@ export async function seedAgentConfig(): Promise<void> {
     // Delete existing config first
     const deleteResult = await AgentConfig.deleteMany({});
     if (deleteResult.deletedCount > 0) {
-      logger.log(`[Seed] Deleted ${deleteResult.deletedCount} existing agent config(s)`);
+      logger.info(`[Seed] Deleted ${deleteResult.deletedCount} existing agent config(s)`);
     }
 
     // Create default config with imported instructions
@@ -32,7 +32,7 @@ export async function seedAgentConfig(): Promise<void> {
     });
 
     await config.save();
-    logger.log('[Seed] Agent config created with default instructions');
+    logger.info('[Seed] Agent config created with default instructions');
   } catch (error) {
     logger.error(error, '[Seed] Error seeding agent config:');
     throw error;

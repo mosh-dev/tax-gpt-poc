@@ -43,7 +43,7 @@ export async function getSecret(key: string): Promise<string | undefined> {
   const cachedTime = cacheTimestamps.get(key);
 
   if (cachedValue && cachedTime && Date.now() - cachedTime < CACHE_TTL) {
-    logger.log(`[Secrets] Using cached value for key: ${key}`);
+    logger.info(`[Secrets] Using cached value for key: ${key}`);
     return cachedValue;
   }
 
@@ -55,7 +55,7 @@ export async function getSecret(key: string): Promise<string | undefined> {
       // Cache the value
       secretsCache.set(key, secret.value);
       cacheTimestamps.set(key, Date.now());
-      logger.log(`[Secrets] Retrieved and cached secret: ${key}`);
+      logger.info(`[Secrets] Retrieved and cached secret: ${key}`);
       return secret.value;
     } else {
       logger.warn(`[Secrets] Secret not found in database: ${key}`);
@@ -84,5 +84,5 @@ export async function getLLMApiKey(): Promise<string | undefined> {
 export function clearSecretsCache(): void {
   secretsCache.clear();
   cacheTimestamps.clear();
-  injectFromContainer(LoggerService).log('[Secrets] Cache cleared');
+  injectFromContainer(LoggerService).info('[Secrets] Cache cleared');
 }

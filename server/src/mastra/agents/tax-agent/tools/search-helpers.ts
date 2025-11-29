@@ -53,7 +53,7 @@ export async function executeKnowledgeSearch(
     const logger = injectFromContainer(AgentLoggerService);
     const ragService = injectFromContainer(RAGService);
 
-    logger.log(`[${toolName}] Searching for: "${query}"`);
+    logger.info(`[${toolName}] Searching for: "${query}"`);
 
     const results = await ragService.searchKnowledge(query, {
       topK: options.topK || 5,
@@ -83,7 +83,7 @@ export async function executeKnowledgeSearch(
     // Get unique source files
     const uniqueSources = [...new Set(formattedResults.map(r => r.source))];
 
-    logger.log(`[${toolName}] Found ${results.length} results from ${uniqueSources.length} file(s): ${uniqueSources.join(', ')}`);
+    logger.info(`[${toolName}] Found ${results.length} results from ${uniqueSources.length} file(s): ${uniqueSources.join(', ')}`);
 
     // Create detailed message with source files
     const sourceList = uniqueSources.map(s => `"${s}"`).join(', ');

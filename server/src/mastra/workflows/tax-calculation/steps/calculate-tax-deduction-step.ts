@@ -74,7 +74,7 @@ export const calculateTaxStep = createStep({
       recommendations.push('Your tax situation appears well optimized. Great job!');
     }
 
-    logger.log('[Workflow] Tax calculation completed');
+    logger.info('[Workflow] Tax calculation completed');
 
     return {
       personalInfo,

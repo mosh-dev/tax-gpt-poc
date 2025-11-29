@@ -14,7 +14,7 @@ let mastraInstance: Mastra | null = null;
  */
 export function setMastra(instance: Mastra): void {
   mastraInstance = instance;
-  injectFromContainer(LoggerService).log('[Mastra Instance] Mastra instance registered');
+  injectFromContainer(LoggerService).info('[Mastra Instance] Mastra instance registered');
 }
 
 /**

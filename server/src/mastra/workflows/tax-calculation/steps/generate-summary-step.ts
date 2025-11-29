@@ -35,7 +35,7 @@ export const generateSummaryStep = createStep({
       const { calculation, personalInfo } = inputData;
 
       if (resumeData.generatePdf) {
-        logger.log('[Workflow] Generating PDF summary');
+        logger.info('[Workflow] Generating PDF summary');
 
         // Build tax data structure for PDF generator
         const taxDataForPdf = {
@@ -103,7 +103,7 @@ export const generateSummaryStep = createStep({
     }
 
     // Suspend for final confirmation
-    logger.log('[Workflow] Suspending for final confirmation');
+    logger.info('[Workflow] Suspending for final confirmation');
     return await suspend({
       reason: 'Review your tax calculation and confirm to generate PDF summary',
       calculation: inputData.calculation,

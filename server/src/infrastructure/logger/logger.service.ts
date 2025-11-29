@@ -12,9 +12,9 @@ export class LoggerService {
     return pinoServerLogger.child({ module });
   }
 
-  public log(obj: object, msg?: string): void;
-  public log(msg: string): void;
-  public log(objOrMsg: object | string, msg?: string): void {
+  public info(obj: object, msg?: string): void;
+  public info(msg: string): void;
+  public info(objOrMsg: object | string, msg?: string): void {
     if (typeof objOrMsg === 'string') {
       this.logger.info(objOrMsg);
     } else {
@@ -40,16 +40,6 @@ export class LoggerService {
       this.logger.error(objOrMsg);
     } else {
       this.logger.error(objOrMsg, msg);
-    }
-  }
-
-  public logException(error: Error, msg?: string): void;
-  public logException(obj: object, msg?: string): void;
-  public logException(errorOrObj: Error | object, msg?: string): void {
-    if (errorOrObj instanceof Error) {
-      this.logger.error({ err: errorOrObj, stack: errorOrObj.stack }, msg || errorOrObj.message);
-    } else {
-      this.logger.error(errorOrObj, msg);
     }
   }
 }

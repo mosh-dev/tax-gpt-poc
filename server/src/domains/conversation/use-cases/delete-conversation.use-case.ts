@@ -21,12 +21,12 @@ export class DeleteConversationUseCase {
       throw new Error(`Conversation not found: ${conversationId}`);
     }
 
-    this.logger.log(`[DeleteConversationUseCase] Starting deletion for: ${conversationId}`);
+    this.logger.info(`[DeleteConversationUseCase] Starting deletion for: ${conversationId}`);
 
     // Step 1: Delete custom MongoDB collections (messages first, then conversation)
     try {
       await this.messageRepository.deleteByConversationId(convId);
-      this.logger.log(`[DeleteConversationUseCase] Deleted messages for: ${conversationId}`);
+      this.logger.info(`[DeleteConversationUseCase] Deleted messages for: ${conversationId}`);
     } catch (error) {
       console.error(`[DeleteConversationUseCase] Error deleting messages:`, error);
       throw new Error(`Failed to delete messages: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -34,7 +34,7 @@ export class DeleteConversationUseCase {
 
     try {
       await this.conversationRepository.delete(convId);
-      this.logger.log(`[DeleteConversationUseCase] Deleted conversation: ${conversationId}`);
+      this.logger.info(`[DeleteConversationUseCase] Deleted conversation: ${conversationId}`);
     } catch (error) {
       console.error(`[DeleteConversationUseCase] Error deleting conversation:`, error);
       throw new Error(`Failed to delete conversation: ${error instanceof Error ? error.message : 'Unknown error'}`);
@@ -44,7 +44,7 @@ export class DeleteConversationUseCase {
     if (this.aiAgentService) {
       try {
         await this.aiAgentService.deleteThread(conversationId);
-        this.logger.log(`[DeleteConversationUseCase] Deleted Mastra data for: ${conversationId}`);
+        this.logger.info(`[DeleteConversationUseCase] Deleted Mastra data for: ${conversationId}`);
       } catch (error) {
         console.error(`[DeleteConversationUseCase] Error deleting Mastra data:`, error);
         // Log error but don't throw - we want to continue even if Mastra cleanup fails
@@ -54,6 +54,6 @@ export class DeleteConversationUseCase {
       this.logger.warn(`[DeleteConversationUseCase] AI Agent Service not available, skipping Mastra cleanup`);
     }
 
-    this.logger.log(`[DeleteConversationUseCase] Completed deletion for: ${conversationId}`);
+    this.logger.info(`[DeleteConversationUseCase] Completed deletion for: ${conversationId}`);
   }
 }

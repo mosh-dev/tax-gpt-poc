@@ -59,11 +59,11 @@ export class AgentConfigService {
       { new: true, upsert: true, runValidators: true }
     ).lean<IAgentConfig>();
 
-    this.logger.log('[AgentConfigService] Configuration updated');
+    this.logger.info('[AgentConfigService] Configuration updated');
 
     // Invalidate the agent instance so it gets recreated with new instructions
     await invalidateTaxAgent();
-    this.logger.log('[AgentConfigService] Agent instance invalidated');
+    this.logger.info('[AgentConfigService] Agent instance invalidated');
 
     return {
       id: config._id.toString(),

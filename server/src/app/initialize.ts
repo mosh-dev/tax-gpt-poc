@@ -24,15 +24,15 @@ let isInitializing = false;
  */
 function ensureStorageDirectories(): void {
   const logger = injectFromContainer(LoggerService);
-  logger.log('[Storage] Ensuring storage directories...');
-  logger.log(`[Storage] STORAGE_ROOT: ${STORAGE_ROOT}`);
+  logger.info('[Storage] Ensuring storage directories...');
+  logger.info(`[Storage] STORAGE_ROOT: ${STORAGE_ROOT}`);
 
   // Create root storage directory
   if (!fs.existsSync(STORAGE_ROOT)) {
-    logger.log(`[Storage] Creating root storage directory: ${STORAGE_ROOT}`);
+    logger.info(`[Storage] Creating root storage directory: ${STORAGE_ROOT}`);
     fs.mkdirSync(STORAGE_ROOT, { recursive: true });
   } else {
-    logger.log('[Storage] Root storage directory already exists');
+    logger.info('[Storage] Root storage directory already exists');
   }
 
   // Create subdirectories (except vectors.db which is a file)
@@ -41,14 +41,14 @@ function ensureStorageDirectories(): void {
   for (const dir of directories) {
     const dirPath = STORAGE_PATHS[dir];
     if (!fs.existsSync(dirPath)) {
-      logger.log(`[Storage] Creating subdirectory: ${dir} at ${dirPath}`);
+      logger.info(`[Storage] Creating subdirectory: ${dir} at ${dirPath}`);
       fs.mkdirSync(dirPath, { recursive: true });
     } else {
-      logger.log(`[Storage] Subdirectory already exists: ${dir}`);
+      logger.info(`[Storage] Subdirectory already exists: ${dir}`);
     }
   }
 
-  logger.log('[Storage] Storage directories setup complete');
+  logger.info('[Storage] Storage directories setup complete');
 }
 
 

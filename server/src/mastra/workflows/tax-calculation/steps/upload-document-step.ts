@@ -27,7 +27,7 @@ export const uploadDocumentsStep = createStep({
   execute: async ({ inputData, resumeData, suspend }) => {
     const logger = injectFromContainer(AgentLoggerService);
     if (resumeData && resumeData.documents.length > 0) {
-      logger.log(`[Workflow] Documents received: ${resumeData.documents.length}`);
+      logger.info(`[Workflow] Documents received: ${resumeData.documents.length}`);
       return {
         personalInfo: inputData,
         documents: resumeData.documents,
@@ -35,7 +35,7 @@ export const uploadDocumentsStep = createStep({
     }
 
     // Suspend and wait for document upload
-    logger.log('[Workflow] Suspending for document upload');
+    logger.info('[Workflow] Suspending for document upload');
     return await suspend({
       reason: 'Please upload your tax documents for processing',
       acceptedFormats: ['PDF', 'JPG', 'PNG', 'TIFF'],

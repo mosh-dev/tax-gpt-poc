@@ -31,7 +31,7 @@ export class RAGService {
     },
     onProgress?: (stage: 'extracting' | 'chunking' | 'embedding', progress: number, message: string) => void
   ): Promise<IngestResult> {
-    this.logger.log(`[RAG] Ingesting file: ${metadata.fileName} (${metadata.fileType})`);
+    this.logger.info(`[RAG] Ingesting file: ${metadata.fileName} (${metadata.fileType})`);
 
     // Step 1: Extract text content based on file type
     const content = await this.extractTextContent(filePath, metadata.fileType);
@@ -40,7 +40,7 @@ export class RAGService {
       throw new Error('Extracted content is empty');
     }
 
-    this.logger.log(`[RAG] Extracted ${content.length} characters from ${metadata.fileName}`);
+    this.logger.info(`[RAG] Extracted ${content.length} characters from ${metadata.fileName}`);
     onProgress?.('extracting', 20, `Extracted ${content.length} characters`);
 
     // Step 2: Chunk the document
@@ -51,7 +51,7 @@ export class RAGService {
     }
 
     const stats = getChunkStats(chunks);
-    this.logger.log(`[RAG] Created ${chunks.length} chunks (avg size: ${stats.avgChunkSize} chars)`);
+    this.logger.info(`[RAG] Created ${chunks.length} chunks (avg size: ${stats.avgChunkSize} chars)`);
     onProgress?.('chunking', 40, `Created ${chunks.length} chunks`);
 
     // Step 3: Generate embeddings for all chunks
@@ -62,7 +62,7 @@ export class RAGService {
       throw new Error('Mismatch between chunks and embeddings count');
     }
 
-    this.logger.log(`[RAG] Generated ${embeddings.length} embeddings`);
+    this.logger.info(`[RAG] Generated ${embeddings.length} embeddings`);
     onProgress?.('embedding', 100, `Generated ${embeddings.length} embeddings`);
 
     // Step 4: Prepare vector documents
@@ -85,7 +85,7 @@ export class RAGService {
 
     const vectorIds = vectorDocs.map((doc) => doc.id);
 
-    this.logger.log(`[RAG] Stored ${vectorIds.length} vectors in database`);
+    this.logger.info(`[RAG] Stored ${vectorIds.length} vectors in database`);
 
     // Step 6: Save metadata to MongoDB
     await KnowledgeBase.create({
@@ -99,7 +99,7 @@ export class RAGService {
       uploadedAt: new Date(),
     });
 
-    this.logger.log(`[RAG] Saved metadata to MongoDB for ${metadata.fileName}`);
+    this.logger.info(`[RAG] Saved metadata to MongoDB for ${metadata.fileName}`);
 
     return {
       fileId: metadata.fileId,
@@ -118,7 +118,7 @@ export class RAGService {
    * Search knowledge base
    */
   async searchKnowledge(query: string, options: SearchOptions = {}): Promise<SearchResult[]> {
-    this.logger.log(`[RAG] Searching for: "${query.substring(0, 50)}..."`);
+    this.logger.info(`[RAG] Searching for: "${query.substring(0, 50)}..."`);
 
     const results = await this.vectorStore.search(query, {
       topK: options.topK || 5,
@@ -126,7 +126,7 @@ export class RAGService {
       fileId: options.fileId,
     });
 
-    this.logger.log(`[RAG] Search returned ${results.length} results`);
+    this.logger.info(`[RAG] Search returned ${results.length} results`);
 
     return results;
   }
@@ -136,7 +136,7 @@ export class RAGService {
    * Note: Physical file deletion is handled by File Service in the route
    */
   async deleteFile(fileId: string): Promise<void> {
-    this.logger.log(`[RAG] Deleting file: ${fileId}`);
+    this.logger.info(`[RAG] Deleting file: ${fileId}`);
 
     // Find the file metadata
     const kbFile = await KnowledgeBase.findOne({ fileId });
@@ -151,7 +151,7 @@ export class RAGService {
     // Delete metadata from MongoDB
     await KnowledgeBase.deleteOne({ fileId });
 
-    this.logger.log(`[RAG] Successfully deleted file: ${fileId}`);
+    this.logger.info(`[RAG] Successfully deleted file: ${fileId}`);
   }
 
   /**

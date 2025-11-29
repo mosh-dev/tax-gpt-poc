@@ -30,7 +30,7 @@ export const getTaxDataTool = createTool({
   }),
   execute: async ({ searchName, employeeId }) => {
     const logger = injectFromContainer(AgentLoggerService);
-    logger.log({ searchName, employeeId }, `[GetTaxDataTool] Searching for tax data for employee`);
+    logger.info({ searchName, employeeId }, `[GetTaxDataTool] Searching for tax data for employee`);
     try {
       // If employeeId is provided, fetch that specific employee
       if (employeeId) {

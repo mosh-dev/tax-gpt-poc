@@ -53,7 +53,7 @@ export const processDocumentsTool = createTool({
   execute: async ({ fileIds, quality }) => {
     const logger = injectFromContainer(AgentLoggerService);
     try {
-      logger.log(`[ProcessDocumentsTool] Processing ${fileIds.length} file(s) with OCR...`);
+      logger.info(`[ProcessDocumentsTool] Processing ${fileIds.length} file(s) with OCR...`);
       const mongoRepository = injectFromContainer(MongoRepository);
 
       const results = [];
@@ -72,7 +72,7 @@ export const processDocumentsTool = createTool({
           continue;
         }
 
-        logger.log(`[ProcessDocumentsTool] Processing: ${metadata.originalName}`);
+        logger.info(`[ProcessDocumentsTool] Processing: ${metadata.originalName}`);
 
         try {
           const ocrService = injectFromContainer(OCRService);
@@ -104,7 +104,7 @@ export const processDocumentsTool = createTool({
               fileType: ocrResult.metadata.fileType
             });
 
-            logger.log(`[ProcessDocumentsTool] Success: ${metadata.originalName}: ${ocrResult.wordCount} words`);
+            logger.info(`[ProcessDocumentsTool] Success: ${metadata.originalName}: ${ocrResult.wordCount} words`);
           } else {
             // Mark as processed even if failed
             await mongoRepository.markFileAsProcessed(fileId);
@@ -146,7 +146,7 @@ export const processDocumentsTool = createTool({
         results
       };
 
-      logger.log(`[ProcessDocumentsTool] Summary: ${successful}/${fileIds.length} successful, ${totalWords} total words`);
+      logger.info(`[ProcessDocumentsTool] Summary: ${successful}/${fileIds.length} successful, ${totalWords} total words`);
 
       // Wrap entire result in createSafeResult to ensure JSON-safe output
       return createSafeResult({

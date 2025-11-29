@@ -34,8 +34,8 @@ export class TaxAgent {
     try {
       const memoryConfig = createMemoryConfigFromEnv();
       this.memory = createMastraMemory(memoryConfig);
-      this.logger.log('[TaxAgent] Mastra Memory initialized successfully');
-      this.logger.log(`[TaxAgent] Vector storage: ${memoryConfig.enableVectorStorage ? 'enabled' : 'disabled'}`);
+      this.logger.info('[TaxAgent] Mastra Memory initialized successfully');
+      this.logger.info(`[TaxAgent] Vector storage: ${memoryConfig.enableVectorStorage ? 'enabled' : 'disabled'}`);
     } catch (error: any) {
       const errorMsg = getErrorMessage(error);
       this.logger.error(error, `[TaxAgent] Failed to initialize Mastra Memory: ${errorMsg}`);
@@ -44,9 +44,9 @@ export class TaxAgent {
 
     // Count tokens in system instructions
     const tokenCount = encode(instructions).length;
-    this.logger.log(`[TaxAgent] System instructions loaded from database:`);
-    this.logger.log(`  - Character count: ${instructions.length.toLocaleString()}`);
-    this.logger.log(`  - Token count: ${tokenCount.toLocaleString()} tokens`);
+    this.logger.info(`[TaxAgent] System instructions loaded from database:`);
+    this.logger.info(`  - Character count: ${instructions.length.toLocaleString()}`);
+    this.logger.info(`  - Token count: ${tokenCount.toLocaleString()} tokens`);
 
     this.agent = new Agent({
       id: 'zurich-tax-assistant',
@@ -125,7 +125,7 @@ export class TaxAgent {
       // This allows Mastra to create the thread on second attempt
       const errorMessage = getErrorMessage(error).toLowerCase();
       if (errorMessage.includes('thread') || errorMessage.includes('not found') || errorMessage.includes('does not exist')) {
-        this.logger.log(`[TaxAgent] First attempt failed with thread error, retrying...`);
+        this.logger.info(`[TaxAgent] First attempt failed with thread error, retrying...`);
         try {
           stream = await createStream();
         } catch (retryError) {
@@ -160,12 +160,12 @@ export class TaxAgent {
     }
 
     const effectiveResourceId = resourceId || 'default-user';
-    this.logger.log(`[TaxAgent] Deleting Mastra thread: ${threadId}, Resource: ${effectiveResourceId}`);
+    this.logger.info(`[TaxAgent] Deleting Mastra thread: ${threadId}, Resource: ${effectiveResourceId}`);
 
     try {
       // Use Mastra's official Memory API to delete thread and messages
       await this.memory.deleteThread(threadId);
-      this.logger.log(`[TaxAgent] Successfully deleted Mastra thread via official API: ${threadId}`);
+      this.logger.info(`[TaxAgent] Successfully deleted Mastra thread via official API: ${threadId}`);
     } catch (error) {
       this.logger.error(error, '[TaxAgent] Error deleting Mastra thread:');
     }
@@ -207,7 +207,7 @@ export class TaxAgent {
           'snapshot.context.input.threadId': threadId,
         });
 
-        this.logger.log(`[TaxAgent] Deleted ${result.deletedCount} workflow snapshots for thread: ${threadId}`);
+        this.logger.info(`[TaxAgent] Deleted ${result.deletedCount} workflow snapshots for thread: ${threadId}`);
       } else {
         this.logger.warn('[TaxAgent] MongoDB connection not available for workflow snapshot cleanup');
       }

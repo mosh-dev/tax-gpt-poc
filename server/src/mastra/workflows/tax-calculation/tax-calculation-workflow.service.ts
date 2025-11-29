@@ -40,7 +40,7 @@ export class TaxCalculationWorkflowService {
       // Create workflow run (automatically persisted to MongoDB)
       const run = await workflow.createRun();
       const runId = run.runId;
-      this.logger.log(`[WorkflowService] Created workflow run: ${runId}`);
+      this.logger.info(`[WorkflowService] Created workflow run: ${runId}`);
 
       // Start the workflow
       const result = await run.start({
@@ -75,14 +75,14 @@ export class TaxCalculationWorkflowService {
       if (result.status === 'success') {
         status.status = 'completed';
         status.result = result.result;
-        this.logger.log(`[WorkflowService] Workflow completed on start`);
+        this.logger.info(`[WorkflowService] Workflow completed on start`);
         await this.deleteWorkflowSnapshot(runId);
       }
 
       // Handle error state
       if (result.status === 'failed') {
         status.error = result.error?.message || 'Unknown error';
-        this.logger.log(result,`[WorkflowService] Workflow failed on start:`);
+        this.logger.info(result,`[WorkflowService] Workflow failed on start:`);
         await this.deleteWorkflowSnapshot(runId);
       }
 
@@ -110,7 +110,7 @@ export class TaxCalculationWorkflowService {
       throw new Error(`Workflow run not found in storage: ${runId}. The workflow may have been completed or cancelled.`);
     }
 
-    this.logger.log(`[WorkflowService] Found workflow snapshot in MongoDB, restoring run...`);
+    this.logger.info(`[WorkflowService] Found workflow snapshot in MongoDB, restoring run...`);
 
     // Create a new Run instance from the existing runId (Mastra loads from storage)
     const run = await workflow.createRun({ runId });
@@ -128,7 +128,7 @@ export class TaxCalculationWorkflowService {
       resumeData,
     });
 
-    this.logger.log(`[WorkflowService] Workflow resumed, status: ${result.status}`);
+    this.logger.info(`[WorkflowService] Workflow resumed, status: ${result.status}`);
 
     // Build status response
     const status: WorkflowStatus = {
@@ -155,14 +155,14 @@ export class TaxCalculationWorkflowService {
     if (result.status === 'success') {
       status.status = 'completed';
       status.result = result.result;
-      this.logger.log(`[WorkflowService] Workflow completed`);
+      this.logger.info(`[WorkflowService] Workflow completed`);
       await this.deleteWorkflowSnapshot(runId);
     }
 
     // Handle error state
     if (result.status === 'failed') {
       status.error = result.error?.message || 'Unknown error';
-      this.logger.log(status, `[WorkflowService] Workflow failed:`);
+      this.logger.info(status, `[WorkflowService] Workflow failed:`);
       await this.deleteWorkflowSnapshot(runId);
     }
 
@@ -179,7 +179,7 @@ export class TaxCalculationWorkflowService {
 
       if (snapshotCollection) {
         const result = await snapshotCollection.deleteMany({ run_id: runId });
-        this.logger.log(`[WorkflowService] Deleted ${result.deletedCount} workflow snapshot(s) for runId: ${runId}`);
+        this.logger.info(`[WorkflowService] Deleted ${result.deletedCount} workflow snapshot(s) for runId: ${runId}`);
       } else {
         this.logger.warn('[WorkflowService] MongoDB connection not available for workflow snapshot cleanup');
       }

@@ -28,7 +28,7 @@ export class OCRService {
    */
   registerProcessor(fileType: FileType, processor: DocumentProcessor): void {
     this.processors.set(fileType, processor);
-    this.logger.log(`[OCRService] Registered processor for ${fileType} files`);
+    this.logger.info(`[OCRService] Registered processor for ${fileType} files`);
   }
 
   /**
@@ -103,14 +103,14 @@ export class OCRService {
       config = getOCRConfig(options?.quality);
     }
 
-    this.logger.log(`[OCRService] Processing ${fileType} file: ${path.basename(filePath)}`);
-    this.logger.log(config,`[OCRService] Config`);
+    this.logger.info(`[OCRService] Processing ${fileType} file: ${path.basename(filePath)}`);
+    this.logger.info(config,`[OCRService] Config`);
 
     // Process document
     const result = await processor.process(filePath, config);
 
-    this.logger.log(`[OCRService] Completed in ${Date.now() - startTime}ms`);
-    this.logger.log(`[OCRService] Extracted ${result.wordCount} words`);
+    this.logger.info(`[OCRService] Completed in ${Date.now() - startTime}ms`);
+    this.logger.info(`[OCRService] Extracted ${result.wordCount} words`);
 
     return result;
   }

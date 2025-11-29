@@ -28,11 +28,11 @@ After starting, you'll receive the first step's requirements. Guide the user thr
     const logger = injectFromContainer(AgentLoggerService);
     const workflowService = injectFromContainer(TaxCalculationWorkflowService);
     try {
-      logger.log(`[StartWorkflowTool] Starting tax calculation workflow for thread: ${threadId}`);
+      logger.info(`[StartWorkflowTool] Starting tax calculation workflow for thread: ${threadId}`);
 
       const status = await workflowService.startTaxCalculation(threadId, message);
 
-      logger.log(`[StartWorkflowTool] Workflow started with status: ${status.status}`);
+      logger.info(`[StartWorkflowTool] Workflow started with status: ${status.status}`);
 
       if (status.status === 'suspended') {
         return {

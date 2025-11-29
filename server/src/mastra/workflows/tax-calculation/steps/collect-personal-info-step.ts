@@ -26,12 +26,12 @@ export const collectPersonalInfoStep = createStep({
   execute: async ({ resumeData, suspend }) => {
     const logger = injectFromContainer(AgentLoggerService);
     if (resumeData) {
-      logger.log(resumeData, '[Workflow] Personal info received:');
+      logger.info(resumeData, '[Workflow] Personal info received:');
       return resumeData;
     }
 
     // Suspend and wait for user input
-    logger.log('[Workflow] Suspending for personal info collection');
+    logger.info('[Workflow] Suspending for personal info collection');
     return await suspend({
       reason: 'Please provide your personal information to begin tax calculation',
       requiredFields: [

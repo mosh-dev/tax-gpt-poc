@@ -197,7 +197,7 @@ const employeeSeedData: EmployeeData[] = [
  */
 export async function seedEmployees(): Promise<void> {
   const logger = injectFromContainer(LoggerService);
-  logger.log('[Seed] Starting employee data seeding...');
+  logger.info('[Seed] Starting employee data seeding...');
 
   let created = 0;
   let updated = 0;
@@ -217,7 +217,7 @@ export async function seedEmployees(): Promise<void> {
     }
   }
 
-  logger.log(`[Seed] Employee seeding complete: ${created} created, ${updated} updated`);
+  logger.info(`[Seed] Employee seeding complete: ${created} created, ${updated} updated`);
 }
 
 /**

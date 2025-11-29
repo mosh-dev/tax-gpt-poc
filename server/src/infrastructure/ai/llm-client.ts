@@ -57,7 +57,7 @@ export async function initializeLLMClient(): Promise<void> {
   const logger = injectFromContainer(LoggerService);
 
   if (isInitialized) {
-    logger.log('[LLM] Already initialized, skipping initialization');
+    logger.info('[LLM] Already initialized, skipping initialization');
     return;
   }
 
@@ -84,12 +84,12 @@ export async function initializeLLMClient(): Promise<void> {
     });
 
     llmClients.set(baseURL, client);
-    logger.log(`[LLM] Created client for base URL: ${baseURL}`);
+    logger.info(`[LLM] Created client for base URL: ${baseURL}`);
   }
 
-  logger.log('[LLM] Model Registry:');
+  logger.info('[LLM] Model Registry:');
   for (const [purpose, config] of modelConfigs.entries()) {
-    logger.log(`  - ${purpose}: ${config.modelName} (mode: ${config.generateMode})`);
+    logger.info(`  - ${purpose}: ${config.modelName} (mode: ${config.generateMode})`);
   }
 
   isInitialized = true;

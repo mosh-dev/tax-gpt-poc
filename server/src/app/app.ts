@@ -32,7 +32,7 @@ export async function createExpressApp(): Promise<Express> {
 
   // Request logging middleware
   app.use((req: Request, _: Response, next: NextFunction) => {
-    logger.log(`${new Date().toISOString()} - ${req.method} ${req.path}`);
+    logger.info(`${new Date().toISOString()} - ${req.method} ${req.path}`);
     next();
   });
 
@@ -59,7 +59,7 @@ export async function createExpressApp(): Promise<Express> {
   app.use('/api/employees', authMiddleware, employeeRoutes);
   app.use('/api/knowledge', authMiddleware, knowledgeRoutes);
 
-  logger.log('[Express Setup] Routes configured');
+  logger.info('[Express Setup] Routes configured');
 
   // 404 handler
   app.use((req: Request, res: Response) => {
@@ -92,9 +92,9 @@ export async function startExpressServer(app: Express): Promise<void> {
     const logger = injectFromContainer(LoggerService);
     try {
       const server = app.listen(Environment.SERVER_PORT, () => {
-        logger.log(`[Express Server] Environment: ${Environment.NODE_ENV}`);
-        logger.log(`[Express Server] API: ${Environment.BASE_URL}/api`);
-        logger.log(`[Express Server] Health: ${Environment.BASE_URL}/api/health`);
+        logger.info(`[Express Server] Environment: ${Environment.NODE_ENV}`);
+        logger.info(`[Express Server] API: ${Environment.BASE_URL}/api`);
+        logger.info(`[Express Server] Health: ${Environment.BASE_URL}/api/health`);
         resolve();
       });
 

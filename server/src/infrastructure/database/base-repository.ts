@@ -41,10 +41,10 @@ export class MongoRepository {
       return;
     }
 
-    this.logger.log('[MongoRepository] Attempting to reconnect to database...');
+    this.logger.info('[MongoRepository] Attempting to reconnect to database...');
     try {
       await connectDatabase();
-      this.logger.log('[MongoRepository] Successfully reconnected to database');
+      this.logger.info('[MongoRepository] Successfully reconnected to database');
     } catch (error) {
       this.logger.error(error,'[MongoRepository] Failed to reconnect to database');
       throw error;

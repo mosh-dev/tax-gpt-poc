@@ -57,7 +57,7 @@ export class FileService {
     // Save to database
     await this.mongoRepository.createFile(fileData);
 
-    this.logger.log(`[FileService] Saved file: ${file.originalname} (ID: ${fileId}, ${file.size} bytes)`);
+    this.logger.info(`[FileService] Saved file: ${file.originalname} (ID: ${fileId}, ${file.size} bytes)`);
 
     return {
       fileId,
@@ -86,7 +86,7 @@ export class FileService {
     try {
       // Delete physical file
       await fs.unlink(file.storedPath);
-      this.logger.log(`[FileService] Deleted physical file: ${file.storedPath}`);
+      this.logger.info(`[FileService] Deleted physical file: ${file.storedPath}`);
     } catch (error : any) {
       this.logger.error(error,`[FileService] Failed to delete physical file: ${file.storedPath}`);
       // Continue with database deletion even if physical file deletion fails
@@ -95,7 +95,7 @@ export class FileService {
     // Delete from database
     await this.mongoRepository.deleteFile(fileId);
 
-    this.logger.log(`[FileService] Deleted file: ${fileId}`);
+    this.logger.info(`[FileService] Deleted file: ${fileId}`);
     return true;
   }
 
@@ -133,7 +133,7 @@ export class FileService {
     // Save to database
     await this.mongoRepository.createFile(fileData);
 
-    this.logger.log(`[FileService] Saved generated file: ${filename} (ID: ${fileId}, ${buffer.length} bytes)`);
+    this.logger.info(`[FileService] Saved generated file: ${filename} (ID: ${fileId}, ${buffer.length} bytes)`);
 
     return {
       fileId,

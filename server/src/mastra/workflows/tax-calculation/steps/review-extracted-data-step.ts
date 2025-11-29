@@ -36,7 +36,7 @@ export const reviewExtractedDataStep = createStep({
     const logger = injectFromContainer(AgentLoggerService);
 
     if (resumeData && resumeData.confirmed) {
-      logger.log('[Workflow] Extracted data confirmed by user');
+      logger.info('[Workflow] Extracted data confirmed by user');
       return {
         personalInfo: inputData.personalInfo,
         taxData: resumeData,
@@ -46,7 +46,7 @@ export const reviewExtractedDataStep = createStep({
     // Extract structured tax data from documents using AI
     // This happens internally in the workflow step - no separate tool call needed
     // The AI agent should have already called process-documents tool to OCR the files
-    logger.log('[Workflow] Extracting tax data from documents using AI...');
+    logger.info('[Workflow] Extracting tax data from documents using AI...');
 
     // Fetch latest OCR data from MongoDB (in case process-documents was called after workflow started)
     const documentsWithText: DocumentWithText[] = [];
@@ -64,7 +64,7 @@ export const reviewExtractedDataStep = createStep({
         // Fetch from MongoDB in case it was processed after workflow started
         const fileMetadata = await mongoRepository.findFileById(doc.fileId);
         if (fileMetadata?.ocrResult?.text && fileMetadata.ocrResult.text.trim().length > 0) {
-          logger.log(`[Workflow] Fetched OCR text from DB for: ${doc.fileName}`);
+          logger.info(`[Workflow] Fetched OCR text from DB for: ${doc.fileName}`);
           documentsWithText.push({
             fileName: doc.fileName,
             extractedText: fileMetadata.ocrResult.text,
@@ -99,7 +99,7 @@ export const reviewExtractedDataStep = createStep({
       });
     }
 
-    logger.log(`[Workflow] Found ${documentsWithText.length} documents with text for extraction`);
+    logger.info(`[Workflow] Found ${documentsWithText.length} documents with text for extraction`);
 
     // Extract structured data using AI with personal info context
     // This uses the shared tax-data-extraction service internally
@@ -115,7 +115,7 @@ export const reviewExtractedDataStep = createStep({
       confirmed: false,
     };
 
-    logger.log('[Workflow] AI extraction completed, suspending for user review');
+    logger.info('[Workflow] AI extraction completed, suspending for user review');
     return await suspend({
       reason: 'Please review the extracted data and make any corrections',
       extractedData,

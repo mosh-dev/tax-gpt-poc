@@ -101,16 +101,16 @@ export class ImageProcessor extends BaseDocumentProcessor {
       // Parse language configuration (tesseract.js format)
       const language = this.parseLanguageConfig(config.language || DEFAULT_OCR_CONFIG.language);
 
-      this.logger.log(`[ImageProcessor] Processing with tesseract.js: ${language}`);
+      this.logger.info(`[ImageProcessor] Processing with tesseract.js: ${language}`);
 
       // Create Tesseract worker
       // tesseract.js will auto-download language files from CDN on first use
       const cachePath = getStoragePath('tesseract');
-      this.logger.log(`[ImageProcessor] Creating Tesseract worker for language: ${language}, cachePath: ${cachePath}`);
+      this.logger.info(`[ImageProcessor] Creating Tesseract worker for language: ${language}, cachePath: ${cachePath}`);
 
       worker = await createWorker(language, config.oem, {
         cachePath: cachePath,
-        logger: m => this.logger.log(`[Tesseract] ${m.status}: ${Math.round((m.progress || 0) * 100)}%`)
+        logger: m => this.logger.info(`[Tesseract] ${m.status}: ${Math.round((m.progress || 0) * 100)}%`)
       });
 
       // Configure worker with PSM (Page Segmentation Mode)
@@ -134,7 +134,7 @@ export class ImageProcessor extends BaseDocumentProcessor {
         result.confidence = data.confidence;
       }
 
-      this.logger.log(`[ImageProcessor] Extracted ${result.wordCount} words with ${data.confidence?.toFixed(1)}% confidence`);
+      this.logger.info(`[ImageProcessor] Extracted ${result.wordCount} words with ${data.confidence?.toFixed(1)}% confidence`);
 
       // Clean up processed image if needed
       if (shouldCleanupProcessed) {

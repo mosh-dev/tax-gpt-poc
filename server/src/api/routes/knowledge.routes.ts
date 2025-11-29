@@ -26,7 +26,7 @@ router.post('/upload', knowledgeUpload.single('file'), async (req: Request, res:
       return;
     }
 
-    logger.log(`[KnowledgeRoutes] Uploading file: ${file.originalname}`);
+    logger.info(`[KnowledgeRoutes] Uploading file: ${file.originalname}`);
 
     // Generate unique upload ID for progress tracking
     const uploadId = randomUUID();
@@ -54,7 +54,7 @@ router.post('/upload', knowledgeUpload.single('file'), async (req: Request, res:
         }
       });
 
-      logger.log(`[KnowledgeRoutes] File ingested successfully: ${result.fileName} (${result.chunkCount} chunks)`);
+      logger.info(`[KnowledgeRoutes] File ingested successfully: ${result.fileName} (${result.chunkCount} chunks)`);
 
       // Send completion event
       progressManager.complete(uploadId, {
@@ -93,7 +93,7 @@ router.get('/upload-progress/:uploadId', authMiddleware, (req: Request, res: Res
     return;
   }
 
-  logger.log(`[Knowledge API] SSE connection for upload: ${uploadId}`);
+  logger.info(`[Knowledge API] SSE connection for upload: ${uploadId}`);
   progressManager.subscribe(uploadId, res);
 });
 
@@ -134,7 +134,7 @@ router.delete('/files/:id', async (req: Request, res: Response): Promise<void> =
       return;
     }
 
-    logger.log(`[KnowledgeRoutes] Deleting file: ${id}`);
+    logger.info(`[KnowledgeRoutes] Deleting file: ${id}`);
 
     const knowledgeService = injectFromContainer(KnowledgeService);
     const result = await knowledgeService.deleteFile(id);

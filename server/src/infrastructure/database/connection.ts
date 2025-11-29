@@ -17,7 +17,7 @@ const MONGODB_URI = Environment.MONGODB_URI;
 export async function connectDatabase(): Promise<void> {
   const logger = injectFromContainer(LoggerService);
   if (isDatabaseConnected()) {
-    logger.log('[Database] Already connected, skipping connection');
+    logger.info('[Database] Already connected, skipping connection');
     return;
   }
 
@@ -54,7 +54,7 @@ export function isDatabaseConnected(): boolean {
 
 // Handle connection events
 mongoose.connection.on('connected', () => {
-  injectFromContainer(LoggerService).log('[Database] Mongoose connected to MongoDB');
+  injectFromContainer(LoggerService).info('[Database] Mongoose connected to MongoDB');
 });
 
 mongoose.connection.on('error', (err) => {
@@ -62,7 +62,7 @@ mongoose.connection.on('error', (err) => {
 });
 
 mongoose.connection.on('disconnected', () => {
-  injectFromContainer(LoggerService).log('[Database] Mongoose disconnected from MongoDB');
+  injectFromContainer(LoggerService).info('[Database] Mongoose disconnected from MongoDB');
 });
 
 // Graceful shutdown
