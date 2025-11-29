@@ -46,10 +46,8 @@ export async function getOrCreateTaxAgent(): Promise<TaxAgent> {
   }
 
   // Agent needs to be created or refreshed - query DB for latest instructions
-  logger.log(
-    { reason: !taxAgentInstance ? 'no instance' : 'refresh requested' },
-    '[TaxAgent] Fetching instructions from database'
-  );
+  const reason = taxAgentInstance ? ' refresh requested' : 'no instance';
+  logger.log(`[TaxAgent] Fetching instructions from database - reason: ${reason}`);
 
   isCreating = true;
   try {

@@ -1,5 +1,4 @@
 import { asClass, asValue, createContainer, InjectionMode, NameAndRegistrationPair } from 'awilix';
-import { test } from '@/app/di-container/container-registry';
 
 const containerRegistry = createContainer({
   injectionMode: InjectionMode.PROXY,
@@ -95,5 +94,3 @@ export function injectFromContainer<T>(refOrKey: any): T {
     throw new Error(`injectFromContainer must be called from a injection context: ${key}`);
   }
 }
-
-test();

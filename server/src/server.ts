@@ -1,5 +1,4 @@
 import { Environment } from '@config/environment';
-import { getErrorMessage } from '@utils/error-handler';
 import { createExpressApp, startExpressServer } from '@/app/app';
 import { pinoServerLogger } from '@utils/pino-logger';
 
@@ -11,8 +10,7 @@ async function startServer() {
     const app = await createExpressApp();
     await startExpressServer(app);
   } catch (error) {
-    pinoServerLogger.error(error);
-    console.error('[Server] Failed to start:', getErrorMessage(error));
+    pinoServerLogger.error(error, `[Server] Failed to start`);
     process.exit(1);
   }
 }

@@ -3,7 +3,6 @@ import { nodeExternalsPlugin } from 'esbuild-node-externals';
 import tscPlugin from "esbuild-plugin-tsc";
 import { copy } from 'esbuild-plugin-copy';
 import { spawn } from 'child_process';
-import { circularDependencyPlugin } from './esbuild-plugins/circular-dependency-plugin.mjs';
 
 const outPath = 'dist/app';
 
@@ -20,9 +19,6 @@ const config = {
   plugins: [
     nodeExternalsPlugin(),
     tscPlugin(),
-    circularDependencyPlugin({
-      exclude: /node_modules/,
-    }),
     copy({
       resolveFrom: 'out',
       assets: [{

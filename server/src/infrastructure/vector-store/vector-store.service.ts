@@ -1,13 +1,10 @@
-/**
- * Vector Store Service
- * Persistent vector storage using LibSQL
- */
-
 import { LibSQLVector } from '@mastra/libsql';
 import { STORAGE_PATHS } from '@config/storage';
 import { generateEmbedding } from '@infrastructure/embedding/embedding.service';
 import { getErrorMessage } from '@utils/error-handler';
 import type { VectorDocument, SearchResult } from './vector-store.types';
+import { injectFromContainer } from '@/app/di-container/container-helper';
+import { LoggerService } from '@infrastructure/logger/logger.service';
 
 export type { VectorDocument, SearchResult };
 
@@ -16,6 +13,8 @@ export type { VectorDocument, SearchResult };
  * Uses LibSQL for persistent vector storage
  */
 export class VectorStoreService {
+  private readonly logger = injectFromContainer(LoggerService);
+
   private vector: LibSQLVector;
   private initialized: boolean = false;
   private readonly indexName = 'knowledge_base';
@@ -23,13 +22,12 @@ export class VectorStoreService {
 
   constructor() {
     const vectorDbPath = 'file:' + STORAGE_PATHS.vectors;
-    console.log('[VectorStore] Initializing LibSQL vector store at:', vectorDbPath);
+    this.logger.log(`[VectorStore] Initializing LibSQL vector store at: ${vectorDbPath}`);
 
     this.vector = new LibSQLVector({
       id: 'knowledge-base-vectors',
       connectionUrl: vectorDbPath,
     });
-    // Note: This service creates LibSQLVector in constructor and doesn't use DI yet
   }
 
   /**
@@ -48,22 +46,22 @@ export class VectorStoreService {
           dimension: this.dimension,
           metric: 'cosine',
         });
-        console.log('[VectorStore] Created new vector index');
-      } catch (error: unknown) {
+        this.logger.log('[VectorStore] Created new vector index');
+      } catch (error) {
         // Index might already exist, that's okay
         const errorMsg = getErrorMessage(error);
         if (errorMsg.includes('already exists')) {
-          console.log('[VectorStore] Using existing vector index');
+          this.logger.log('[VectorStore] Using existing vector index');
+          return;
         } else {
-          console.warn('[VectorStore] Index creation warning:', errorMsg);
+          this.logger.error(error,'[VectorStore] Index creation warning:');
         }
       }
 
       this.initialized = true;
-      console.log('[VectorStore] Vector store initialized successfully');
-    } catch (error: unknown) {
-      const errorMsg = getErrorMessage(error);
-      console.error('[VectorStore] Failed to initialize:', errorMsg);
+      this.logger.log('[VectorStore] Vector store initialized successfully');
+    } catch (error) {
+      this.logger.error(error,'[VectorStore] Failed to initialize:');
       throw error;
     }
   }
@@ -97,11 +95,10 @@ export class VectorStoreService {
         ids,
       });
 
-      console.log(`[VectorStore] Stored ${docs.length} documents in LibSQL`);
+      this.logger.log(`[VectorStore] Stored ${docs.length} documents in LibSQL`);
     } catch (error: unknown) {
-      const errorMsg = getErrorMessage(error);
-      console.error('[VectorStore] Error storing documents:', errorMsg);
-      throw new Error(`Failed to store documents: ${errorMsg}`);
+      this.logger.error(error, '[VectorStore] Error storing documents:');
+      throw error;
     }
   }
 
@@ -150,14 +147,13 @@ export class VectorStoreService {
         },
       }));
 
-      console.log(`[VectorStore] Search returned ${searchResults.length} results (topK: ${topK}, minScore: ${minScore})`);
+      this.logger.log(`[VectorStore] Search returned ${searchResults.length} results (topK: ${topK}, minScore: ${minScore})`);
 
       return searchResults;
     } catch (error: unknown) {
-      const errorMsg = getErrorMessage(error);
-      console.error('[VectorStore] Error searching:', errorMsg);
+      this.logger.error(error,'[VectorStore] Error searching:');
       // If query fails, return empty results instead of throwing
-      console.warn('[VectorStore] Returning empty results due to search error');
+      this.logger.warn('[VectorStore] Returning empty results due to search error');
       return [];
     }
   }
@@ -179,10 +175,10 @@ export class VectorStoreService {
           id,
         });
       }
-      console.log(`[VectorStore] Deleted ${ids.length} documents from LibSQL`);
+      this.logger.log(`[VectorStore] Deleted ${ids.length} documents from LibSQL`);
     } catch (error: unknown) {
       const errorMsg = getErrorMessage(error);
-      console.error('[VectorStore] Error deleting documents:', errorMsg);
+      this.logger.error('[VectorStore] Error deleting documents:', errorMsg);
     }
   }
 
@@ -210,13 +206,13 @@ export class VectorStoreService {
 
       if (ids.length > 0) {
         await this.deleteDocuments(ids);
-        console.log(`[VectorStore] Deleted ${ids.length} documents for file ${fileId}`);
+        this.logger.log(`[VectorStore] Deleted ${ids.length} documents for file ${fileId}`);
       } else {
-        console.log(`[VectorStore] No documents found for file ${fileId}`);
+        this.logger.log(`[VectorStore] No documents found for file ${fileId}`);
       }
     } catch (error: unknown) {
       const errorMsg = getErrorMessage(error);
-      console.error('[VectorStore] Error deleting by fileId:', errorMsg);
+      this.logger.error(error, '[VectorStore] Error deleting by fileId:');
       throw new Error(`Failed to delete documents for file ${fileId}: ${errorMsg}`);
     }
   }
