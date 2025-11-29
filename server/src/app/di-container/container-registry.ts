@@ -23,7 +23,7 @@ import { RAGService } from '@domains/knowledge/services/rag.service';
 import { OCRService } from '@infrastructure/ocr/ocr.service';
 import { TesseractOCRService } from '@infrastructure/ocr/tesseract-ocr.service';
 import { MastraAIAgentService } from '@infrastructure/ai/mastra-ai-agent.service';
-import { MastraLoggerService } from '@infrastructure/ai/mastra-logger.service';
+import { AgentLoggerService } from '@infrastructure/ai/agent-logger.service';
 import { VectorStoreService } from '@infrastructure/vector-store/vector-store.service';
 import { LocalFileStorageService } from '@infrastructure/storage/local-file-storage.service';
 import { LoggerService } from '@infrastructure/logger/logger.service';
@@ -69,7 +69,7 @@ export function registerApplicationComponents() {
     { class: VectorStoreService },
     { class: LocalFileStorageService },
     { class: LoggerService },
-    { class: MastraLoggerService },
+    { class: AgentLoggerService },
 
     // Repositories
     { class: MongoRepository },

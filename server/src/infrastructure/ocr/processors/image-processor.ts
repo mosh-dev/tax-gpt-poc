@@ -12,8 +12,12 @@ import { DEFAULT_OCR_CONFIG, DEFAULT_PREPROCESSING_OPTIONS } from '../ocr-config
 import { getStoragePath } from '@config/storage';
 import { OCRResultThree } from '@/types/ocr-result.types';
 import { FileType, OCRConfig, PreprocessingOptions } from '@infrastructure/ocr/ocr.types';
+import { injectFromContainer } from '@/app/di-container/container-helper';
+import { LoggerService } from '@infrastructure/logger/logger.service';
 
 export class ImageProcessor extends BaseDocumentProcessor {
+  private readonly logger = injectFromContainer(LoggerService);
+
   protected supportedTypes: FileType[] = ['image'];
 
   /**
@@ -94,16 +98,16 @@ export class ImageProcessor extends BaseDocumentProcessor {
       // Parse language configuration (tesseract.js format)
       const language = this.parseLanguageConfig(config.language || DEFAULT_OCR_CONFIG.language);
 
-      console.log(`[ImageProcessor] Processing with tesseract.js: ${language}`);
+      this.logger.log(`[ImageProcessor] Processing with tesseract.js: ${language}`);
 
       // Create Tesseract worker
       // tesseract.js will auto-download language files from CDN on first use
       const cachePath = getStoragePath('tesseract');
-      console.log(`[ImageProcessor] Creating Tesseract worker for language: ${language}, cachePath: ${cachePath}`);
+      this.logger.log(`[ImageProcessor] Creating Tesseract worker for language: ${language}, cachePath: ${cachePath}`);
 
       worker = await createWorker(language, config.oem, {
         cachePath: cachePath,
-        logger: m => console.log(`[Tesseract] ${m.status}: ${Math.round((m.progress || 0) * 100)}%`)
+        logger: m => this.logger.log(`[Tesseract] ${m.status}: ${Math.round((m.progress || 0) * 100)}%`)
       });
 
       // Configure worker with PSM (Page Segmentation Mode)
@@ -127,12 +131,12 @@ export class ImageProcessor extends BaseDocumentProcessor {
         result.confidence = data.confidence;
       }
 
-      console.log(`[ImageProcessor] Extracted ${result.wordCount} words with ${data.confidence?.toFixed(1)}% confidence`);
+      this.logger.log(`[ImageProcessor] Extracted ${result.wordCount} words with ${data.confidence?.toFixed(1)}% confidence`);
 
       // Clean up processed image if needed
       if (shouldCleanupProcessed) {
         await fs.unlink(processedImagePath).catch(err => {
-          console.warn(`Failed to delete processed image: ${err.message}`);
+          this.logger.warn(`Failed to delete processed image: ${err.message}`);
         });
       }
 

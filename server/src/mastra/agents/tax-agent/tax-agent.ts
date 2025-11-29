@@ -17,7 +17,7 @@ import { searchGeneralTool } from '@/mastra/agents/tax-agent/tools/search-genera
 import { getOpenAiModel } from '@infrastructure/ai/llm-client';
 import { ChunkType } from '@mastra/core/stream';
 import { injectFromContainer } from '@/app/di-container/container-helper';
-import { MastraLoggerService } from '@infrastructure/ai/mastra-logger.service';
+import { AgentLoggerService } from '@infrastructure/ai/agent-logger.service';
 
 /**
  * Tax Agent powered by Mastra and LMStudio
@@ -25,7 +25,7 @@ import { MastraLoggerService } from '@infrastructure/ai/mastra-logger.service';
 export class TaxAgent {
   public readonly agent: Agent;
   private readonly memory?: Memory;
-  private readonly logger = injectFromContainer(MastraLoggerService)
+  private readonly logger = injectFromContainer(AgentLoggerService)
 
   constructor(instructions: string) {
     const model = getOpenAiModel();
@@ -207,13 +207,12 @@ export class TaxAgent {
           'snapshot.context.input.threadId': threadId,
         });
 
-        console.log(`[TaxAgent] Deleted ${result.deletedCount} workflow snapshots for thread: ${threadId}`);
+        this.logger.log(`[TaxAgent] Deleted ${result.deletedCount} workflow snapshots for thread: ${threadId}`);
       } else {
-        console.warn('[TaxAgent] MongoDB connection not available for workflow snapshot cleanup');
+        this.logger.warn('[TaxAgent] MongoDB connection not available for workflow snapshot cleanup');
       }
     } catch (error: unknown) {
-      const errorMsg = getErrorMessage(error);
-      console.error('[TaxAgent] Error deleting workflow snapshots:', errorMsg);
+      this.logger.error(error, '[TaxAgent] Error deleting workflow snapshots');
       throw error;
     }
   }

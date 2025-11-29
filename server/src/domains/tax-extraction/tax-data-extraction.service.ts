@@ -6,6 +6,8 @@
 
 import { z } from 'zod';
 import { extractStructuredData } from '@domains/extraction/services/structured-extraction.service';
+import { LoggerService } from '@infrastructure/logger/logger.service';
+import { injectFromContainer } from '@/app/di-container/container-helper';
 
 // Schema for extracted tax data
 const taxDataSchema = z.object({
@@ -58,8 +60,11 @@ export async function extractTaxData(
   documents: DocumentWithText[],
   personalContext?: PersonalContext
 ): Promise<TaxData> {
+
+  const logger = injectFromContainer(LoggerService);
+
   if (documents.length === 0 || documents.every(d => !d.extractedText)) {
-    console.warn('[TaxDataExtraction] No documents with extracted text provided, returning zeros');
+    logger.warn('[TaxDataExtraction] No documents with extracted text provided, returning zeros');
     return createEmptyTaxData();
   }
 
@@ -68,11 +73,11 @@ export async function extractTaxData(
     .map(doc => `=== ${doc.fileName} ===\n${doc.extractedText}`);
 
   if (documentTexts.length === 0) {
-    console.warn('[TaxDataExtraction] Combined text is empty, returning zeros');
+    logger.warn('[TaxDataExtraction] Combined text is empty, returning zeros');
     return createEmptyTaxData();
   }
 
-  console.log(`[TaxDataExtraction] Extracting from ${documents.length} documents`);
+  logger.log(`[TaxDataExtraction] Extracting from ${documents.length} documents`);
 
   const systemPrompt = buildSwissTaxPrompt(personalContext);
 
@@ -87,20 +92,20 @@ export async function extractTaxData(
       }
     );
 
-    console.log('[TaxDataExtraction] AI extraction completed successfully');
-    console.log('[TaxDataExtraction] Extracted data:', JSON.stringify(result, null, 2));
+    logger.log('[TaxDataExtraction] AI extraction completed successfully');
+    logger.log(result, '[TaxDataExtraction] Extracted data');
 
     return result;
   } catch (error: any) {
-    console.error('[TaxDataExtraction] Error during AI extraction:', {
+    logger.error({
       error: error.message || error,
       type: error.constructor?.name,
-    });
+    },'[TaxDataExtraction] Error during AI extraction:');
 
-    console.error('[TaxDataExtraction] Context:', {
+    logger.error({
       documentCount: documents.length,
       hasPersonalContext: !!personalContext,
-    });
+    },'[TaxDataExtraction] Context:');
 
     return createEmptyTaxData();
   }

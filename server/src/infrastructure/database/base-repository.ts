@@ -7,6 +7,8 @@
 import { FileData, FileModel } from '@domains/document/models/file.model';
 import { ObjectMap } from '@/types/common.types';
 import { connectDatabase, isDatabaseConnected } from '@infrastructure/database/connection';
+import { injectFromContainer } from '@/app/di-container/container-helper';
+import { LoggerService } from '@infrastructure/logger/logger.service';
 
 export interface CreateFileData {
   fileId: string;
@@ -23,6 +25,7 @@ export interface CreateFileData {
 }
 
 export class MongoRepository {
+  private readonly logger = injectFromContainer(LoggerService);
   /**
    * Check if database is connected
    */
@@ -38,12 +41,12 @@ export class MongoRepository {
       return;
     }
 
-    console.log('[MongoRepository] Attempting to reconnect to database...');
+    this.logger.log('[MongoRepository] Attempting to reconnect to database...');
     try {
       await connectDatabase();
-      console.log('[MongoRepository] Successfully reconnected to database');
+      this.logger.log('[MongoRepository] Successfully reconnected to database');
     } catch (error) {
-      console.error('[MongoRepository] Failed to reconnect to database:', error);
+      this.logger.error(error,'[MongoRepository] Failed to reconnect to database');
       throw error;
     }
   }
@@ -53,7 +56,7 @@ export class MongoRepository {
    */
   private async execute<T>(operation: () => Promise<T>): Promise<T> {
     if (!this.isConnected()) {
-      console.warn('[MongoRepository] Database not connected, attempting reconnection...');
+      this.logger.warn('[MongoRepository] Database not connected, attempting reconnection...');
       await this.reconnect();
     }
 

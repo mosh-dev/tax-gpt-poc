@@ -8,6 +8,8 @@ import { MASTRA_COLLECTIONS } from '@config/database-collections';
 import { getErrorMessage } from '@utils/error-handler';
 import { WORKFLOW_IDS } from '@shared/constants/workflow';
 import { getMastra } from '@/mastra/mastra-instance';
+import { injectFromContainer } from '@/app/di-container/container-helper';
+import { LoggerService } from '@infrastructure/logger/logger.service';
 
 export interface WorkflowStatus {
   runId: string;
@@ -23,6 +25,8 @@ export interface WorkflowStatus {
 }
 
 export class TaxCalculationWorkflowService {
+  private readonly logger = injectFromContainer(LoggerService);
+
   /**
    * Start a new tax calculation workflow
    * Workflow state is automatically persisted to MongoDB by Mastra
@@ -36,7 +40,7 @@ export class TaxCalculationWorkflowService {
       // Create workflow run (automatically persisted to MongoDB)
       const run = await workflow.createRun();
       const runId = run.runId;
-      console.log(`[WorkflowService] Created workflow run: ${runId}`);
+      this.logger.log(`[WorkflowService] Created workflow run: ${runId}`);
 
       // Start the workflow
       const result = await run.start({
@@ -71,21 +75,21 @@ export class TaxCalculationWorkflowService {
       if (result.status === 'success') {
         status.status = 'completed';
         status.result = result.result;
-        console.log(`[WorkflowService] Workflow completed on start`);
+        this.logger.log(`[WorkflowService] Workflow completed on start`);
         await this.deleteWorkflowSnapshot(runId);
       }
 
       // Handle error state
       if (result.status === 'failed') {
         status.error = result.error?.message || 'Unknown error';
-        console.log(`[WorkflowService] Workflow failed on start:`, status.error);
+        this.logger.log(result,`[WorkflowService] Workflow failed on start:`);
         await this.deleteWorkflowSnapshot(runId);
       }
 
       return status;
     } catch (error: unknown) {
       const errorMsg = getErrorMessage(error);
-      console.error('[WorkflowService] Error starting workflow:', errorMsg);
+      this.logger.error('[WorkflowService] Error starting workflow:', errorMsg);
       throw new Error(`Failed to start workflow: ${errorMsg}`);
     }
   }
@@ -96,79 +100,73 @@ export class TaxCalculationWorkflowService {
    */
   async resumeWorkflow(runId: string, stepId: string, resumeData: any): Promise<WorkflowStatus> {
 
-    try {
-      const mastra = getMastra();
-      const workflow = mastra.getWorkflow('taxCalculation');
+    const mastra = getMastra();
+    const workflow = mastra.getWorkflow('taxCalculation');
 
-      // Load workflow run from MongoDB
-      const workflowRunSnapshot = await workflow.getWorkflowRunById(runId);
+    // Load workflow run from MongoDB
+    const workflowRunSnapshot = await workflow.getWorkflowRunById(runId);
 
-      if (!workflowRunSnapshot) {
-        throw new Error(`Workflow run not found in storage: ${runId}. The workflow may have been completed or cancelled.`);
-      }
-
-      console.log(`[WorkflowService] Found workflow snapshot in MongoDB, restoring run...`);
-
-      // Create a new Run instance from the existing runId (Mastra loads from storage)
-      const run = await workflow.createRun({ runId });
-
-      // Extract metadata from snapshot
-      const snapshot = typeof workflowRunSnapshot.snapshot === 'string'
-        ? JSON.parse(workflowRunSnapshot.snapshot)
-        : workflowRunSnapshot.snapshot;
-
-      const threadId = snapshot?.context?.input?.threadId || '';
-
-      // Resume the workflow
-      const result = await run.resume({
-        step: stepId,
-        resumeData,
-      });
-
-      console.log(`[WorkflowService] Workflow resumed, status: ${result.status}`);
-
-      // Build status response
-      const status: WorkflowStatus = {
-        runId,
-        threadId,
-        workflowId: WORKFLOW_IDS.TAX_CALCULATION,
-        status: result.status as WorkflowStatus['status'],
-        createdAt: workflowRunSnapshot.createdAt,
-        updatedAt: new Date(),
-      };
-
-      // Handle suspended state
-      if (result.status === 'suspended' && result.suspended) {
-        const suspendedStepId = result.suspended[0][0];
-        status.currentStep = suspendedStepId;
-
-        const stepResult = result.steps?.[suspendedStepId];
-        if (stepResult?.suspendPayload) {
-          status.suspendPayload = stepResult.suspendPayload;
-        }
-      }
-
-      // Handle completed state
-      if (result.status === 'success') {
-        status.status = 'completed';
-        status.result = result.result;
-        console.log(`[WorkflowService] Workflow completed`);
-        await this.deleteWorkflowSnapshot(runId);
-      }
-
-      // Handle error state
-      if (result.status === 'failed') {
-        status.error = result.error?.message || 'Unknown error';
-        console.log(`[WorkflowService] Workflow failed:`, status.error);
-        await this.deleteWorkflowSnapshot(runId);
-      }
-
-      return status;
-    } catch (error: unknown) {
-      const errorMsg = getErrorMessage(error);
-      console.error('[WorkflowService] Error resuming workflow:', errorMsg);
-      throw new Error(`Failed to resume workflow: ${errorMsg}`);
+    if (!workflowRunSnapshot) {
+      throw new Error(`Workflow run not found in storage: ${runId}. The workflow may have been completed or cancelled.`);
     }
+
+    this.logger.log(`[WorkflowService] Found workflow snapshot in MongoDB, restoring run...`);
+
+    // Create a new Run instance from the existing runId (Mastra loads from storage)
+    const run = await workflow.createRun({ runId });
+
+    // Extract metadata from snapshot
+    const snapshot = typeof workflowRunSnapshot.snapshot === 'string'
+      ? JSON.parse(workflowRunSnapshot.snapshot)
+      : workflowRunSnapshot.snapshot;
+
+    const threadId = snapshot?.context?.input?.threadId || '';
+
+    // Resume the workflow
+    const result = await run.resume({
+      step: stepId,
+      resumeData,
+    });
+
+    this.logger.log(`[WorkflowService] Workflow resumed, status: ${result.status}`);
+
+    // Build status response
+    const status: WorkflowStatus = {
+      runId,
+      threadId,
+      workflowId: WORKFLOW_IDS.TAX_CALCULATION,
+      status: result.status as WorkflowStatus['status'],
+      createdAt: workflowRunSnapshot.createdAt,
+      updatedAt: new Date(),
+    };
+
+    // Handle suspended state
+    if (result.status === 'suspended' && result.suspended) {
+      const suspendedStepId = result.suspended[0][0];
+      status.currentStep = suspendedStepId;
+
+      const stepResult = result.steps?.[suspendedStepId];
+      if (stepResult?.suspendPayload) {
+        status.suspendPayload = stepResult.suspendPayload;
+      }
+    }
+
+    // Handle completed state
+    if (result.status === 'success') {
+      status.status = 'completed';
+      status.result = result.result;
+      this.logger.log(`[WorkflowService] Workflow completed`);
+      await this.deleteWorkflowSnapshot(runId);
+    }
+
+    // Handle error state
+    if (result.status === 'failed') {
+      status.error = result.error?.message || 'Unknown error';
+      this.logger.log(status, `[WorkflowService] Workflow failed:`);
+      await this.deleteWorkflowSnapshot(runId);
+    }
+
+    return status;
   }
 
   /**
@@ -181,14 +179,12 @@ export class TaxCalculationWorkflowService {
 
       if (snapshotCollection) {
         const result = await snapshotCollection.deleteMany({ run_id: runId });
-        console.log(`[WorkflowService] Deleted ${result.deletedCount} workflow snapshot(s) for runId: ${runId}`);
+        this.logger.log(`[WorkflowService] Deleted ${result.deletedCount} workflow snapshot(s) for runId: ${runId}`);
       } else {
-        console.warn('[WorkflowService] MongoDB connection not available for workflow snapshot cleanup');
+        this.logger.warn('[WorkflowService] MongoDB connection not available for workflow snapshot cleanup');
       }
     } catch (error: unknown) {
-      const errorMsg = getErrorMessage(error);
-      console.error('[WorkflowService] Error deleting workflow snapshot:', errorMsg);
-      // Don't throw - snapshot cleanup failure shouldn't break the main flow
+      this.logger.error(error, '[WorkflowService] Error deleting workflow snapshot:');
     }
   }
 }

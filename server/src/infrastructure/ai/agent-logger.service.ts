@@ -3,7 +3,7 @@ import { LoggerService } from '@infrastructure/logger/logger.service';
 /**
  * Console-based logger implementation
  */
-export class MastraLoggerService extends LoggerService {
+export class AgentLoggerService extends LoggerService {
   private readonly agentLogger = this.createNewLogger('TaxAgent');
 
   public logStreamError(error: any): void {
