@@ -5,12 +5,11 @@ import { pinoServerLogger } from '@utils/pino-logger';
  * Console-based logger implementation
  */
 export class LoggerService {
-  private pinoServerLogger = pinoServerLogger;
-  protected readonly logger = this.createNewLogger('TaxGPT');
+  protected readonly logger = pinoServerLogger.child({ module: 'TaxGPT' });
 
   public createNewLogger(module: string): Logger {
-    this.pinoServerLogger.info(`Creating new logger for module: ${module}`);
-    return this.pinoServerLogger.child({ module });
+    this.logger.info(`Creating logger for module: ${module}`);
+    return pinoServerLogger.child({ module });
   }
 
   public log(obj: object, msg?: string): void;
