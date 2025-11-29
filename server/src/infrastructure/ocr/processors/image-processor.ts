@@ -13,6 +13,7 @@ import { getStoragePath } from '@config/storage';
 import { OCRResultThree } from '@/types/ocr-result.types';
 import { FileType, OCRConfig, PreprocessingOptions } from '@infrastructure/ocr/ocr.types';
 import { LoggerService } from '@infrastructure/logger/logger.service';
+import { getErrorMessage } from '@utils/error-handler';
 
 export class ImageProcessor extends BaseDocumentProcessor {
   private readonly logger: LoggerService;
@@ -147,7 +148,7 @@ export class ImageProcessor extends BaseDocumentProcessor {
 
     } catch (error) {
       result.status = 'failed';
-      result.error = error instanceof Error ? error.message : 'Unknown error during OCR processing';
+      result.error = getErrorMessage(error) || 'Unknown error during OCR processing';
 
       // Clean up processed image if it exists
       if (shouldCleanupProcessed) {

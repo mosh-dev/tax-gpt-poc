@@ -96,16 +96,13 @@ export async function extractTaxData(
     logger.info(result, '[TaxDataExtraction] Extracted data');
 
     return result;
-  } catch (error: any) {
-    logger.error({
-      error: error.message || error,
-      type: error.constructor?.name,
-    },'[TaxDataExtraction] Error during AI extraction:');
+  } catch (error) {
+    logger.error({ error }, '[TaxDataExtraction] Error during AI extraction');
 
     logger.error({
       documentCount: documents.length,
       hasPersonalContext: !!personalContext,
-    },'[TaxDataExtraction] Context:');
+    }, '[TaxDataExtraction] Context:');
 
     return createEmptyTaxData();
   }

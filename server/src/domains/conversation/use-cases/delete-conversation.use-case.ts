@@ -6,6 +6,7 @@ import { MastraAIAgentService } from '@infrastructure/ai/mastra-ai-agent.service
 import { ConversationId } from '@domains/conversation/value-objects/conversation-id.class';
 import { injectFromContainer } from '@/app/di-container/container-helper';
 import { LoggerService } from '@infrastructure/logger/logger.service';
+import { getErrorMessage } from '@utils/error-handler';
 
 export class DeleteConversationUseCase {
   private readonly conversationRepository = injectFromContainer(MongoConversationRepository);
@@ -31,7 +32,7 @@ export class DeleteConversationUseCase {
       this.logger.info(`[DeleteConversationUseCase] Deleted messages for: ${conversationId}`);
     } catch (error) {
       this.logger.error({ error }, `[DeleteConversationUseCase] Error deleting messages`);
-      throw new Error(`Failed to delete messages: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(`Failed to delete messages: ${getErrorMessage(error) || 'Unknown error'}`);
     }
 
     try {
@@ -39,7 +40,7 @@ export class DeleteConversationUseCase {
       this.logger.info(`[DeleteConversationUseCase] Deleted conversation: ${conversationId}`);
     } catch (error) {
       this.logger.error({ error }, `[DeleteConversationUseCase] Error deleting conversation`);
-      throw new Error(`Failed to delete conversation: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(`Failed to delete conversation: ${getErrorMessage(error) || 'Unknown error'}`);
     }
 
     // Step 2: Delete Mastra data (threads, messages, workflow snapshots)

@@ -7,10 +7,12 @@ import { TesseractOCRService } from '@infrastructure/ocr/tesseract-ocr.service';
 import { ProcessDocumentDTO, ProcessDocumentResultDTO } from '@domains/document/dtos/file-dto';
 import { FileId } from '@domains/document/value-objects/file-id.class';
 import { injectFromContainer } from '@/app/di-container/container-helper';
+import { LoggerService } from '@infrastructure/logger/logger.service';
 
 export class ProcessDocumentUseCase {
   private fileRepository = injectFromContainer(MongoFileRepository);
   private ocrService = injectFromContainer(TesseractOCRService);
+  private logger = injectFromContainer(LoggerService);
 
   async execute(data: ProcessDocumentDTO): Promise<ProcessDocumentResultDTO> {
     // 1. Get file from repository
@@ -72,9 +74,8 @@ export class ProcessDocumentUseCase {
       try {
         const result = await this.execute(doc);
         results.push(result);
-      } catch (error: any) {
-        console.error(`[ProcessDocumentUseCase] Failed to process ${doc.fileId}:`, error);
-        // Continue processing other documents
+      } catch (error) {
+        this.logger.error({ error },`[ProcessDocumentUseCase] Failed to process ${doc.fileId}:`);
       }
     }
 

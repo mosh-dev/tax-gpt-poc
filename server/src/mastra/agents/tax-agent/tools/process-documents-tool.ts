@@ -125,7 +125,7 @@ export const processDocumentsTool = createTool({
             fileId,
             fileName: metadata.originalName,
             success: false,
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: getErrorMessage(error) || 'Unknown error'
           });
 
           logger.error({ error }, `[ProcessDocumentsTool] Error: ${metadata.originalName}:`);

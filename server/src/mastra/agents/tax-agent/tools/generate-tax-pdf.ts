@@ -5,6 +5,8 @@ import { FileService } from '@domains/document/services/file.service';
 import { SwissTaxData } from '@domains/tax-extraction/swiss-tax-data.model';
 import { TOOL_IDS } from '@shared/constants/tool-ids';
 import { injectFromContainer } from '@/app/di-container/container-helper';
+import { getErrorMessage } from '@utils/error-handler';
+import { AgentLoggerService } from '@infrastructure/ai/agent-logger.service';
 
 /**
  * Tool to generate a PDF document of calculated tax data
@@ -58,6 +60,7 @@ export const generateTaxPDFTool = createTool({
     error: z.string().optional(),
   }),
   execute: async ({ taxData, fileName }) => {
+    const logger = injectFromContainer(AgentLoggerService);
     try {
       // Generate the PDF buffer
       const pdfBuffer = await generateTaxReturnPDF(taxData as SwissTaxData);
@@ -86,12 +89,12 @@ export const generateTaxPDFTool = createTool({
         downloadUrl: savedFile.url,
         message: `Successfully generated tax return PDF for ${taxData.personalInfo.firstName} ${taxData.personalInfo.lastName} (Tax Year ${taxData.taxYear}). File size: ${fileSizeKB} KB. The PDF includes income summary, deductions, wealth declaration, and taxable income calculation.`,
       };
-    } catch (error: any) {
-      console.error('PDF Generation Error:', error);
+    } catch (error) {
+      logger.error({ error }, 'PDF Generation Error');
       return {
         success: false,
         message: 'Failed to generate PDF document',
-        error: error.message || 'Unknown error occurred during PDF generation',
+        error: getErrorMessage(error) || 'Unknown error occurred during PDF generation',
       };
     }
   },

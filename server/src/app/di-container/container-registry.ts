@@ -36,6 +36,7 @@ import { MongoMessageRepository } from '@infrastructure/database/mongodb/reposit
 
 import { Environment } from '@config/environment';
 import { MongoRepository } from '@infrastructure/database/base-repository';
+import { TaxCalculationWorkflowService } from '@/mastra/workflows/tax-calculation/tax-calculation-workflow.service';
 
 export function registerApplicationComponents() {
   // Register all components at once to avoid order issues
@@ -76,6 +77,9 @@ export function registerApplicationComponents() {
     { class: MongoConversationRepository },
     { class: MongoFileRepository },
     { class: MongoMessageRepository },
+
+    // Mastra
+    { class: TaxCalculationWorkflowService },
 
     // Values
     { key: 'baseUrl', value: Environment.BASE_URL },

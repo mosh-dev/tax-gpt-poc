@@ -4,6 +4,7 @@ import { Employee } from '@domains/tax-extraction/employee.model';
 import { TOOL_IDS } from '@shared/constants/tool-ids';
 import { injectFromContainer } from '@/app/di-container/container-helper';
 import { AgentLoggerService } from '@infrastructure/ai/agent-logger.service';
+import { getErrorMessage } from '@utils/error-handler';
 
 /**
  * Tool to retrieve Swiss tax data by searching employee name
@@ -106,11 +107,11 @@ export const getTaxDataTool = createTool({
         multipleResults: results,
         error: `Found ${employees.length} employees matching "${searchName}". Please ask the user which one they want:`,
       };
-    } catch (error: any) {
+    } catch (error) {
       return {
         success: false,
         searchName,
-        error: error.message || 'Failed to retrieve tax data',
+        error: getErrorMessage(error) || 'Failed to retrieve tax data',
       };
     }
   },

@@ -2,6 +2,7 @@ import { z } from 'zod';
 import { injectFromContainer } from '@/app/di-container/container-helper';
 import { RAGService } from '@domains/knowledge/services/rag.service';
 import { AgentLoggerService } from '@infrastructure/ai/agent-logger.service';
+import { getErrorMessage } from '@utils/error-handler';
 
 export interface SearchOptions {
   topK?: number;
@@ -49,9 +50,9 @@ export async function executeKnowledgeSearch(
   options: SearchOptions = {},
   toolName: string = 'SearchTool'
 ): Promise<SearchResult> {
+  const logger = injectFromContainer(AgentLoggerService);
+  const ragService = injectFromContainer(RAGService);
   try {
-    const logger = injectFromContainer(AgentLoggerService);
-    const ragService = injectFromContainer(RAGService);
 
     logger.info(`[${toolName}] Searching for: "${query}"`);
 
@@ -100,13 +101,13 @@ export async function executeKnowledgeSearch(
       message: message,
     };
   } catch (error) {
-    console.error(`[${toolName}] Error searching knowledge base:`, error);
+    logger.error({ error }, `[${toolName}] Error searching knowledge base`);
 
     return {
       success: false,
       query,
       resultsFound: 0,
-      message: error instanceof Error ? error.message : 'Unknown error occurred while searching',
+      message: getErrorMessage(error) || 'Unknown error occurred while searching',
       sourceFiles: [],
       results: [],
     };

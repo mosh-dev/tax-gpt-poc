@@ -5,7 +5,7 @@ import { pinoServerLogger } from '@utils/pino-logger';
  * Logger service that exposes Pino logger methods directly
  */
 export class LoggerService {
-  protected readonly logger = pinoServerLogger.child({ module: 'TaxGPT' });
+  protected logger = pinoServerLogger.child({ module: 'TaxGPT' });
 
   public createNewLogger(module: string): Logger {
     this.logger.info(`Creating logger for module: ${module}`);

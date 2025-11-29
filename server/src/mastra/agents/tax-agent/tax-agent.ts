@@ -101,7 +101,6 @@ export class TaxAgent {
 
     // resourceId is required by Mastra Memory - use default if not provided
     const effectiveResourceId = resourceId || 'default-user';
-    ``
 
     // Helper function to create stream
     const createStream = () => {

@@ -4,6 +4,7 @@ import { TaxCalculationWorkflowService } from '@/mastra/workflows/tax-calculatio
 import { TOOL_IDS } from '@shared/constants/tool-ids';
 import { injectFromContainer } from '@/app/di-container/container-helper';
 import { AgentLoggerService } from '@infrastructure/ai/agent-logger.service';
+import { getErrorMessage } from '@utils/error-handler';
 
 export const startTaxCalculationTool = createTool({
   id: TOOL_IDS.START_TAX_CALCULATION,
@@ -55,7 +56,7 @@ Ask the user to provide the required information based on the suspendPayload.`,
       return {
         success: false,
         message: 'Failed to start workflow',
-        error: error instanceof Error ? error.message : 'Unknown error',
+        error: getErrorMessage(error) || 'Unknown error',
       };
     }
   },

@@ -2,7 +2,9 @@
  * Stream Chat Use Case
  * Handles streaming chat with AI agent
  */
-import { MongoConversationRepository } from '@infrastructure/database/mongodb/repositories/mongo-conversation.repository';
+import {
+  MongoConversationRepository
+} from '@infrastructure/database/mongodb/repositories/mongo-conversation.repository';
 import { MongoMessageRepository } from '@infrastructure/database/mongodb/repositories/mongo-message.repository';
 import { MastraAIAgentService } from '@infrastructure/ai/mastra-ai-agent.service';
 import { StreamChatRequestDTO, StreamEventDTO } from '@domains/conversation/dtos/chat-dto';
@@ -11,13 +13,16 @@ import { MessageId } from '@domains/conversation/value-objects/message-id.class'
 import { MessageRole } from '@domains/conversation/value-objects/message-role.class';
 import { TaxGptMessage } from '@domains/conversation/entities/tax-gpt-message.class';
 import { TaxGptConversation } from '@domains/conversation/entities/tax-gpt-conversation.class';
-import { STREAM_EVENT_TYPES, MASTRA_EVENT_TYPES } from '@shared/constants/events';
+import { MASTRA_EVENT_TYPES, STREAM_EVENT_TYPES } from '@shared/constants/events';
 import { injectFromContainer } from '@/app/di-container/container-helper';
+import { getErrorMessage } from '@utils/error-handler';
+import { AgentLoggerService } from '@infrastructure/ai/agent-logger.service';
 
 export class StreamChatUseCase {
-  private conversationRepository = injectFromContainer(MongoConversationRepository);
-  private messageRepository = injectFromContainer(MongoMessageRepository);
-  private aiAgentService = injectFromContainer(MastraAIAgentService);
+  private readonly conversationRepository = injectFromContainer(MongoConversationRepository);
+  private readonly messageRepository = injectFromContainer(MongoMessageRepository);
+  private readonly aiAgentService = injectFromContainer(MastraAIAgentService);
+  private readonly logger = injectFromContainer(AgentLoggerService);
 
   /**
    * Generate a conversation title from the first message (first 3 words)
@@ -39,7 +44,7 @@ export class StreamChatUseCase {
     return 'Tax Conversation';
   }
 
-  async *execute(request: StreamChatRequestDTO): AsyncIterable<StreamEventDTO> {
+  async* execute(request: StreamChatRequestDTO): AsyncIterable<StreamEventDTO> {
     // 1. Get or create conversation (atomic operation to prevent race conditions)
     const conversationId = request.conversationId
       ? ConversationId.create(request.conversationId)
@@ -182,11 +187,11 @@ export class StreamChatUseCase {
         );
         await this.messageRepository.create(assistantMessage);
       }
-    } catch (error: any) {
-      console.error('[StreamChatUseCase] Error:', error);
+    } catch (error) {
+      this.logger.error({ error }, '[StreamChatUseCase] Error');
       yield {
         type: STREAM_EVENT_TYPES.ERROR,
-        error: error.message || 'An error occurred during chat',
+        error: getErrorMessage(error) || 'An error occurred during chat',
         conversationId: conversationId.value,
         timestamp: new Date().toISOString(),
       };

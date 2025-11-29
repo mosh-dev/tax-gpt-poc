@@ -12,6 +12,7 @@ import { OCRResultThree } from '@/types/ocr-result.types';
 import { DocumentProcessor, FileType, OCRConfig, SupportedLanguage } from '@infrastructure/ocr/ocr.types';
 import { injectFromContainer } from '@/app/di-container/container-helper';
 import { LoggerService } from '@infrastructure/logger/logger.service';
+import { getErrorMessage } from '@utils/error-handler';
 
 export class OCRService {
   private processors = new Map<FileType, DocumentProcessor>();
@@ -147,7 +148,7 @@ export class OCRService {
             preprocessed: false,
             timestamp: new Date().toISOString()
           },
-          error: error instanceof Error ? error.message : 'Unknown error'
+          error: getErrorMessage(error) || 'Unknown error'
         });
       }
     }

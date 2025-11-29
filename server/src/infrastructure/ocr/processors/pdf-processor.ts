@@ -62,7 +62,8 @@ export class PDFProcessor extends BaseDocumentProcessor {
    * Clean up temporary files and directory
    */
   private async cleanupTempFiles(tempDir: string): Promise<void> {
-    await fs.rm(tempDir, { recursive: true, force: true }).catch(() => {});
+    await fs.rm(tempDir, { recursive: true, force: true }).catch(() => {
+    });
   }
 
   /**
@@ -113,7 +114,7 @@ export class PDFProcessor extends BaseDocumentProcessor {
       return this.updateProcessingTime(result, startTime);
 
     } catch (error) {
-      this.logger.error({ error },'[PDFProcessor] Error');
+      this.logger.error({ error }, '[PDFProcessor] Error');
       result.status = 'failed';
       result.error = getErrorMessage(error);
       return this.updateProcessingTime(result, startTime);
@@ -127,12 +128,12 @@ export class PDFProcessor extends BaseDocumentProcessor {
   private async extractTextFromDigitalPDF(filePath: string): Promise<string> {
     try {
       const dataBuffer = await fs.readFile(filePath);
-      const pdfParse =  new PDFParse({ data: dataBuffer });
+      const pdfParse = new PDFParse({ data: dataBuffer });
       const data = await pdfParse.getText();
       return data.text.trim();
     } catch (error) {
-      console.error('[PDFProcessor] Digital extraction failed:', error);
-      return ''; // Return empty string to trigger OCR fallback
+      this.logger.error({ error }, '[PDFProcessor] Digital extraction failed');
+      return '';
     }
   }
 
@@ -162,7 +163,7 @@ export class PDFProcessor extends BaseDocumentProcessor {
       return allText.join('\n\n--- Page Break ---\n\n');
 
     } catch (error) {
-      throw new Error(`Scanned PDF processing failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      throw new Error(`Scanned PDF processing failed: ${getErrorMessage(error) || 'Unknown error'}`);
     } finally {
       await this.cleanupTempFiles(tempDir);
     }

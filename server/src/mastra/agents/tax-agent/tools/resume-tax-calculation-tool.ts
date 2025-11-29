@@ -10,6 +10,7 @@ import { TOOL_IDS } from '@shared/constants/tool-ids';
 import { injectFromContainer } from '@/app/di-container/container-helper';
 import { TaxCalculationWorkflowService } from '@/mastra/workflows/tax-calculation/tax-calculation-workflow.service';
 import { AgentLoggerService } from '@infrastructure/ai/agent-logger.service';
+import { getErrorMessage } from '@utils/error-handler';
 
 export const resumeTaxCalculationTool = createTool({
   id: TOOL_IDS.RESUME_TAX_CALCULATION,
@@ -80,7 +81,7 @@ Always check what step the workflow is currently on before resuming.`,
     } catch (error) {
       logger.error({ error }, '[ResumeWorkflowTool]');
 
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage = getErrorMessage(error) || 'Unknown error';
 
       // Check if it's a step mismatch error
       if (errorMessage.includes('was not suspended') || errorMessage.includes('Available suspended steps')) {
