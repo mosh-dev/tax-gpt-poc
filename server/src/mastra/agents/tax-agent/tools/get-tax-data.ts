@@ -2,6 +2,8 @@ import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 import { Employee } from '@domains/tax-extraction/employee.model';
 import { TOOL_IDS } from '@shared/constants/tool-ids';
+import { injectFromContainer } from '@/app/di-container/container-helper';
+import { AgentLoggerService } from '@infrastructure/ai/agent-logger.service';
 
 /**
  * Tool to retrieve Swiss tax data by searching employee name
@@ -27,7 +29,8 @@ export const getTaxDataTool = createTool({
     error: z.string().optional(),
   }),
   execute: async ({ searchName, employeeId }) => {
-    console.log({ searchName, employeeId });
+    const logger = injectFromContainer(AgentLoggerService);
+    logger.log({ searchName, employeeId }, `[GetTaxDataTool] Searching for tax data for employee`);
     try {
       // If employeeId is provided, fetch that specific employee
       if (employeeId) {

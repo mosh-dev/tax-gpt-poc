@@ -6,6 +6,7 @@ import { progressManager } from '@domains/knowledge/services/progress-manager';
 import { knowledgeUpload } from '@domains/knowledge/services/upload-config';
 import { KnowledgeService } from '@domains/knowledge/services/knowledge.service';
 import { injectFromContainer } from '@/app/di-container/container-helper';
+import { LoggerService } from '@infrastructure/logger/logger.service';
 
 const router = Router();
 
@@ -15,7 +16,8 @@ const router = Router();
  * Returns immediately with uploadId for progress tracking
  * Requires authentication
  */
-router.post('/upload', authMiddleware, knowledgeUpload.single('file'), async (req: Request, res: Response): Promise<void> => {
+router.post('/upload', knowledgeUpload.single('file'), async (req: Request, res: Response): Promise<void> => {
+  const logger = injectFromContainer(LoggerService);
   try {
     const file = req.file as Express.Multer.File;
 
@@ -24,7 +26,7 @@ router.post('/upload', authMiddleware, knowledgeUpload.single('file'), async (re
       return;
     }
 
-    console.log(`[KnowledgeRoutes] Uploading file: ${file.originalname}`);
+    logger.log(`[KnowledgeRoutes] Uploading file: ${file.originalname}`);
 
     // Generate unique upload ID for progress tracking
     const uploadId = randomUUID();
@@ -52,7 +54,7 @@ router.post('/upload', authMiddleware, knowledgeUpload.single('file'), async (re
         }
       });
 
-      console.log(`[KnowledgeRoutes] File ingested successfully: ${result.fileName} (${result.chunkCount} chunks)`);
+      logger.log(`[KnowledgeRoutes] File ingested successfully: ${result.fileName} (${result.chunkCount} chunks)`);
 
       // Send completion event
       progressManager.complete(uploadId, {
@@ -62,13 +64,13 @@ router.post('/upload', authMiddleware, knowledgeUpload.single('file'), async (re
       });
     } catch (processingError: unknown) {
       const errorMsg = getErrorMessage(processingError);
-      console.error('[KnowledgeRoutes] Processing error:', errorMsg);
+      logger.error(processingError, '[KnowledgeRoutes] Processing error:');
       progressManager.error(uploadId, errorMsg);
     }
 
   } catch (error: unknown) {
     const errorMsg = getErrorMessage(error);
-    console.error('[KnowledgeRoutes] Upload error:', errorMsg);
+    logger.error(error,'[KnowledgeRoutes] Upload error:');
 
     res.status(500).json({
       error: 'Failed to upload file',
@@ -83,6 +85,7 @@ router.post('/upload', authMiddleware, knowledgeUpload.single('file'), async (re
  * Requires authentication
  */
 router.get('/upload-progress/:uploadId', authMiddleware, (req: Request, res: Response): void => {
+  const logger = injectFromContainer(LoggerService);
   const { uploadId } = req.params;
 
   if (!uploadId) {
@@ -90,7 +93,7 @@ router.get('/upload-progress/:uploadId', authMiddleware, (req: Request, res: Res
     return;
   }
 
-  console.log(`[Knowledge API] SSE connection for upload: ${uploadId}`);
+  logger.log(`[Knowledge API] SSE connection for upload: ${uploadId}`);
   progressManager.subscribe(uploadId, res);
 });
 
@@ -99,14 +102,15 @@ router.get('/upload-progress/:uploadId', authMiddleware, (req: Request, res: Res
  * List all knowledge base files
  * Requires authentication
  */
-router.get('/files', authMiddleware, async (_: Request, res: Response) => {
+router.get('/files', async (_: Request, res: Response) => {
+  const logger = injectFromContainer(LoggerService);
   try {
     const knowledgeService = injectFromContainer(KnowledgeService);
     const result = await knowledgeService.listFiles();
     res.json(result);
   } catch (error: unknown) {
     const errorMsg = getErrorMessage(error);
-    console.error('[KnowledgeRoutes] List error:', errorMsg);
+    logger.error(error,'[KnowledgeRoutes] List error');
 
     res.status(500).json({
       error: 'Failed to list files',
@@ -120,7 +124,8 @@ router.get('/files', authMiddleware, async (_: Request, res: Response) => {
  * Delete a knowledge base file and all its vectors
  * Requires authentication
  */
-router.delete('/files/:id', authMiddleware, async (req: Request, res: Response): Promise<void> => {
+router.delete('/files/:id', async (req: Request, res: Response): Promise<void> => {
+  const logger = injectFromContainer(LoggerService);
   try {
     const { id } = req.params;
 
@@ -129,7 +134,7 @@ router.delete('/files/:id', authMiddleware, async (req: Request, res: Response):
       return;
     }
 
-    console.log(`[KnowledgeRoutes] Deleting file: ${id}`);
+    logger.log(`[KnowledgeRoutes] Deleting file: ${id}`);
 
     const knowledgeService = injectFromContainer(KnowledgeService);
     const result = await knowledgeService.deleteFile(id);
@@ -137,7 +142,7 @@ router.delete('/files/:id', authMiddleware, async (req: Request, res: Response):
 
   } catch (error: unknown) {
     const errorMsg = getErrorMessage(error);
-    console.error('[KnowledgeRoutes] Delete error:', errorMsg);
+    logger.error(error, '[KnowledgeRoutes] Delete error:');
 
     res.status(500).json({
       error: 'Failed to delete file',

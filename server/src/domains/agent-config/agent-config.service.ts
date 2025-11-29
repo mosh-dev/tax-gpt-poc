@@ -5,6 +5,8 @@
 
 import { AgentConfig, IAgentConfig } from '@domains/agent-config/models/agent-config.model';
 import { invalidateTaxAgent } from '@/mastra/agents/tax-agent/tax-agent.handler';
+import { injectFromContainer } from '@/app/di-container/container-helper';
+import { LoggerService } from '@infrastructure/logger/logger.service';
 
 export interface UpdateConfigParams {
   instructions: string;
@@ -17,7 +19,7 @@ export interface AgentConfigResponse {
 }
 
 export class AgentConfigService {
-  // Note: This service uses Mongoose models directly and doesn't use DI yet
+  private readonly logger = injectFromContainer(LoggerService)
   /**
    * Get the current agent configuration
    */
@@ -57,11 +59,11 @@ export class AgentConfigService {
       { new: true, upsert: true, runValidators: true }
     ).lean<IAgentConfig>();
 
-    console.log('[AgentConfigService] Configuration updated');
+    this.logger.log('[AgentConfigService] Configuration updated');
 
     // Invalidate the agent instance so it gets recreated with new instructions
     await invalidateTaxAgent();
-    console.log('[AgentConfigService] Agent instance invalidated');
+    this.logger.log('[AgentConfigService] Agent instance invalidated');
 
     return {
       id: config._id.toString(),

@@ -10,29 +10,27 @@ import stringify from 'safe-stable-stringify';
 import { injectFromContainer } from '@/app/di-container/container-helper';
 import { MongoRepository } from '@infrastructure/database/base-repository';
 import { OCRService } from '@infrastructure/ocr/ocr.service';
+import { AgentLoggerService } from '@infrastructure/ai/agent-logger.service';
 
 /**
  * Safely serialize any value to ensure it's JSON-safe
  * Uses safe-stable-stringify to handle all edge cases
  */
-function safeSerialize(value: any): any {
-  if (typeof value === 'string') {
-    // Parse and re-stringify to clean up any problematic characters
-    try {
-      const serialized = stringify(value);
-      // Remove the surrounding quotes added by stringify
-      return serialized ? JSON.parse(serialized) : '';
-    } catch {
-      // Fallback: basic cleanup
-      return value
-        // eslint-disable-next-line no-control-regex
-        .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
-        .replace(/\r\n/g, '\n')
-        .replace(/\r/g, '\n')
-        .trim();
-    }
+function safeSerialize(value: string): string {
+  // Parse and re-stringify to clean up any problematic characters
+  try {
+    const serialized = stringify(value);
+    // Remove the surrounding quotes added by stringify
+    return serialized ? JSON.parse(serialized) : '';
+  } catch {
+    // Fallback: basic cleanup
+    return value
+      // eslint-disable-next-line no-control-regex
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
+      .replace(/\r\n/g, '\n')
+      .replace(/\r/g, '\n')
+      .trim();
   }
-  return value;
 }
 
 /**
@@ -53,8 +51,9 @@ export const processDocumentsTool = createTool({
     quality: z.enum(['fast', 'balanced', 'accurate']).optional().default('balanced').describe('OCR quality preset'),
   }),
   execute: async ({ fileIds, quality }) => {
+    const logger = injectFromContainer(AgentLoggerService);
     try {
-      console.log(`[ProcessDocumentsTool] Processing ${fileIds.length} file(s) with OCR...`);
+      logger.log(`[ProcessDocumentsTool] Processing ${fileIds.length} file(s) with OCR...`);
       const mongoRepository = injectFromContainer(MongoRepository);
 
       const results = [];
@@ -73,7 +72,7 @@ export const processDocumentsTool = createTool({
           continue;
         }
 
-        console.log(`[ProcessDocumentsTool] Processing: ${metadata.originalName}`);
+        logger.log(`[ProcessDocumentsTool] Processing: ${metadata.originalName}`);
 
         try {
           const ocrService = injectFromContainer(OCRService);
@@ -105,7 +104,7 @@ export const processDocumentsTool = createTool({
               fileType: ocrResult.metadata.fileType
             });
 
-            console.log(`[ProcessDocumentsTool] Success: ${metadata.originalName}: ${ocrResult.wordCount} words`);
+            logger.log(`[ProcessDocumentsTool] Success: ${metadata.originalName}: ${ocrResult.wordCount} words`);
           } else {
             // Mark as processed even if failed
             await mongoRepository.markFileAsProcessed(fileId);
@@ -117,7 +116,7 @@ export const processDocumentsTool = createTool({
               error: ocrResult.error || 'OCR processing failed'
             });
 
-            console.error(`[ProcessDocumentsTool] Failed: ${metadata.originalName}: ${ocrResult.error}`);
+            logger.error(`[ProcessDocumentsTool] Failed: ${metadata.originalName}: ${ocrResult.error}`);
           }
 
         } catch (error) {
@@ -128,7 +127,7 @@ export const processDocumentsTool = createTool({
             error: error instanceof Error ? error.message : 'Unknown error'
           });
 
-          console.error(`[ProcessDocumentsTool] Error: ${metadata.originalName}:`, error);
+          logger.error(error, `[ProcessDocumentsTool] Error: ${metadata.originalName}:`);
         }
       }
 
@@ -147,7 +146,7 @@ export const processDocumentsTool = createTool({
         results
       };
 
-      console.log(`[ProcessDocumentsTool] Summary: ${successful}/${fileIds.length} successful, ${totalWords} total words`);
+      logger.log(`[ProcessDocumentsTool] Summary: ${successful}/${fileIds.length} successful, ${totalWords} total words`);
 
       // Wrap entire result in createSafeResult to ensure JSON-safe output
       return createSafeResult({
@@ -157,7 +156,7 @@ export const processDocumentsTool = createTool({
       });
 
     } catch (error) {
-      console.error('[ProcessDocumentsTool] Error:', error);
+      logger.error(error, '[ProcessDocumentsTool] Error:');
       return createSafeResult({
         success: false,
         message: 'Failed to process documents',

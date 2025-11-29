@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { injectFromContainer } from '@/app/di-container/container-helper';
-import { LoggerService } from '@infrastructure/logger/logger.service';
 import { RAGService } from '@domains/knowledge/services/rag.service';
+import { AgentLoggerService } from '@infrastructure/ai/agent-logger.service';
 
 export interface SearchOptions {
   topK?: number;
@@ -50,7 +50,7 @@ export async function executeKnowledgeSearch(
   toolName: string = 'SearchTool'
 ): Promise<SearchResult> {
   try {
-    const logger = injectFromContainer(LoggerService);
+    const logger = injectFromContainer(AgentLoggerService);
     const ragService = injectFromContainer(RAGService);
 
     logger.log(`[${toolName}] Searching for: "${query}"`);

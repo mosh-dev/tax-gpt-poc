@@ -1,8 +1,6 @@
 import { getMastra } from '@/mastra/mastra-instance';
 import { createExpressApp, startExpressServer } from '@/app/app';
-import { injectFromContainer } from '@/app/di-container/container-helper';
-import { LoggerService } from '@infrastructure/logger/logger.service';
-
+import { pinoServerLogger } from '@utils/pino-logger';
 
 // !!!!!!!! IMPORTANT !!!!!!!!
 // This file is used to start the Mastra playground.
@@ -13,8 +11,7 @@ try {
   const app = await createExpressApp();
   await startExpressServer(app);
 } catch (error: any) {
-  const logger = injectFromContainer(LoggerService);
-  logger.logException(error,'[Mastra] Failed to start Express server:');
+  pinoServerLogger.error(error, '[Mastra] Failed to start Express server:');
   throw error;
 }
 

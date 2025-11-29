@@ -9,7 +9,7 @@ import { getErrorMessage } from '@utils/error-handler';
 import { WORKFLOW_IDS } from '@shared/constants/workflow';
 import { getMastra } from '@/mastra/mastra-instance';
 import { injectFromContainer } from '@/app/di-container/container-helper';
-import { LoggerService } from '@infrastructure/logger/logger.service';
+import { AgentLoggerService } from '@infrastructure/ai/agent-logger.service';
 
 export interface WorkflowStatus {
   runId: string;
@@ -25,7 +25,7 @@ export interface WorkflowStatus {
 }
 
 export class TaxCalculationWorkflowService {
-  private readonly logger = injectFromContainer(LoggerService);
+  private readonly logger = injectFromContainer(AgentLoggerService);
 
   /**
    * Start a new tax calculation workflow

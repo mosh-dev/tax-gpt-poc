@@ -4,6 +4,8 @@ import { getGenerateMode, getModelByPurpose, getModelConfigs, MODEL_PURPOSES } f
 import { truncateToTokenLimit } from './token-manager';
 import { generateCacheKey, getCache } from '@infrastructure/cache/cache.manager';
 import { ExtractionInput, ExtractionMetadata, ExtractionOptions } from '@domains/extraction/extraction.types';
+import { injectFromContainer } from '@/app/di-container/container-helper';
+import { LoggerService } from '@infrastructure/logger/logger.service';
 
 const DEFAULT_MAX_TOKENS = 12000;
 
@@ -22,8 +24,9 @@ export async function extractStructuredData<T extends z.ZodTypeAny>(
     throw new Error('Extraction input text cannot be empty');
   }
 
-  const modelPurpose = MODEL_PURPOSES.EXTRACTION;
+  const logger = injectFromContainer(LoggerService);
 
+  const modelPurpose = MODEL_PURPOSES.EXTRACTION;
   const model = getModelByPurpose(modelPurpose);
   const generateMode = getGenerateMode(modelPurpose);
   const modelConfig = getModelConfigs().get(modelPurpose);
@@ -40,7 +43,7 @@ export async function extractStructuredData<T extends z.ZodTypeAny>(
   if (useCache) {
     const cached = cache.get<z.infer<T>>(cacheKey);
     if (cached) {
-      console.log('[StructuredExtraction] Cache hit');
+      logger.log('[StructuredExtraction] Cache hit');
       return cached;
     }
   }
@@ -54,7 +57,7 @@ export async function extractStructuredData<T extends z.ZodTypeAny>(
   });
 
   if (truncationResult.wasTruncated) {
-    console.log(
+    logger.log(
       `[StructuredExtraction] Text truncated: ${truncationResult.originalTokens} → ${truncationResult.finalTokens} tokens`
     );
   }
@@ -67,14 +70,14 @@ export async function extractStructuredData<T extends z.ZodTypeAny>(
     ? `${systemPrompt}\n\nInput:\n${finalText}`
     : finalText;
 
-  console.log(`[StructuredExtraction] Extracting with model: ${modelName} (mode: ${generateMode})`);
+  logger.log(`[StructuredExtraction] Extracting with model: ${modelName} (mode: ${generateMode})`);
 
   try {
     const result = await generateObject({
       model,
       schema,
       prompt,
-      mode: generateMode,
+      generateMode,
     });
 
     if (!result.object) {
@@ -86,13 +89,13 @@ export async function extractStructuredData<T extends z.ZodTypeAny>(
     }
 
     return result.object;
-  } catch (error: any) {
-    console.error('[StructuredExtraction] Error during extraction:', {
-      error: error.message || error,
+  } catch (error) {
+    logger.error({
+      error: error,
       modelName,
       generateMode,
       textLength: finalText.length,
-    });
+    }, '[StructuredExtraction] Error during extraction:');
     throw error;
   }
 }

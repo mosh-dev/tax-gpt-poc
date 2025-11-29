@@ -8,9 +8,11 @@ import type {
 } from '@domains/knowledge/knowledge.types';
 import { injectFromContainer } from '@/app/di-container/container-helper';
 import { RAGService } from '@domains/knowledge/services/rag.service';
+import { LoggerService } from '@infrastructure/logger/logger.service';
 
 export class KnowledgeService {
   private readonly ragService = injectFromContainer(RAGService);
+  private readonly logger = injectFromContainer(LoggerService);
   /**
    * Upload and process a knowledge base file
    */
@@ -21,7 +23,7 @@ export class KnowledgeService {
       throw new Error('No file provided');
     }
 
-    console.log(`[KnowledgeService] Uploading file: ${file.originalname}`);
+    this.logger.log(`[KnowledgeService] Uploading file: ${file.originalname}`);
 
     // Save file using File Service from container
     const fileService = injectFromContainer(FileService);
@@ -40,7 +42,7 @@ export class KnowledgeService {
       onProgress
     );
 
-    console.log(`[KnowledgeService] File processed successfully: ${savedFile.originalName}`);
+    this.logger.log(`[KnowledgeService] File processed successfully: ${savedFile.originalName}`);
 
     return {
       fileId: savedFile.fileId,
@@ -88,7 +90,7 @@ export class KnowledgeService {
       throw new Error('File ID is required');
     }
 
-    console.log(`[KnowledgeService] Deleting file: ${fileId}`);
+    this.logger.log(`[KnowledgeService] Deleting file: ${fileId}`);
 
     // Delete vectors from RAG service
     await this.ragService.deleteFile(fileId);
@@ -97,7 +99,7 @@ export class KnowledgeService {
     const fileService = injectFromContainer(FileService);
     await fileService.deleteFile(fileId);
 
-    console.log(`[KnowledgeService] File deleted successfully: ${fileId}`);
+    this.logger.log(`[KnowledgeService] File deleted successfully: ${fileId}`);
 
     return {
       success: true,

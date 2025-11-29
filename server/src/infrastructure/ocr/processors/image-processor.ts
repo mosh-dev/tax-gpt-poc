@@ -12,13 +12,16 @@ import { DEFAULT_OCR_CONFIG, DEFAULT_PREPROCESSING_OPTIONS } from '../ocr-config
 import { getStoragePath } from '@config/storage';
 import { OCRResultThree } from '@/types/ocr-result.types';
 import { FileType, OCRConfig, PreprocessingOptions } from '@infrastructure/ocr/ocr.types';
-import { injectFromContainer } from '@/app/di-container/container-helper';
 import { LoggerService } from '@infrastructure/logger/logger.service';
 
 export class ImageProcessor extends BaseDocumentProcessor {
-  private readonly logger = injectFromContainer(LoggerService);
-
+  private readonly logger: LoggerService;
   protected supportedTypes: FileType[] = ['image'];
+
+  constructor(logger: LoggerService) {
+    super();
+    this.logger = logger;
+  }
 
   /**
    * Preprocess image to improve OCR accuracy
@@ -148,7 +151,8 @@ export class ImageProcessor extends BaseDocumentProcessor {
 
       // Clean up processed image if it exists
       if (shouldCleanupProcessed) {
-        await fs.unlink(processedImagePath).catch(() => {});
+        await fs.unlink(processedImagePath).catch(() => {
+        });
       }
 
       return this.updateProcessingTime(result, startTime);

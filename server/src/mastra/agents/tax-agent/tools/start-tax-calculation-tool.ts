@@ -2,8 +2,8 @@ import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 import { TaxCalculationWorkflowService } from '@/mastra/workflows/tax-calculation/tax-calculation-workflow.service';
 import { TOOL_IDS } from '@shared/constants/tool-ids';
-import { LoggerService } from '@infrastructure/logger/logger.service';
 import { injectFromContainer } from '@/app/di-container/container-helper';
+import { AgentLoggerService } from '@infrastructure/ai/agent-logger.service';
 
 export const startTaxCalculationTool = createTool({
   id: TOOL_IDS.START_TAX_CALCULATION,
@@ -25,7 +25,7 @@ After starting, you'll receive the first step's requirements. Guide the user thr
     message: z.string().optional().describe('Optional initial message from the user'),
   }),
   execute: async ({ threadId, message }) => {
-    const logger = injectFromContainer(LoggerService);
+    const logger = injectFromContainer(AgentLoggerService);
     const workflowService = injectFromContainer(TaxCalculationWorkflowService);
     try {
       logger.log(`[StartWorkflowTool] Starting tax calculation workflow for thread: ${threadId}`);

@@ -2,20 +2,13 @@ import express, { Express, NextFunction, Request, Response } from 'express';
 import cors from 'cors';
 import { getStoragePath } from '@config/storage';
 import { Environment } from '@config/environment';
-import { initializeApp } from '@/app/initialize';
+import { initializeInfrastructure } from '@/app/initialize';
 import { agentConfigRoutes } from '@api/routes/agent-config.routes';
 import { authRoutes } from '@api/routes/auth.routes';
 import { employeeRoutes } from '@api/routes/employee.routes';
 import { conversationRoutes } from '@api/routes/conversation.routes';
 import { chatRoutes } from '@api/routes/chat.routes';
 import { authMiddleware } from '@api/middleware/auth.middleware';
-import { Mastra } from '@mastra/core';
-import { workflowStorage } from '@/mastra/storage/workflow-storage';
-import { taxCalculationWorkflow } from '@/mastra/workflows/tax-calculation/tax-calculation-workflow';
-import { PinoLogger } from '@mastra/loggers';
-import { Observability } from '@mastra/observability';
-import { setMastra } from '@/mastra/mastra-instance';
-import { getOrCreateTaxAgent } from '@/mastra/agents/tax-agent/tax-agent.handler';
 import { MAX_BODY_SIZE } from '@/shared/constants/file-upload';
 import { knowledgeRoutes } from '@api/routes/knowledge.routes';
 import { fileRoutes } from '@api/routes/file.routes';
@@ -27,28 +20,9 @@ import { LoggerService } from '@infrastructure/logger/logger.service';
  * Sets up middleware, routes, and error handlers
  */
 export async function createExpressApp(): Promise<Express> {
-  await initializeApp();
+  await initializeInfrastructure();
 
   const logger = injectFromContainer(LoggerService);
-
-  const taxAgentWrapper = await getOrCreateTaxAgent();
-  const mastra = new Mastra({
-    agents: { taxAgent: taxAgentWrapper.agent },
-    storage: workflowStorage,
-    workflows: {
-      taxCalculation: taxCalculationWorkflow,
-    },
-    logger: new PinoLogger({
-      name: 'Mastra',
-      level: 'info',
-    }),
-    observability: new Observability({
-      default: { enabled: true },
-    }),
-  });
-  setMastra(mastra);
-
-
   const app: Express = express();
 
   // Middleware
@@ -66,7 +40,7 @@ export async function createExpressApp(): Promise<Express> {
   app.get('/api/health', (_: Request, res: Response) => {
     res.json({
       status: 'ok',
-      message: 'Tax-GPT server is running (Clean Architecture)',
+      message: 'Tax-GPT server is running.',
       timestamp: new Date().toISOString()
     });
   });
@@ -83,7 +57,7 @@ export async function createExpressApp(): Promise<Express> {
   app.use('/api/files', authMiddleware, fileRoutes);
   app.use('/api/agent-config', authMiddleware, agentConfigRoutes);
   app.use('/api/employees', authMiddleware, employeeRoutes);
-  app.use('/api/knowledge', knowledgeRoutes);
+  app.use('/api/knowledge', authMiddleware, knowledgeRoutes);
 
   logger.log('[Express Setup] Routes configured');
 

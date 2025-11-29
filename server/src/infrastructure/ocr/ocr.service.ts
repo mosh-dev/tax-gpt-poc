@@ -18,8 +18,8 @@ export class OCRService {
   private logger = injectFromContainer(LoggerService);
 
   constructor() {
-    this.registerProcessor('image', new ImageProcessor());
-    this.registerProcessor('pdf', new PDFProcessor());
+    this.registerProcessor('image', new ImageProcessor(this.logger));
+    this.registerProcessor('pdf', new PDFProcessor(this.logger));
   }
 
   /**
@@ -103,14 +103,14 @@ export class OCRService {
       config = getOCRConfig(options?.quality);
     }
 
-    console.log(`[OCRService] Processing ${fileType} file: ${path.basename(filePath)}`);
-    console.log(`[OCRService] Config:`, config);
+    this.logger.log(`[OCRService] Processing ${fileType} file: ${path.basename(filePath)}`);
+    this.logger.log(config,`[OCRService] Config`);
 
     // Process document
     const result = await processor.process(filePath, config);
 
-    console.log(`[OCRService] Completed in ${Date.now() - startTime}ms`);
-    console.log(`[OCRService] Extracted ${result.wordCount} words`);
+    this.logger.log(`[OCRService] Completed in ${Date.now() - startTime}ms`);
+    this.logger.log(`[OCRService] Extracted ${result.wordCount} words`);
 
     return result;
   }

@@ -8,8 +8,8 @@ import { createTool } from '@mastra/core/tools';
 import { z } from 'zod';
 import { TOOL_IDS } from '@shared/constants/tool-ids';
 import { injectFromContainer } from '@/app/di-container/container-helper';
-import { LoggerService } from '@infrastructure/logger/logger.service';
 import { TaxCalculationWorkflowService } from '@/mastra/workflows/tax-calculation/tax-calculation-workflow.service';
+import { AgentLoggerService } from '@infrastructure/ai/agent-logger.service';
 
 export const resumeTaxCalculationTool = createTool({
   id: TOOL_IDS.RESUME_TAX_CALCULATION,
@@ -32,7 +32,7 @@ Always check what step the workflow is currently on before resuming.`,
     data: z.any().describe('The data for this step. Structure depends on the step type.'),
   }),
   execute: async ({ runId, stepId, data }) => {
-    const logger = injectFromContainer(LoggerService);
+    const logger = injectFromContainer(AgentLoggerService);
     const workflowService = injectFromContainer(TaxCalculationWorkflowService);
 
     try {

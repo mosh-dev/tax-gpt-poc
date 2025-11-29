@@ -5,6 +5,7 @@
  */
 
 import dotenv from 'dotenv';
+import { pinoServerLogger } from '@utils/pino-logger';
 
 // Load environment variables
 dotenv.config({ override: true });
@@ -77,5 +78,5 @@ export const Environment = {
 } as const;
 
 // Validate configuration at startup
-console.log(`[Config] Environment: ${Environment.NODE_ENV}`);
-console.log(`[Config] Base URL: ${Environment.BASE_URL}`);
+pinoServerLogger.info(`[Config] Environment: ${Environment.NODE_ENV}`);
+pinoServerLogger.info(`[Config] Base URL: ${Environment.BASE_URL}`);

@@ -7,9 +7,11 @@ import { getErrorMessage } from '@utils/error-handler';
 import { StreamChatUseCase } from '@domains/conversation/use-cases/stream-chat.use-case';
 import { StreamChatRequestDTO } from '@domains/conversation/dtos/chat-dto';
 import { injectFromContainer } from '@/app/di-container/container-helper';
+import { AgentLoggerService } from '@infrastructure/ai/agent-logger.service';
 
 export class ChatController {
   private streamChatUseCase = injectFromContainer(StreamChatUseCase);
+  private readonly logger = injectFromContainer(AgentLoggerService);
 
   /**
    * POST /api/chat/stream-with-tools
@@ -54,7 +56,7 @@ export class ChatController {
         for await (const event of this.streamChatUseCase.execute(requestDTO)) {
           // Check if client disconnected
           if (!res.writable) {
-            console.log('[ChatController] Client disconnected - stopping stream');
+            this.logger.log('[ChatController] Client disconnected - stopping stream');
             break;
           }
 
@@ -65,7 +67,7 @@ export class ChatController {
         res.end();
       } catch (streamError: unknown) {
         const streamErrorMsg = getErrorMessage(streamError);
-        console.error('[ChatController] Streaming error:', streamErrorMsg);
+        this.logger.error('[ChatController] Streaming error:', streamErrorMsg);
         res.write(`data: ${JSON.stringify({
           type: 'error',
           error: streamErrorMsg,
@@ -75,7 +77,7 @@ export class ChatController {
       }
     } catch (error: unknown) {
       const errorMsg = getErrorMessage(error);
-      console.error('[ChatController] Chat stream error:', errorMsg);
+      this.logger.error('[ChatController] Chat stream error:', errorMsg);
 
       if (!res.headersSent) {
         res.status(500).json({

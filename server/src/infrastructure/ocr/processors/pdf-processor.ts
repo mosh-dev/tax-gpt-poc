@@ -16,14 +16,17 @@ import { OCRResultThree } from '@/types/ocr-result.types';
 import { FileType, OCRConfig } from '@infrastructure/ocr/ocr.types';
 import { pdfToPng } from 'pdf-to-png-converter';
 import { STORAGE_PATHS } from '@config/storage';
+import { LoggerService } from '@infrastructure/logger/logger.service';
 
 export class PDFProcessor extends BaseDocumentProcessor {
   protected supportedTypes: FileType[] = ['pdf'];
   private imageProcessor: ImageProcessor;
+  private readonly logger: LoggerService;
 
-  constructor() {
+  constructor(logger: LoggerService) {
     super();
-    this.imageProcessor = new ImageProcessor();
+    this.logger = logger;
+    this.imageProcessor = new ImageProcessor(this.logger);
   }
 
   /**
@@ -44,7 +47,7 @@ export class PDFProcessor extends BaseDocumentProcessor {
    * More reliable than PDF.js canvas rendering for complex PDFs with inline images
    */
   private async convertPDFToImages(filePath: string, tempDir: string, maxPages: number = 10): Promise<string[]> {
-    console.log(`[PDFProcessor] Converting PDF to images...`);
+    this.logger.log(`[PDFProcessor] Converting PDF to images...`);
     const pngPages = await pdfToPng(filePath, {
       outputFolder: path.relative(process.cwd(), tempDir), // Must Use relative path for pdf-to-png-converter
       viewportScale: 2.0,
@@ -77,13 +80,13 @@ export class PDFProcessor extends BaseDocumentProcessor {
     result.language = config.language || DEFAULT_OCR_CONFIG.language;
 
     try {
-      console.log(`[PDFProcessor] Processing PDF: ${filename}`);
+      this.logger.log(`[PDFProcessor] Processing PDF: ${filename}`);
 
       // Step 1: Try digital text extraction (fast)
       const digitalText = await this.extractTextFromDigitalPDF(filePath);
       const digitalWordCount = this.calculateWordCount(digitalText);
 
-      console.log(`[PDFProcessor] Digital extraction: ${digitalWordCount} words`);
+      this.logger.log(`[PDFProcessor] Digital extraction: ${digitalWordCount} words`);
 
       // If we got significant text (>50 words), use digital extraction
       if (digitalWordCount > 50) {
@@ -92,10 +95,10 @@ export class PDFProcessor extends BaseDocumentProcessor {
         result.status = 'completed';
         (result.metadata).preprocessed = false;
 
-        console.log(`[PDFProcessor] Using digital extraction (${digitalWordCount} words)`);
+        this.logger.log(`[PDFProcessor] Using digital extraction (${digitalWordCount} words)`);
       } else {
         // Step 2: Fall back to OCR for scanned PDFs
-        console.log(`[PDFProcessor] Insufficient text from digital extraction, trying OCR...`);
+        this.logger.log(`[PDFProcessor] Insufficient text from digital extraction, trying OCR...`);
 
         const ocrText = await this.extractTextFromScannedPDF(filePath, config);
         result.text = ocrText;
@@ -103,13 +106,13 @@ export class PDFProcessor extends BaseDocumentProcessor {
         result.status = 'completed';
         result.metadata.preprocessed = true;
 
-        console.log(`[PDFProcessor] OCR extraction: ${result.wordCount} words`);
+        this.logger.log(`[PDFProcessor] OCR extraction: ${result.wordCount} words`);
       }
 
       return this.updateProcessingTime(result, startTime);
 
     } catch (error) {
-      console.error('[PDFProcessor] Error:', error);
+      this.logger.error(error,'[PDFProcessor] Error');
       result.status = 'failed';
       result.error = error instanceof Error ? error.message : 'Unknown error during PDF processing';
       return this.updateProcessingTime(result, startTime);
@@ -144,13 +147,13 @@ export class PDFProcessor extends BaseDocumentProcessor {
       // Convert PDF to PNG images
       const imagePaths = await this.convertPDFToImages(filePath, tempDir, 10);
 
-      console.log(`[PDFProcessor] OCR processing ${imagePaths.length} page(s)...`);
+      this.logger.log(`[PDFProcessor] OCR processing ${imagePaths.length} page(s)...`);
 
       const allText: string[] = [];
 
       // OCR each page
       for (let i = 0; i < imagePaths.length; i++) {
-        console.log(`[PDFProcessor] OCR processing page ${i + 1}...`);
+        this.logger.log(`[PDFProcessor] OCR processing page ${i + 1}...`);
         const ocrResult = await this.imageProcessor.process(imagePaths[i], config);
         allText.push(ocrResult.text);
       }

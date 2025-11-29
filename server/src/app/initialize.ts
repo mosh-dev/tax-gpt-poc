@@ -7,6 +7,12 @@ import { STORAGE_PATHS, STORAGE_ROOT } from '@config/storage';
 import fs from 'fs';
 import { injectFromContainer } from '@/app/di-container/container-helper';
 import { LoggerService } from '@infrastructure/logger/logger.service';
+import { Observability } from '@mastra/observability';
+import { taxCalculationWorkflow } from '@/mastra/workflows/tax-calculation/tax-calculation-workflow';
+import { workflowStorage } from '@/mastra/storage/workflow-storage';
+import { Mastra } from '@mastra/core';
+import { getOrCreateTaxAgent } from '@/mastra/agents/tax-agent/tax-agent.handler';
+import { setMastra } from '@/mastra/mastra-instance';
 
 let isInitialized = false;
 let isInitializing = false;
@@ -51,7 +57,7 @@ function ensureStorageDirectories(): void {
  * Idempotent - safe to call multiple times
  * @returns Promise<void>
  */
-export async function initializeApp(): Promise<void> {
+export async function initializeInfrastructure(): Promise<void> {
   if (isInitialized) {
     pinoServerLogger.info('[Initialize] Already initialized, skipping');
     return;
@@ -60,7 +66,7 @@ export async function initializeApp(): Promise<void> {
   if (isInitializing) {
     pinoServerLogger.info('[Initialize] Initialization in progress, waiting...');
     await new Promise(resolve => setTimeout(resolve, 100));
-    return initializeApp(); // Retry
+    return initializeInfrastructure(); // Retry
   }
 
   isInitializing = true;
@@ -70,6 +76,19 @@ export async function initializeApp(): Promise<void> {
     await connectDatabase();
     await runAllSeeds();
     await initializeLLMClient();
+
+    const taxAgentWrapper = await getOrCreateTaxAgent();
+    const mastra = new Mastra({
+      agents: { taxAgent: taxAgentWrapper.agent },
+      storage: workflowStorage,
+      workflows: {
+        taxCalculation: taxCalculationWorkflow,
+      },
+      observability: new Observability({
+        default: { enabled: true },
+      }),
+    });
+    setMastra(mastra);
 
     isInitialized = true;
     pinoServerLogger.info('[Initialize] Application initialization completed successfully');

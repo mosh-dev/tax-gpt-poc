@@ -3,7 +3,7 @@
  * JWT token verification for protected routes
  */
 
-import { Request, Response, NextFunction } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import jwt, { SignOptions } from 'jsonwebtoken';
 import { Environment } from '@config/environment';
 
