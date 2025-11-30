@@ -1,4 +1,4 @@
-import { initializeContainer } from '@/app/di-container/container-helper';
+import { registerToContainer } from '@/app/di-container/container-helper';
 
 import { ConversationController } from '@api/controllers/conversation.controller';
 import { ChatController } from '@api/controllers/chat.controller';
@@ -40,7 +40,7 @@ import { TaxCalculationWorkflowService } from '@/mastra/workflows/tax-calculatio
 
 export function registerApplicationComponents() {
   // Register all components at once to avoid order issues
-  initializeContainer([
+  registerToContainer([
     // Controllers
     { class: ConversationController },
     { class: ChatController },

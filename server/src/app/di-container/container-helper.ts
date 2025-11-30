@@ -7,11 +7,11 @@ const containerRegistry = createContainer({
 
 type RegistrationItem = | { class: new (...args: any[]) => any } | { key: string; value: any };
 
-export function initializeContainer(registrations: RegistrationItem[]): void;
-export function initializeContainer(nameAndRegistrationPair: NameAndRegistrationPair<any>): void;
-export function initializeContainer<T>(classRef: new (...args: any[]) => T): string;
-export function initializeContainer<T>(key: string, value: T): string;
-export function initializeContainer<T>(refOrKey: any, value?: T): string | void {
+export function registerToContainer(registrations: RegistrationItem[]): void;
+export function registerToContainer(nameAndRegistrationPair: NameAndRegistrationPair<any>): void;
+export function registerToContainer<T>(classRef: new (...args: any[]) => T): string;
+export function registerToContainer<T>(key: string, value: T): string;
+export function registerToContainer<T>(refOrKey: any, value?: T): string | void {
   // Array registration mode
   if (Array.isArray(refOrKey)) {
     const registrations: NameAndRegistrationPair<any> = {};
@@ -49,29 +49,6 @@ export function initializeContainer<T>(refOrKey: any, value?: T): string | void 
     registration = asClass(refOrKey).singleton();
   } else {
     throw new Error(`initializeContainer requires an array, a NameAndRegistrationPair object, a class, or a (key, value) pair. Got: ${typeof refOrKey} - ${refOrKey}`);
-  }
-
-  containerRegistry.register({
-    [key]: registration
-  });
-
-  return key;
-}
-
-
-// noinspection JSUnusedGlobalSymbols
-export function registerToContainer<T>(refOrKey: any, value?: T): string {
-  let key: string;
-  let registration: any;
-
-  if (value !== undefined) {
-    key = String(refOrKey);
-    registration = asValue(value);
-  } else if (typeof refOrKey === 'function' && refOrKey.prototype) {
-    key = refOrKey.name;
-    registration = asClass(refOrKey).singleton();
-  } else {
-    throw new Error(`registerToContainer requires either a class or a (key, value) pair. Got: ${typeof refOrKey} - ${refOrKey}`);
   }
 
   containerRegistry.register({
