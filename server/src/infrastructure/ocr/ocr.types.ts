@@ -3,6 +3,7 @@
  * Centralized type definitions for the OCR system
  */
 import { OCRResultThree } from '@/types/ocr-result.types';
+import { OEM, PSM } from 'tesseract.js';
 
 export type SupportedLanguage = 'eng' | 'deu' | 'fra' | 'ita';
 export type FileType = 'image' | 'pdf' | 'unknown';
@@ -15,9 +16,9 @@ export interface OCRConfig {
   /** Tesseract language(s) to use */
   language?: SupportedLanguage | string;
   /** Tesseract OCR Engine Mode (0-3) */
-  oem?: number;
+  oem?: OEM;
   /** Tesseract Page Segmentation Mode (0-13) */
-  psm?: number;
+  psm?: PSM;
   /** Enable image preprocessing */
   preprocessing?: boolean;
   /** Maximum image dimension for processing */
